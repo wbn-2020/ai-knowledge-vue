@@ -1,66 +1,168 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
-import { documents, knowledgeBases } from '@/mock/data'
+import { onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { deleteDocument, downloadDocument, getDocument, getDocumentPreview, renameDocument, retryDocument } from '@/api/knowledge'
+import type { DocumentItem } from '@/types'
+import { documentErrorOf, documentNameOf, fileSizeOf, fileTypeOf, kbNameOf, statusTagType, timeOf } from '@/utils/view-adapters'
 
 const route = useRoute()
-const doc = computed(() => documents.find((item) => item.id === Number(route.params.id)) || documents[0])
-const kb = computed(() => knowledgeBases.find((item) => item.name === doc.value.knowledgeBaseName))
+const router = useRouter()
+const loading = ref(false)
+const previewLoading = ref(false)
+const doc = ref<DocumentItem | null>(null)
+const preview = ref('')
+const retrying = ref(false)
+const downloading = ref(false)
+const errorMessage = ref('')
+
+function downloadBlob(response: any, fallbackName: string) {
+  const blob = response?.data instanceof Blob ? response.data : new Blob([response?.data || ''])
+  const disposition = response?.headers?.['content-disposition'] || ''
+  const match = disposition.match(/filename\*?=(?:UTF-8'')?["']?([^"';]+)["']?/i)
+  const filename = match ? decodeURIComponent(match[1]) : fallbackName
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
+async function loadPreview(id: number) {
+  previewLoading.value = true
+  try {
+    preview.value = await getDocumentPreview(id)
+  } catch {
+    preview.value = ''
+  } finally {
+    previewLoading.value = false
+  }
+}
+
+async function loadDetail() {
+  loading.value = true
+  errorMessage.value = ''
+  try {
+    const id = Number(route.params.id)
+    doc.value = await getDocument(id)
+    await loadPreview(id)
+  } catch (error) {
+    doc.value = null
+    errorMessage.value = error instanceof Error ? error.message : '文档详情加载失败'
+  } finally {
+    loading.value = false
+  }
+}
+
+async function retryParse() {
+  if (!doc.value) return
+  retrying.value = true
+  try {
+    await retryDocument(doc.value.id)
+    ElMessage.success('已提交重新解析任务')
+    loadDetail()
+  } finally {
+    retrying.value = false
+  }
+}
+
+async function downloadRaw() {
+  if (!doc.value) return
+  downloading.value = true
+  try {
+    const response = await downloadDocument(doc.value.id)
+    downloadBlob(response, documentNameOf(doc.value))
+  } finally {
+    downloading.value = false
+  }
+}
+
+async function rename() {
+  if (!doc.value) return
+  const result = await ElMessageBox.prompt('请输入新的文档名称', '重命名文档', {
+    inputValue: documentNameOf(doc.value),
+    inputValidator: (value) => !!value.trim() || '文档名称不能为空',
+  })
+  await renameDocument(doc.value.id, result.value.trim())
+  ElMessage.success('文档已重命名')
+  loadDetail()
+}
+
+async function removeDoc() {
+  if (!doc.value) return
+  await ElMessageBox.confirm(`确认删除文档「${documentNameOf(doc.value)}」吗？`, '删除确认', { type: 'warning' })
+  await deleteDocument(doc.value.id)
+  ElMessage.success('文档已删除')
+  router.push('/app/documents')
+}
+
+onMounted(loadDetail)
 </script>
 
 <template>
-  <div>
-    <div class="page-header">
-      <div>
-        <h1 class="page-title">文档详情</h1>
-        <div class="page-desc">查看文档基础信息、解析状态、向量化状态和关联知识库。</div>
-      </div>
-      <div class="header-actions">
-        <el-button plain>重新解析</el-button>
-        <el-button type="primary">下载原文件</el-button>
-      </div>
-    </div>
+  <div v-loading="loading">
+    <el-alert v-if="errorMessage" class="state-alert" type="error" show-icon :closable="false" :title="errorMessage" />
 
-    <div class="detail-grid">
-      <section class="soft-card">
-        <div class="soft-card-body">
-          <span class="subtle-badge">{{ doc.type }}</span>
-          <h2>{{ doc.name }}</h2>
-          <div class="meta-grid">
-            <div><span>所属知识库</span><strong>{{ kb?.name }}</strong></div>
-            <div><span>大小</span><strong>{{ doc.size }}</strong></div>
-            <div><span>解析状态</span><strong>{{ doc.parseStatus }}</strong></div>
-            <div><span>向量状态</span><strong>{{ doc.embeddingStatus }}</strong></div>
-            <div><span>更新时间</span><strong>{{ doc.updatedAt }}</strong></div>
-            <div><span>文档 ID</span><strong>#{{ doc.id }}</strong></div>
-            <div><span>上传人</span><strong>当前用户</strong></div>
-            <div><span>切片数量</span><strong>{{ doc.parseStatus === 'SUCCESS' ? 24 : 0 }}</strong></div>
-          </div>
+    <template v-if="doc">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">文档详情</h1>
+          <div class="page-desc">查看文档基础信息、解析状态、向量化状态、失败原因和文本预览。</div>
         </div>
-      </section>
+        <div class="header-actions">
+          <el-button plain @click="router.push('/app/documents')">返回列表</el-button>
+          <el-button plain @click="rename">重命名</el-button>
+          <el-button plain :loading="retrying" @click="retryParse">重新解析</el-button>
+          <el-button plain type="danger" @click="removeDoc">删除</el-button>
+          <el-button type="primary" :loading="downloading" @click="downloadRaw">下载原文件</el-button>
+        </div>
+      </div>
 
-      <section class="soft-card">
-        <div class="soft-card-body">
-          <h3 class="section-title">摘要与状态</h3>
-          <el-alert type="info" :closable="false" show-icon title="MVP 仅展示摘要卡片，不做全文在线预览。" />
-          <div class="summary-box">
-            这份文档的摘要会在后端接入后由文档摘要模块生成。当前页面展示文档状态、失败原因、切片数量和向量化进度。
+      <div class="detail-grid">
+        <section class="soft-card">
+          <div class="soft-card-body">
+            <span class="subtle-badge">{{ fileTypeOf(doc) }}</span>
+            <h2>{{ documentNameOf(doc) }}</h2>
+            <div class="meta-grid">
+              <div><span>所属知识库</span><strong>{{ kbNameOf(doc) }}</strong></div>
+              <div><span>大小</span><strong>{{ fileSizeOf(doc) }}</strong></div>
+              <div><span>解析状态</span><el-tag :type="statusTagType(doc.parseStatus)">{{ doc.parseStatus }}</el-tag></div>
+              <div><span>向量状态</span><el-tag :type="statusTagType(doc.embeddingStatus)" effect="plain">{{ doc.embeddingStatus }}</el-tag></div>
+              <div><span>更新时间</span><strong>{{ timeOf(doc) }}</strong></div>
+              <div><span>文档 ID</span><strong>#{{ doc.id }}</strong></div>
+              <div><span>切片数量</span><strong>{{ doc.chunkCount || doc.segmentCount || '-' }}</strong></div>
+              <div><span>失败原因</span><strong>{{ documentErrorOf(doc) || '-' }}</strong></div>
+            </div>
           </div>
-          <div class="status-list">
-            <div><span>解析</span><strong>{{ doc.parseStatus }}</strong></div>
-            <div><span>向量化</span><strong>{{ doc.embeddingStatus }}</strong></div>
-            <div><span>失败原因</span><strong>{{ doc.parseStatus === 'FAILED' ? '文件格式异常或解析器不支持该内容结构' : '-' }}</strong></div>
+        </section>
+
+        <section class="soft-card">
+          <div class="soft-card-body">
+            <h3 class="section-title">预览与处理状态</h3>
+            <el-alert v-if="documentErrorOf(doc)" class="state-alert" type="error" :closable="false" show-icon :title="documentErrorOf(doc)" />
+            <el-alert v-if="!preview && !previewLoading" type="info" :closable="false" show-icon title="后端未返回可预览文本，仍可查看状态和下载原文件。" />
+            <div class="summary-box" v-loading="previewLoading">{{ preview || '暂无预览内容' }}</div>
           </div>
-        </div>
-      </section>
-    </div>
+        </section>
+      </div>
+    </template>
+    <el-empty v-else-if="!loading" description="文档不存在" />
   </div>
 </template>
 
 <style scoped lang="scss">
+.state-alert {
+  margin-bottom: 16px;
+}
+
 .header-actions {
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .detail-grid {
@@ -81,32 +183,28 @@ h2 {
   margin-top: 18px;
 }
 
-.meta-grid span,
-.status-list span {
+.meta-grid span {
   display: block;
   color: var(--color-text-muted);
   font-size: 13px;
+  margin-bottom: 6px;
 }
 
-.meta-grid strong,
-.status-list strong {
+.meta-grid strong {
   display: block;
-  margin-top: 6px;
 }
 
 .summary-box {
   margin-top: 16px;
+  max-height: 420px;
+  min-height: 220px;
+  overflow: auto;
   padding: 16px;
   border-radius: 14px;
   background: var(--color-surface-soft);
   color: var(--color-text-muted);
   line-height: 1.8;
-}
-
-.status-list {
-  display: grid;
-  gap: 14px;
-  margin-top: 18px;
+  white-space: pre-wrap;
 }
 
 @media (max-width: 900px) {

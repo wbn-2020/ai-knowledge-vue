@@ -11,8 +11,11 @@ export interface UserInfo {
   nickname: string
   avatar?: string
   email?: string
+  bio?: string
   role: 'USER' | 'ADMIN'
-  status: 'NORMAL' | 'DISABLED'
+  status: 'NORMAL' | 'ENABLED' | 'DISABLED'
+  createTime?: string
+  createdAt?: string
 }
 
 export interface KnowledgeBase {
@@ -23,8 +26,10 @@ export interface KnowledgeBase {
   category: string
   docCount: number
   status: 'NORMAL' | 'PROCESSING' | 'FAILED' | 'DISABLED'
-  updatedAt: string
-  createdAt: string
+  updatedAt?: string
+  updateTime?: string
+  createdAt?: string
+  createTime?: string
 }
 
 export interface DocumentItem {
@@ -35,31 +40,67 @@ export interface DocumentItem {
   parseStatus: 'PENDING' | 'PARSING' | 'SUCCESS' | 'FAILED'
   embeddingStatus: 'PENDING' | 'PROCESSING' | 'SUCCESS' | 'FAILED'
   knowledgeBaseName: string
-  updatedAt: string
+  knowledgeBaseId?: number
+  fileName?: string
+  originalName?: string
+  fileType?: string
+  fileSize?: number
+  errorMessage?: string
+  failReason?: string
+  parseError?: string
+  chunkCount?: number
+  segmentCount?: number
+  updatedAt?: string
+  updateTime?: string
+  createdAt?: string
+  createTime?: string
 }
 
 export interface NotificationItem {
   id: number
   title: string
   content: string
-  type: '解析成功' | '解析失败' | '问答失败' | '系统公告'
-  isRead: boolean
-  createdAt: string
+  type: string
+  isRead?: boolean
+  read?: boolean
+  enabled?: boolean
+  createdAt?: string
+  createTime?: string
+  updatedAt?: string
+  updateTime?: string
 }
 
 export interface ChatSession {
   id: number
   title: string
-  knowledgeBaseName: string
-  latestQuestion: string
-  updatedAt: string
+  knowledgeBaseId?: number
+  knowledgeBaseName?: string
+  latestQuestion?: string
+  messageCount?: number
+  updatedAt?: string
+  updateTime?: string
+  createdAt?: string
+  createTime?: string
+}
+
+export interface ChatReference {
+  id?: number
+  documentId?: number
+  chunkId?: number
+  documentName?: string
+  content?: string
+  score?: number
 }
 
 export interface ChatMessage {
   id: number
   role: 'user' | 'assistant'
   content: string
-  references?: string[]
+  references?: Array<string | ChatReference>
+  createdAt?: string
+  createTime?: string
+  modelName?: string
+  tokenCount?: number
 }
 
 export interface Metric {
@@ -75,7 +116,87 @@ export interface LoginForm {
 
 export interface RegisterForm {
   username: string
+  email?: string
   password: string
   confirmPassword: string
   nickname: string
+}
+
+export interface AdminAnnouncement {
+  id: number
+  title: string
+  content: string
+  enabled: boolean
+  creator?: string
+  createTime?: string
+  updateTime?: string
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface OperationLog {
+  id: number
+  userId?: number
+  username?: string
+  action?: string
+  module?: string
+  method?: string
+  path?: string
+  ip?: string
+  success?: boolean
+  result?: string
+  failReason?: string
+  createTime?: string
+  createdAt?: string
+}
+
+export interface LoginLog {
+  id: number
+  account?: string
+  username?: string
+  ip?: string
+  userAgent?: string
+  success?: boolean
+  failReason?: string
+  createTime?: string
+  createdAt?: string
+}
+
+export interface AiCallLog {
+  id: number
+  userId?: number
+  username?: string
+  modelName?: string
+  callType?: string
+  promptTokens?: number
+  completionTokens?: number
+  totalTokens?: number
+  elapsedMs?: number
+  success?: boolean
+  failReason?: string
+  createTime?: string
+  createdAt?: string
+}
+
+export interface LogAlert {
+  type: string
+  level: string
+  message: string
+  total: number
+  failed: number
+  failureRate: number
+}
+
+export interface SearchResult {
+  id?: number
+  documentId?: number
+  chunkId?: number
+  documentName?: string
+  name?: string
+  title?: string
+  content?: string
+  summary?: string
+  text?: string
+  score?: number
+  similarity?: number
 }

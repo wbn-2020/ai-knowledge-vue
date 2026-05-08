@@ -1,37 +1,345 @@
-import type { KnowledgeBase, DocumentItem, ChatMessage, ChatSession, Metric } from '@/types'
-import { knowledgeBases, documents, messages, sessions, metrics, adminMetrics } from '@/mock/data'
+import request from './request'
+import type { PageResponse } from './request'
+import type { AxiosProgressEvent } from 'axios'
+import type {
+  AdminAnnouncement,
+  AiCallLog,
+  ChatMessage,
+  ChatSession,
+  DocumentItem,
+  KnowledgeBase,
+  LogAlert,
+  LoginLog,
+  NotificationItem,
+  OperationLog,
+  SearchResult,
+  UserInfo,
+} from '@/types'
 
-const asyncWrap = <T>(data: T) =>
-  Promise.resolve({
-    code: 200,
-    data,
-    msg: 'ok',
-  })
-
-export function getDashboardMetrics() {
-  return asyncWrap(metrics)
+export interface DashboardOverview {
+  knowledgeBaseCount: number
+  documentCount: number
+  chatSessionCount: number
+  recentKnowledgeBases: KnowledgeBase[]
+  recentDocuments: DocumentItem[]
+  recentSessions: ChatSession[]
 }
 
-export function getKnowledgeBases() {
-  return asyncWrap<KnowledgeBase[]>(knowledgeBases)
+export interface AskResponse {
+  sessionId: number
+  answer: string
+  references: Array<{
+    id: number
+    documentId: number
+    chunkId: number
+    documentName: string
+    content: string
+    score: number
+  }>
+}
+
+export function getDashboardOverview() {
+  return request.get<any, DashboardOverview>('/dashboard/overview')
+}
+
+export function createKnowledgeBase(data: Partial<KnowledgeBase>) {
+  return request.post<any, KnowledgeBase>('/knowledge-bases', data)
+}
+
+export function getKnowledgeBasePage(params: { keyword?: string; pageNo?: number; pageSize?: number; sortBy?: string }) {
+  return request.get<any, PageResponse<KnowledgeBase>>('/knowledge-bases', { params })
+}
+
+export function getKnowledgeBase(id: number) {
+  return request.get<any, KnowledgeBase>(`/knowledge-bases/${id}`)
 }
 
 export function getKnowledgeBaseDetail(id: number) {
-  return asyncWrap(knowledgeBases.find((item) => item.id === id) || knowledgeBases[0])
+  return request.get<any, { knowledgeBase: KnowledgeBase; recentDocuments: DocumentItem[]; recentSessions: ChatSession[]; processingStatus: string }>(`/knowledge-bases/${id}/detail`)
 }
 
-export function getDocuments() {
-  return asyncWrap<DocumentItem[]>(documents)
+export function updateKnowledgeBase(id: number, data: Partial<KnowledgeBase>) {
+  return request.put<any, KnowledgeBase>(`/knowledge-bases/${id}`, data)
 }
 
-export function getChatSessions() {
-  return asyncWrap<ChatSession[]>(sessions)
+export function deleteKnowledgeBase(id: number) {
+  return request.delete(`/knowledge-bases/${id}`)
 }
 
-export function getChatMessages() {
-  return asyncWrap<ChatMessage[]>(messages)
+export function uploadDocument(knowledgeBaseId: number, file: File, onUploadProgress?: (event: AxiosProgressEvent) => void) {
+  const formData = new FormData()
+  formData.append('knowledgeBaseId', String(knowledgeBaseId))
+  formData.append('file', file)
+  return request.post<any, DocumentItem>('/documents/upload', formData, { onUploadProgress })
 }
 
-export function getAdminMetrics() {
-  return asyncWrap<Metric[]>(adminMetrics)
+export function getDocumentPage(params: {
+  knowledgeBaseId?: number
+  keyword?: string
+  parseStatus?: string
+  embeddingStatus?: string
+  pageNo?: number
+  pageSize?: number
+}) {
+  return request.get<any, PageResponse<DocumentItem>>('/documents', { params })
+}
+
+export function getDocument(id: number) {
+  return request.get<any, DocumentItem>(`/documents/${id}`)
+}
+
+export function deleteDocument(id: number) {
+  return request.delete(`/documents/${id}`)
+}
+
+export function renameDocument(id: number, name: string) {
+  return request.put(`/documents/${id}/rename`, { name })
+}
+
+export function getDocumentPreview(id: number) {
+  return request.get<any, string>(`/documents/${id}/preview`)
+}
+
+export function downloadDocument(id: number) {
+  return request.get(`/documents/${id}/download`, { responseType: 'blob' })
+}
+
+export function retryDocument(id: number) {
+  return request.post<any, DocumentItem>(`/documents/${id}/retry`)
+}
+
+export function askKnowledgeBase(data: { knowledgeBaseId: number; sessionId?: number | null; question: string }) {
+  return request.post<any, AskResponse>('/chat/ask', data)
+}
+
+export function askDocument(data: { documentId: number; sessionId?: number | null; question: string }) {
+  return request.post<any, AskResponse>('/chat/ask/document', data)
+}
+
+export function askMultiKnowledgeBase(data: { knowledgeBaseIds: number[]; sessionId?: number | null; question: string }) {
+  return request.post<any, AskResponse>('/chat/ask/multi', data)
+}
+
+export function getChatSessionPage(params: { pageNo?: number; pageSize?: number }) {
+  return request.get<any, PageResponse<ChatSession>>('/chat/sessions', { params })
+}
+
+export function getChatMessages(sessionId: number) {
+  return request.get<any, ChatMessage[]>(`/chat/sessions/${sessionId}/messages`)
+}
+
+export function deleteChatSession(sessionId: number) {
+  return request.delete(`/chat/sessions/${sessionId}`)
+}
+
+export function renameChatSession(sessionId: number, title: string) {
+  return request.put(`/chat/sessions/${sessionId}/rename`, { title })
+}
+
+export function clearChatMessages(sessionId: number) {
+  return request.delete(`/chat/sessions/${sessionId}/messages`)
+}
+
+export function regenerateAnswer(sessionId: number) {
+  return request.post<any, AskResponse>(`/chat/sessions/${sessionId}/regenerate`)
+}
+
+export function sendFeedback(data: { messageId: number; feedbackType: string; reason?: string }) {
+  return request.post('/chat/feedback', data)
+}
+
+export function exportChat(sessionId: number, type: 'markdown' | 'pdf' | 'word') {
+  return request.get(`/chat/sessions/${sessionId}/export/${type}`, { responseType: 'blob' })
+}
+
+export function semanticSearch(params: { knowledgeBaseId: number; query: string; topK?: number }) {
+  return request.get<any, SearchResult[]>('/search/semantic', { params })
+}
+
+export function keywordSearch(params: { knowledgeBaseId: number; keyword: string; topK?: number }) {
+  return request.get<any, SearchResult[]>('/search/keyword', { params })
+}
+
+export function summarizeDocument(documentId: number) {
+  return request.post('/summaries/document', null, { params: { documentId } })
+}
+
+export function summarizeKnowledgeBase(knowledgeBaseId: number) {
+  return request.post('/summaries/knowledge-base', null, { params: { knowledgeBaseId } })
+}
+
+export function getNotificationPage(params: { pageNo?: number; pageSize?: number }) {
+  return request.get<any, PageResponse<NotificationItem>>('/notifications', { params })
+}
+
+export function getUnreadNotificationCount() {
+  return request.get<any, number>('/notifications/unread-count')
+}
+
+export function markNotificationRead(id: number) {
+  return request.put(`/notifications/${id}/read`)
+}
+
+export function markAllNotificationsRead() {
+  return request.put('/notifications/read-all')
+}
+
+export function getAnnouncements(params: { pageNo?: number; pageSize?: number }) {
+  return request.get<any, PageResponse<NotificationItem>>('/announcements', { params })
+}
+
+export function getAdminDashboardOverview() {
+  return request.get('/admin/dashboard/overview')
+}
+
+export function getAdminUsers(params: { keyword?: string; status?: string; pageNo?: number; pageSize?: number }) {
+  return request.get<any, PageResponse<UserInfo>>('/admin/users', { params })
+}
+
+export function getAdminUser(id: number) {
+  return request.get<any, UserInfo>(`/admin/users/${id}`)
+}
+
+export function setAdminUserStatus(id: number, status: string) {
+  return request.put(`/admin/users/${id}/status`, null, { params: { status } })
+}
+
+export function resetAdminUserPassword(id: number, password: string) {
+  return request.put(`/admin/users/${id}/password`, { password })
+}
+
+export function getAdminKnowledgeBases(params: { keyword?: string; status?: string; pageNo?: number; pageSize?: number }) {
+  return request.get<any, PageResponse<KnowledgeBase>>('/admin/knowledge-bases', { params })
+}
+
+export function getAdminKnowledgeBase(id: number) {
+  return request.get<any, KnowledgeBase>(`/admin/knowledge-bases/${id}`)
+}
+
+export function setAdminKnowledgeBaseStatus(id: number, status: string) {
+  return request.put(`/admin/knowledge-bases/${id}/status`, null, { params: { status } })
+}
+
+export function deleteAdminKnowledgeBase(id: number) {
+  return request.delete(`/admin/knowledge-bases/${id}`)
+}
+
+export function getAdminDocuments(params: { keyword?: string; knowledgeBaseId?: number; parseStatus?: string; pageNo?: number; pageSize?: number }) {
+  return request.get<any, PageResponse<DocumentItem>>('/admin/documents', { params })
+}
+
+export function getAdminDocument(id: number) {
+  return request.get<any, DocumentItem>(`/admin/documents/${id}`)
+}
+
+export function deleteAdminDocument(id: number) {
+  return request.delete(`/admin/documents/${id}`)
+}
+
+export function retryAdminDocument(id: number) {
+  return request.post(`/admin/documents/${id}/retry`)
+}
+
+export function getDocumentTasks(params: { status?: string; taskType?: string; keyword?: string; pageNo?: number; pageSize?: number }) {
+  return request.get('/admin/document-tasks', { params })
+}
+
+export function getDocumentTask(id: number) {
+  return request.get(`/admin/document-tasks/${id}`)
+}
+
+export function retryDocumentTask(id: number) {
+  return request.post(`/admin/document-tasks/${id}/retry`)
+}
+
+export function getModelConfigs() {
+  return request.get('/admin/config/models')
+}
+
+export function createModelConfig(data: any) {
+  return request.post('/admin/config/models', data)
+}
+
+export function updateModelConfig(id: number, data: any) {
+  return request.put(`/admin/config/models/${id}`, data)
+}
+
+export function deleteModelConfig(id: number) {
+  return request.delete(`/admin/config/models/${id}`)
+}
+
+export function testModelConfig(id: number, prompt: string) {
+  return request.post(`/admin/config/models/${id}/test`, { prompt })
+}
+
+export function getPromptConfigs() {
+  return request.get('/admin/config/prompts')
+}
+
+export function getPromptConfig(id: number) {
+  return request.get(`/admin/config/prompts/${id}`)
+}
+
+export function createPromptConfig(data: any) {
+  return request.post('/admin/config/prompts', data)
+}
+
+export function updatePromptConfig(id: number, data: any) {
+  return request.put(`/admin/config/prompts/${id}`, data)
+}
+
+export function deletePromptConfig(id: number) {
+  return request.delete(`/admin/config/prompts/${id}`)
+}
+
+export function setPromptEnabled(id: number, enabled: boolean) {
+  return request.put(`/admin/config/prompts/${id}/enabled`, { enabled })
+}
+
+export function getSystemConfigs() {
+  return request.get('/admin/config/system')
+}
+
+export function saveSystemConfig(data: any) {
+  return request.post('/admin/config/system', data)
+}
+
+export function deleteSystemConfig(id: number) {
+  return request.delete(`/admin/config/system/${id}`)
+}
+
+export function getOperationLogs(params: any) {
+  return request.get<any, PageResponse<OperationLog>>('/admin/logs/operations', { params })
+}
+
+export function getLoginLogs(params: any) {
+  return request.get<any, PageResponse<LoginLog>>('/admin/logs/logins', { params })
+}
+
+export function getAiCallLogs(params: any) {
+  return request.get<any, PageResponse<AiCallLog>>('/admin/logs/ai-calls', { params })
+}
+
+export function getAlerts() {
+  return request.get<any, LogAlert[]>('/admin/logs/alerts')
+}
+
+export function exportAdminLog(type: 'operations' | 'logins' | 'ai-calls', params: any) {
+  return request.get(`/admin/logs/${type}/export`, { params, responseType: 'blob' })
+}
+
+export function getAdminAnnouncements(params: { pageNo?: number; pageSize?: number }) {
+  return request.get<any, PageResponse<AdminAnnouncement>>('/admin/announcements', { params })
+}
+
+export function createAdminAnnouncement(data: any) {
+  return request.post<any, AdminAnnouncement>('/admin/announcements', data)
+}
+
+export function updateAdminAnnouncement(id: number, data: any) {
+  return request.put<any, AdminAnnouncement>(`/admin/announcements/${id}`, data)
+}
+
+export function deleteAdminAnnouncement(id: number) {
+  return request.delete(`/admin/announcements/${id}`)
 }

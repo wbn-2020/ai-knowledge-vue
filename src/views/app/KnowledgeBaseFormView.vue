@@ -1,39 +1,65 @@
 <script setup lang="ts">
-import { computed, reactive } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { knowledgeBases } from '@/mock/data'
+import { createKnowledgeBase, getKnowledgeBase, updateKnowledgeBase } from '@/api/knowledge'
 
 const route = useRoute()
 const router = useRouter()
 const editId = computed(() => Number(route.params.id || 0))
 const editing = computed(() => !!editId.value)
-const current = computed(() => knowledgeBases.find((item) => item.id === editId.value))
+const saving = ref(false)
+const loading = ref(false)
 
 const form = reactive({
-  name: current.value?.name || '',
-  description: current.value?.description || '',
-  icon: current.value?.icon || '📘',
-  category: current.value?.category || '技术学习',
-  status: current.value?.status || 'NORMAL',
+  name: '',
+  description: '',
+  icon: '📚',
+  category: '技术学习',
+  status: 'NORMAL',
 })
 
-function save() {
+async function loadDetail() {
+  if (!editing.value) return
+  loading.value = true
+  try {
+    const data = await getKnowledgeBase(editId.value)
+    form.name = data.name || ''
+    form.description = data.description || ''
+    form.icon = data.icon || '📚'
+    form.category = data.category || '技术学习'
+    form.status = data.status || 'NORMAL'
+  } finally {
+    loading.value = false
+  }
+}
+
+async function save() {
   if (!form.name.trim()) {
     ElMessage.warning('请输入知识库名称')
     return
   }
-  ElMessage.success(editing.value ? '知识库已更新' : '知识库已创建')
-  router.push('/app/knowledge')
+  saving.value = true
+  try {
+    const payload = { name: form.name, description: form.description, icon: form.icon, category: form.category }
+    if (editing.value) await updateKnowledgeBase(editId.value, payload)
+    else await createKnowledgeBase(payload)
+    ElMessage.success(editing.value ? '知识库已更新' : '知识库已创建')
+    router.push('/app/knowledge')
+  } finally {
+    saving.value = false
+  }
 }
+
+onMounted(loadDetail)
 </script>
 
 <template>
-  <div>
+  <div v-loading="loading">
     <div class="page-header">
       <div>
         <h1 class="page-title">{{ editing ? '编辑知识库' : '创建知识库' }}</h1>
-        <div class="page-desc">配置知识库名称、简介、图标、分类和状态。</div>
+        <div class="page-desc">配置知识库名称、简介、图标和分类。</div>
       </div>
     </div>
 
@@ -53,17 +79,12 @@ function save() {
                 <el-option label="其他" value="其他" />
               </el-select>
             </el-form-item>
-            <el-form-item label="状态">
-              <el-radio-group v-model="form.status">
-                <el-radio-button value="NORMAL">正常</el-radio-button>
-                <el-radio-button value="PROCESSING">处理中</el-radio-button>
-                <el-radio-button value="FAILED">解析失败</el-radio-button>
-                <el-radio-button value="DISABLED">已禁用</el-radio-button>
-              </el-radio-group>
+            <el-form-item v-if="editing" label="状态">
+              <el-tag :type="form.status === 'NORMAL' ? 'success' : form.status === 'FAILED' ? 'danger' : 'warning'">{{ form.status }}</el-tag>
             </el-form-item>
             <div class="actions">
               <el-button @click="router.back()">取消</el-button>
-              <el-button type="primary" @click="save">{{ editing ? '保存修改' : '创建知识库' }}</el-button>
+              <el-button type="primary" :loading="saving" @click="save">{{ editing ? '保存修改' : '创建知识库' }}</el-button>
             </div>
           </el-form>
         </div>
@@ -85,43 +106,10 @@ function save() {
 </template>
 
 <style scoped lang="scss">
-.form-layout {
-  display: grid;
-  grid-template-columns: 1fr 360px;
-  gap: 16px;
-}
-
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.preview-card {
-  padding: 18px;
-  border-radius: 16px;
-  background: var(--color-surface-soft);
-  border: 1px solid var(--color-border);
-}
-
-.icon {
-  width: 52px;
-  height: 52px;
-  display: grid;
-  place-items: center;
-  border-radius: 16px;
-  background: var(--color-primary-weak);
-  font-size: 24px;
-}
-
-.preview-card p {
-  color: var(--color-text-muted);
-  line-height: 1.7;
-}
-
-@media (max-width: 900px) {
-  .form-layout {
-    grid-template-columns: 1fr;
-  }
-}
+.form-layout { display: grid; grid-template-columns: 1fr 360px; gap: 16px; }
+.actions { display: flex; justify-content: flex-end; gap: 10px; }
+.preview-card { padding: 18px; border-radius: 16px; background: var(--color-surface-soft); border: 1px solid var(--color-border); }
+.icon { width: 52px; height: 52px; display: grid; place-items: center; border-radius: 16px; background: var(--color-primary-weak); font-size: 24px; }
+.preview-card p { color: var(--color-text-muted); line-height: 1.7; }
+@media (max-width: 900px) { .form-layout { grid-template-columns: 1fr; } }
 </style>

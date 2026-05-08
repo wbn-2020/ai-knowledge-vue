@@ -1,52 +1,70 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import type { LoginForm, RegisterForm, UserInfo } from '@/types'
-import { currentUser } from '@/mock/data'
+import { adminLogin as adminLoginApi, getCurrentUser, login as loginApi, logout as logoutApi, register as registerApi } from '@/api/auth'
 
 const TOKEN_KEY = 'knowflow_token'
+const USER_KEY = 'knowflow_user'
+
+function readUser() {
+  const raw = localStorage.getItem(USER_KEY)
+  if (!raw) return null
+  try {
+    return JSON.parse(raw) as UserInfo
+  } catch {
+    return null
+  }
+}
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem(TOKEN_KEY) || '')
-  const user = ref<UserInfo | null>(localStorage.getItem('knowflow_user') ? JSON.parse(localStorage.getItem('knowflow_user') as string) : currentUser)
+  const user = ref<UserInfo | null>(readUser())
 
   const isLoggedIn = computed(() => !!token.value)
 
-  function persistUser(nextUser: UserInfo) {
+  function persist(nextToken: string, nextUser: UserInfo) {
+    token.value = nextToken
     user.value = nextUser
-    localStorage.setItem('knowflow_user', JSON.stringify(nextUser))
+    localStorage.setItem(TOKEN_KEY, nextToken)
+    localStorage.setItem(USER_KEY, JSON.stringify(nextUser))
   }
 
   async function login(form: LoginForm) {
-    const nextUser: UserInfo = {
-      ...currentUser,
-      username: form.username,
-      nickname: form.username === 'admin' ? 'KnowFlow 管理员' : 'KnowFlow 用户',
-      role: form.username === 'admin' ? 'ADMIN' : 'USER',
-    }
-    token.value = 'mock-token-' + Date.now()
-    localStorage.setItem(TOKEN_KEY, token.value)
-    persistUser(nextUser)
-    return { code: 200, data: { token: token.value, user: nextUser }, msg: 'ok' }
+    const result = await loginApi(form)
+    persist(result.token, result.user)
+    return result
+  }
+
+  async function adminLogin(form: LoginForm) {
+    const result = await adminLoginApi(form)
+    persist(result.token, result.user)
+    return result
   }
 
   async function register(form: RegisterForm) {
-    return {
-      code: 200,
-      data: {
-        id: Date.now(),
-        username: form.username,
-        nickname: form.nickname || form.username,
-      },
-      msg: '注册成功',
-    }
+    const result = await registerApi(form)
+    persist(result.token, result.user)
+    return result
   }
 
-  function logout() {
+  async function fetchMe() {
+    const result = await getCurrentUser()
+    user.value = result
+    localStorage.setItem(USER_KEY, JSON.stringify(result))
+    return result
+  }
+
+  async function logout() {
+    try {
+      if (token.value) await logoutApi()
+    } catch {
+      // JWT is stateless; local cleanup is still required.
+    }
     token.value = ''
     user.value = null
     localStorage.removeItem(TOKEN_KEY)
-    localStorage.removeItem('knowflow_user')
+    localStorage.removeItem(USER_KEY)
   }
 
-  return { token, user, isLoggedIn, login, register, logout }
+  return { token, user, isLoggedIn, login, adminLogin, register, fetchMe, logout }
 })

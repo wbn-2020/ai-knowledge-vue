@@ -1,25 +1,24 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { createPromptConfig, deletePromptConfig, getPromptConfigs, setPromptEnabled, updatePromptConfig } from '@/api/knowledge'
+import { timeOf } from '@/utils/view-adapters'
 
-interface PromptTemplate {
-  id: number
-  name: string
-  type: string
-  content: string
-  enabled: boolean
-  updatedAt: string
-}
-
-const prompts = ref<PromptTemplate[]>([
-  { id: 1, name: '知识库问答默认 Prompt', type: '问答', content: '请只基于给定文档片段回答用户问题。', enabled: true, updatedAt: '2026-05-08 09:00' },
-  { id: 2, name: '文档摘要 Prompt', type: '摘要', content: '请总结文档核心主题、关键观点和可执行事项。', enabled: true, updatedAt: '2026-05-07 18:20' },
-])
-
+const prompts = ref<any[]>([])
 const drawerVisible = ref(false)
 const editingId = ref<number | null>(null)
-const testResult = ref('')
+const loading = ref(false)
 const form = reactive({ name: '', type: '问答', content: '', enabled: true })
+
+async function loadPrompts() {
+  loading.value = true
+  try {
+    const data: any = await getPromptConfigs()
+    prompts.value = Array.isArray(data) ? data : data?.list || []
+  } finally {
+    loading.value = false
+  }
+}
 
 function openCreate() {
   editingId.value = null
@@ -27,94 +26,53 @@ function openCreate() {
   drawerVisible.value = true
 }
 
-function openEdit(row: PromptTemplate) {
+function openEdit(row: any) {
   editingId.value = row.id
   Object.assign(form, row)
   drawerVisible.value = true
 }
 
-function save() {
+async function save() {
   if (!form.name || !form.content) {
     ElMessage.warning('请填写模板名称和内容')
     return
   }
-  if (editingId.value) {
-    const target = prompts.value.find((item) => item.id === editingId.value)
-    if (target) Object.assign(target, form, { updatedAt: '刚刚' })
-  } else {
-    prompts.value.unshift({ id: Date.now(), updatedAt: '刚刚', ...form })
-  }
+  if (editingId.value) await updatePromptConfig(editingId.value, form)
+  else await createPromptConfig(form)
   drawerVisible.value = false
   ElMessage.success('模板已保存')
+  loadPrompts()
 }
 
-function testPrompt() {
-  testResult.value = '测试结果：Prompt 能正确约束模型只基于知识库片段回答。'
+async function toggle(row: any) {
+  await setPromptEnabled(row.id, !row.enabled)
+  ElMessage.success('启用状态已更新')
+  loadPrompts()
 }
 
-async function remove(row: PromptTemplate) {
+async function remove(row: any) {
   await ElMessageBox.confirm(`确定删除「${row.name}」？`, '删除模板', { type: 'warning' })
-  prompts.value = prompts.value.filter((item) => item.id !== row.id)
+  await deletePromptConfig(row.id)
+  ElMessage.success('模板已删除')
+  loadPrompts()
 }
+
+onMounted(loadPrompts)
 </script>
 
 <template>
   <div>
-    <div class="page-header">
-      <div>
-        <h1 class="page-title">Prompt 模板</h1>
-        <div class="page-desc">管理问答和摘要场景的 Prompt 模板，支持新增、编辑、删除和测试。</div>
-      </div>
-      <el-button type="primary" @click="openCreate">新增模板</el-button>
-    </div>
-
-    <section class="soft-card">
-      <div class="soft-card-body">
-        <el-table :data="prompts" size="large">
-          <el-table-column prop="name" label="模板名称" min-width="240" />
-          <el-table-column prop="type" label="类型" width="120" />
-          <el-table-column prop="updatedAt" label="更新时间" width="170" />
-          <el-table-column label="启用" width="100"><template #default="{ row }"><el-switch v-model="row.enabled" /></template></el-table-column>
-          <el-table-column label="操作" width="220">
-            <template #default="{ row }">
-              <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
-              <el-button link @click="openEdit(row); testPrompt()">测试</el-button>
-              <el-button link type="danger" @click="remove(row)">删除</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
-    </section>
-
+    <div class="page-header"><div><h1 class="page-title">Prompt 模板</h1><div class="page-desc">管理问答和摘要场景的 Prompt 模板，支持新增、编辑、删除和启用。</div></div><el-button type="primary" @click="openCreate">新增模板</el-button></div>
+    <section class="soft-card"><div class="soft-card-body">
+      <el-table :data="prompts" v-loading="loading" size="large" empty-text="暂无 Prompt 模板">
+        <el-table-column prop="name" label="模板名称" min-width="240" /><el-table-column prop="type" label="类型" width="120" /><el-table-column label="更新时间" width="170"><template #default="{ row }">{{ timeOf(row) }}</template></el-table-column>
+        <el-table-column label="启用" width="100"><template #default="{ row }"><el-switch :model-value="row.enabled" @change="toggle(row)" /></template></el-table-column>
+        <el-table-column label="操作" width="180"><template #default="{ row }"><el-button link type="primary" @click="openEdit(row)">编辑</el-button><el-button link type="danger" @click="remove(row)">删除</el-button></template></el-table-column>
+      </el-table>
+    </div></section>
     <el-drawer v-model="drawerVisible" :title="editingId ? '编辑 Prompt' : '新增 Prompt'" size="560px">
-      <el-form label-position="top">
-        <el-form-item label="模板名称"><el-input v-model="form.name" /></el-form-item>
-        <el-form-item label="模板类型">
-          <el-select v-model="form.type" style="width: 100%">
-            <el-option label="问答" value="问答" />
-            <el-option label="摘要" value="摘要" />
-            <el-option label="关键词提取" value="关键词提取" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="模板内容"><el-input v-model="form.content" type="textarea" :rows="9" /></el-form-item>
-        <el-form-item label="启用状态"><el-switch v-model="form.enabled" /></el-form-item>
-        <el-button plain @click="testPrompt">测试 Prompt</el-button>
-        <div v-if="testResult" class="test-result">{{ testResult }}</div>
-      </el-form>
-      <template #footer>
-        <el-button @click="drawerVisible = false">取消</el-button>
-        <el-button type="primary" @click="save">保存</el-button>
-      </template>
+      <el-form label-position="top"><el-form-item label="模板名称"><el-input v-model="form.name" /></el-form-item><el-form-item label="模板类型"><el-select v-model="form.type" style="width: 100%"><el-option label="问答" value="问答" /><el-option label="摘要" value="摘要" /><el-option label="关键词提取" value="关键词提取" /></el-select></el-form-item><el-form-item label="模板内容"><el-input v-model="form.content" type="textarea" :rows="9" /></el-form-item><el-form-item label="启用状态"><el-switch v-model="form.enabled" /></el-form-item></el-form>
+      <template #footer><el-button @click="drawerVisible = false">取消</el-button><el-button type="primary" @click="save">保存</el-button></template>
     </el-drawer>
   </div>
 </template>
-
-<style scoped>
-.test-result {
-  margin-top: 12px;
-  padding: 12px;
-  border-radius: 12px;
-  background: var(--color-surface-soft);
-  color: var(--color-text-muted);
-}
-</style>
