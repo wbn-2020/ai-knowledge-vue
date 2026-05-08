@@ -14,7 +14,11 @@ const loading = ref(false)
         <h1 class="page-title">知识库工作台</h1>
         <div class="page-desc">集中管理个人资料、文档解析状态和最近的 AI 问答记录。</div>
       </div>
-      <div class="header-actions">
+        <div class="header-actions">
+        <el-button plain @click="router.push('/app/notifications')">
+          <el-icon><Bell /></el-icon>
+          通知中心
+        </el-button>
         <el-button plain @click="router.push('/app/documents')">
           <el-icon><Upload /></el-icon>
           上传文档
@@ -35,7 +39,7 @@ const loading = ref(false)
     </div>
 
     <div class="dashboard-grid">
-      <section class="soft-card feature-card">
+          <section class="soft-card feature-card">
         <div class="soft-card-body">
           <span class="subtle-badge">RAG 主链路</span>
           <h2>上传文档后自动解析、切片、向量化，再基于知识库提问。</h2>
@@ -50,6 +54,10 @@ const loading = ref(false)
             <span>检索</span>
             <i />
             <span>问答</span>
+          </div>
+          <div class="quick-links">
+            <el-button link type="primary" @click="router.push('/app/summary')">知识整理</el-button>
+            <el-button link type="primary" @click="router.push('/app/notifications')">消息通知</el-button>
           </div>
         </div>
       </section>
@@ -118,6 +126,12 @@ const loading = ref(false)
   grid-template-columns: 1.4fr 1fr;
   gap: 16px;
   margin: 16px 0;
+}
+
+.quick-links {
+  display: flex;
+  gap: 14px;
+  margin-top: 16px;
 }
 
 .feature-card h2 {

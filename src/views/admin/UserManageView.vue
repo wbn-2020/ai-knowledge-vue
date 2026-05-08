@@ -38,7 +38,7 @@ const users = [
           <el-table-column prop="docCount" label="文档" width="100" />
           <el-table-column label="操作" width="220">
             <template #default="{ row }">
-              <el-button link type="primary">详情</el-button>
+              <el-button link type="primary" @click="$router.push(`/admin/users/${row.id}`)">详情</el-button>
               <el-button link :type="row.status === 'NORMAL' ? 'warning' : 'success'">
                 {{ row.status === 'NORMAL' ? '禁用' : '启用' }}
               </el-button>

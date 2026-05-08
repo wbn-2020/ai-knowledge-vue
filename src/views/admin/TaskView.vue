@@ -23,7 +23,7 @@ const tasks = [
         <el-table-column prop="reason" label="失败原因" min-width="180" />
         <el-table-column prop="createdAt" label="创建时间" width="170" />
         <el-table-column label="操作" width="160">
-          <template #default="{ row }"><el-button v-if="row.status === 'FAILED'" link type="warning">重试</el-button><el-button link>详情</el-button></template>
+          <template #default="{ row }"><el-button v-if="row.status === 'FAILED'" link type="warning">重试</el-button><el-button link type="primary" @click="$router.push(`/admin/tasks/${row.id}`)">详情</el-button></template>
         </el-table-column>
       </el-table>
     </div></section>

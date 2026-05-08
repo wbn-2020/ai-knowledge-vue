@@ -15,6 +15,7 @@ const menus = [
   { path: '/admin/prompts', label: 'Prompt 模板', icon: 'DocumentCopy' },
   { path: '/admin/logs', label: '日志审计', icon: 'Tickets' },
   { path: '/admin/settings', label: '系统参数', icon: 'Setting' },
+  { path: '/admin/announcements', label: '公告管理', icon: 'Notification' },
 ]
 
 function logout() {

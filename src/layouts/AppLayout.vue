@@ -14,6 +14,8 @@ const menus = [
   { path: '/app/chat', label: '智能问答', icon: 'ChatDotRound' },
   { path: '/app/history', label: '问答历史', icon: 'Clock' },
   { path: '/app/search', label: '语义搜索', icon: 'Search' },
+  { path: '/app/summary', label: '知识整理', icon: 'Notebook' },
+  { path: '/app/notifications', label: '消息通知', icon: 'Bell' },
   { path: '/app/settings', label: '用户设置', icon: 'Setting' },
 ]
 

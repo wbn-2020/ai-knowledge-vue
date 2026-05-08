@@ -75,7 +75,7 @@ const filteredDocs = computed(() =>
           <el-table-column prop="updatedAt" label="更新时间" width="170" />
           <el-table-column label="操作" width="180" fixed="right">
             <template #default="{ row }">
-              <el-button link type="primary">详情</el-button>
+              <el-button link type="primary" @click="$router.push(`/app/documents/${row.id}`)">详情</el-button>
               <el-button v-if="row.parseStatus === 'FAILED'" link type="warning">重试</el-button>
               <el-button link type="danger">删除</el-button>
             </template>

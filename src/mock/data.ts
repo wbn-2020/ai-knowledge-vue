@@ -1,4 +1,4 @@
-import type { ChatMessage, ChatSession, DocumentItem, KnowledgeBase, Metric, UserInfo } from '@/types'
+import type { ChatMessage, ChatSession, DocumentItem, KnowledgeBase, Metric, NotificationItem, UserInfo } from '@/types'
 
 export const currentUser: UserInfo = {
   id: 1001,
@@ -75,4 +75,10 @@ export const adminMetrics: Metric[] = [
   { label: '知识库总数', value: 388, hint: '正常 361，异常 27' },
   { label: '待解析任务', value: 16, hint: '最近 1 小时新增 4 个' },
   { label: 'AI 调用次数', value: 9821, hint: '今日成功率 98.2%' },
+]
+
+export const notifications: NotificationItem[] = [
+  { id: 1, title: '文档解析完成', content: 'Spring Boot 架构设计.pdf 已成功解析并完成向量化。', type: '解析成功', isRead: false, createdAt: '2026-05-08 09:12' },
+  { id: 2, title: '文档解析失败', content: 'RAG 方案说明.docx 在解析时发生格式异常。', type: '解析失败', isRead: false, createdAt: '2026-05-07 23:50' },
+  { id: 3, title: '系统公告', content: '平台已开启 MVP 版知识库问答功能。', type: '系统公告', isRead: true, createdAt: '2026-05-07 10:18' },
 ]

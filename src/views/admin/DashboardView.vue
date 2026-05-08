@@ -19,6 +19,11 @@ import { adminMetrics, documents, knowledgeBases } from '@/mock/data'
       </div>
     </div>
 
+    <div class="toolbar">
+      <el-button plain @click="$router.push('/admin/announcements')">公告管理</el-button>
+      <el-button plain @click="$router.push('/admin/tasks')">任务管理</el-button>
+    </div>
+
     <div class="section-grid admin-grid">
       <section class="soft-card">
         <div class="soft-card-body">

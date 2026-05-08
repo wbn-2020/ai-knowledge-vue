@@ -52,7 +52,7 @@ const filteredList = computed(() =>
         </div>
         <div class="card-footer">
           <span>更新于 {{ item.updatedAt }}</span>
-          <el-button link type="primary">查看详情</el-button>
+          <el-button link type="primary" @click.stop="router.push(`/app/knowledge/${item.id}`)">查看详情</el-button>
         </div>
       </article>
     </div>

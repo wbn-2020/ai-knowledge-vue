@@ -38,6 +38,15 @@ export interface DocumentItem {
   updatedAt: string
 }
 
+export interface NotificationItem {
+  id: number
+  title: string
+  content: string
+  type: '解析成功' | '解析失败' | '问答失败' | '系统公告'
+  isRead: boolean
+  createdAt: string
+}
+
 export interface ChatSession {
   id: number
   title: string

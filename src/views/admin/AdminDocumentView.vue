@@ -21,7 +21,7 @@ import { documents } from '@/mock/data'
           <el-table-column prop="embeddingStatus" label="向量状态" width="120" />
           <el-table-column label="操作" width="180">
             <template #default="{ row }">
-              <el-button link type="primary">详情</el-button>
+              <el-button link type="primary" @click="$router.push(`/admin/documents/${row.id}`)">详情</el-button>
               <el-button v-if="row.parseStatus === 'FAILED'" link type="warning">重新解析</el-button>
               <el-button link type="danger">删除</el-button>
             </template>

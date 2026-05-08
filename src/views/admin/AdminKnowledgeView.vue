@@ -26,8 +26,8 @@ import { knowledgeBases } from '@/mock/data'
             </template>
           </el-table-column>
           <el-table-column label="操作" width="180">
-            <template #default>
-              <el-button link type="primary">详情</el-button>
+            <template #default="{ row }">
+              <el-button link type="primary" @click="$router.push(`/admin/knowledge-bases/${row.id}`)">详情</el-button>
               <el-button link type="warning">禁用</el-button>
               <el-button link type="danger">删除</el-button>
             </template>
