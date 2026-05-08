@@ -101,6 +101,9 @@ async function submit() {
           <el-button link type="primary" @click="isRegister = !isRegister">
             {{ isRegister ? '返回登录' : '去注册' }}
           </el-button>
+          <el-button v-if="!isRegister" link type="primary" @click="router.push('/register')">
+            独立注册页
+          </el-button>
         </div>
       </el-form>
     </section>

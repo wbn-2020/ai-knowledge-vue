@@ -1,5 +1,13 @@
 <script setup lang="ts">
 import { adminMetrics, documents, knowledgeBases } from '@/mock/data'
+
+const extensionLinks = [
+  { label: '定时任务', path: '/admin/scheduled-tasks' },
+  { label: '存储统计', path: '/admin/storage-stats' },
+  { label: 'Prompt 评估', path: '/admin/prompt-evaluation' },
+  { label: '高级审计', path: '/admin/audit-advanced' },
+  { label: '公告高级能力', path: '/admin/announcement-advanced' },
+]
 </script>
 
 <template>
@@ -49,6 +57,17 @@ import { adminMetrics, documents, knowledgeBases } from '@/mock/data'
         </div>
       </section>
     </div>
+
+    <section class="soft-card extension-panel">
+      <div class="soft-card-body">
+        <h3 class="section-title">后台扩展入口</h3>
+        <div class="extension-grid">
+          <button v-for="item in extensionLinks" :key="item.path" class="extension-link" @click="$router.push(item.path)">
+            {{ item.label }}
+          </button>
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 
@@ -80,5 +99,28 @@ import { adminMetrics, documents, knowledgeBases } from '@/mock/data'
 .admin-row p {
   margin: 4px 0 0;
   color: var(--color-text-muted);
+}
+
+.extension-panel {
+  margin-top: 16px;
+}
+
+.extension-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.extension-link {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-soft);
+  border-radius: 12px;
+  padding: 12px;
+  cursor: pointer;
+}
+
+.extension-link:hover {
+  border-color: rgba(37, 99, 235, 0.35);
+  color: var(--color-primary);
 }
 </style>

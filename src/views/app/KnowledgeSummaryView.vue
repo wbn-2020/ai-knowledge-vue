@@ -1,5 +1,14 @@
 <script setup lang="ts">
-import { knowledgeBases } from '@/mock/data'
+import { ref } from 'vue'
+import { documents, knowledgeBases } from '@/mock/data'
+
+const selectedDocument = ref(documents[0].id)
+const selectedKb = ref(knowledgeBases[0].id)
+const summary = ref('这是一段由 AI 生成的文档摘要占位内容。正式接入后会展示摘要结果、关键词和重新生成时间。')
+
+function generateSummary() {
+  summary.value = '摘要已重新生成：该内容围绕 KnowFlow AI 的文档解析、切片、向量化和 RAG 问答闭环展开。'
+}
 </script>
 
 <template>
@@ -9,15 +18,18 @@ import { knowledgeBases } from '@/mock/data'
         <h1 class="page-title">知识整理</h1>
         <div class="page-desc">MVP 阶段先实现文档摘要和知识库摘要，作为 AI 应用亮点。</div>
       </div>
-      <el-button type="primary">生成摘要</el-button>
+      <el-button type="primary" @click="generateSummary">生成摘要</el-button>
     </div>
 
     <div class="section-grid">
       <section class="soft-card">
         <div class="soft-card-body">
           <h3 class="section-title">文档摘要</h3>
+          <el-select v-model="selectedDocument" placeholder="选择文档" style="width: 100%">
+            <el-option v-for="doc in documents" :key="doc.id" :label="doc.name" :value="doc.id" />
+          </el-select>
           <div class="summary-card">
-            这里展示选中文档生成的摘要内容。正式接入后由后端摘要接口返回结果。
+            {{ summary }}
           </div>
           <el-tag effect="plain" type="info">当前为前端占位页面</el-tag>
         </div>
@@ -26,7 +38,7 @@ import { knowledgeBases } from '@/mock/data'
       <section class="soft-card">
         <div class="soft-card-body">
           <h3 class="section-title">知识库摘要</h3>
-          <el-select placeholder="选择知识库" style="width: 100%">
+          <el-select v-model="selectedKb" placeholder="选择知识库" style="width: 100%">
             <el-option v-for="kb in knowledgeBases" :key="kb.id" :label="kb.name" :value="kb.id" />
           </el-select>
           <div class="summary-card">

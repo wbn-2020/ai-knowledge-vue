@@ -16,6 +16,11 @@ const menus = [
   { path: '/admin/logs', label: '日志审计', icon: 'Tickets' },
   { path: '/admin/settings', label: '系统参数', icon: 'Setting' },
   { path: '/admin/announcements', label: '公告管理', icon: 'Notification' },
+  { path: '/admin/roles', label: '角色权限', icon: 'Lock' },
+  { path: '/admin/token-costs', label: 'Token 成本', icon: 'Coin' },
+  { path: '/admin/queue-monitor', label: '队列监控', icon: 'TrendCharts' },
+  { path: '/admin/content-review', label: '内容审核', icon: 'Checked' },
+  { path: '/admin/model-routing', label: '模型路由', icon: 'Connection' },
 ]
 
 function logout() {

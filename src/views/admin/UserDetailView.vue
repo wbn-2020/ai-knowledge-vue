@@ -37,6 +37,8 @@ const user = {
             <div><span>文档</span><strong>{{ user.docCount }}</strong></div>
             <div><span>问答次数</span><strong>{{ user.qaCount }}</strong></div>
             <div><span>最近登录</span><strong>{{ user.lastLogin }}</strong></div>
+            <div><span>注册时间</span><strong>2026-05-01 10:12</strong></div>
+            <div><span>账号备注</span><strong>普通演示用户</strong></div>
           </div>
         </div>
       </section>

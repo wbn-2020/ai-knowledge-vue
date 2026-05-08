@@ -20,7 +20,7 @@ const filteredList = computed(() =>
         <h1 class="page-title">知识库管理</h1>
         <div class="page-desc">创建个人知识库，管理文档容器和处理状态。</div>
       </div>
-      <el-button type="primary" @click="showDialog = true">
+      <el-button type="primary" @click="router.push('/app/knowledge/create')">
         <el-icon><Plus /></el-icon>
         创建知识库
       </el-button>
@@ -52,7 +52,10 @@ const filteredList = computed(() =>
         </div>
         <div class="card-footer">
           <span>更新于 {{ item.updatedAt }}</span>
-          <el-button link type="primary" @click.stop="router.push(`/app/knowledge/${item.id}`)">查看详情</el-button>
+          <div>
+            <el-button link type="primary" @click.stop="router.push(`/app/knowledge/${item.id}`)">详情</el-button>
+            <el-button link @click.stop="router.push(`/app/knowledge/${item.id}/edit`)">编辑</el-button>
+          </div>
         </div>
       </article>
     </div>

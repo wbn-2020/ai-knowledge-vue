@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
 import { sessions } from '@/mock/data'
+
+const router = useRouter()
 </script>
 
 <template>
@@ -19,8 +22,9 @@ import { sessions } from '@/mock/data'
           <el-table-column prop="knowledgeBaseName" label="知识库" width="180" />
           <el-table-column prop="latestQuestion" label="最近问题" min-width="260" show-overflow-tooltip />
           <el-table-column prop="updatedAt" label="更新时间" width="170" />
-          <el-table-column label="操作" width="160">
-            <template #default>
+          <el-table-column label="操作" width="180">
+            <template #default="{ row }">
+              <el-button link type="primary" @click="router.push(`/app/history/${row.id}`)">查看</el-button>
               <el-button link type="primary">继续追问</el-button>
               <el-button link type="danger">删除</el-button>
             </template>

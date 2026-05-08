@@ -21,7 +21,11 @@ const logs = [
         <el-table-column prop="action" label="操作" min-width="220" />
         <el-table-column prop="result" label="结果" width="120" />
         <el-table-column prop="time" label="时间" width="170" />
-        <el-table-column label="操作" width="100"><template #default><el-button link type="primary">详情</el-button></template></el-table-column>
+        <el-table-column label="操作" width="100">
+          <template #default="{ row }">
+            <el-button link type="primary" @click="$router.push(`/admin/logs/${row.id}`)">详情</el-button>
+          </template>
+        </el-table-column>
       </el-table>
     </div></section>
   </div>

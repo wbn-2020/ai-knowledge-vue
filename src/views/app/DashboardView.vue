@@ -5,6 +5,18 @@ import { knowledgeBases, documents, metrics, sessions } from '@/mock/data'
 
 const router = useRouter()
 const loading = ref(false)
+const extensionLinks = [
+  { label: '模板', path: '/app/knowledge-templates' },
+  { label: '归档', path: '/app/knowledge-archive' },
+  { label: '批量上传', path: '/app/document-batch-upload' },
+  { label: '文档标签', path: '/app/document-tags' },
+  { label: '版本管理', path: '/app/document-versions' },
+  { label: '文档收藏', path: '/app/document-favorites' },
+  { label: '高级解析', path: '/app/document-advanced-parse' },
+  { label: '会话整理', path: '/app/history-advanced' },
+  { label: '高级通知', path: '/app/notification-advanced' },
+  { label: '界面偏好', path: '/app/theme-settings' },
+]
 </script>
 
 <template>
@@ -112,6 +124,17 @@ const loading = ref(false)
         </div>
       </section>
     </div>
+
+    <section class="soft-card extension-panel">
+      <div class="soft-card-body">
+        <h3 class="section-title">扩展功能入口</h3>
+        <div class="extension-grid">
+          <button v-for="item in extensionLinks" :key="item.path" class="extension-link" @click="router.push(item.path)">
+            {{ item.label }}
+          </button>
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 
@@ -214,9 +237,37 @@ const loading = ref(false)
   border: 1px solid var(--color-border);
 }
 
+.extension-panel {
+  margin-top: 16px;
+}
+
+.extension-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.extension-link {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-soft);
+  border-radius: 12px;
+  padding: 12px;
+  cursor: pointer;
+  color: var(--color-text);
+}
+
+.extension-link:hover {
+  border-color: rgba(37, 99, 235, 0.35);
+  color: var(--color-primary);
+}
+
 @media (max-width: 1100px) {
   .dashboard-grid {
     grid-template-columns: 1fr;
+  }
+
+  .extension-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 </style>

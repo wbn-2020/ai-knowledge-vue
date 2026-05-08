@@ -17,6 +17,12 @@ const menus = [
   { path: '/app/summary', label: '知识整理', icon: 'Notebook' },
   { path: '/app/notifications', label: '消息通知', icon: 'Bell' },
   { path: '/app/settings', label: '用户设置', icon: 'Setting' },
+  { path: '/app/knowledge-share', label: '知识库分享', icon: 'Share' },
+  { path: '/app/knowledge-collaboration', label: '知识库协作', icon: 'UserFilled' },
+  { path: '/app/document-preview', label: '文档预览', icon: 'View' },
+  { path: '/app/chat-advanced', label: '高级问答', icon: 'MagicStick' },
+  { path: '/app/advanced-search', label: '高级搜索', icon: 'Filter' },
+  { path: '/app/knowledge-tools', label: '知识工具', icon: 'Tools' },
 ]
 
 const currentTitle = computed(() => (route.meta.title as string) || 'KnowFlow AI')

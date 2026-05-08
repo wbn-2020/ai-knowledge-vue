@@ -33,6 +33,8 @@ const kb = computed(() => knowledgeBases.find((item) => item.name === doc.value.
             <div><span>向量状态</span><strong>{{ doc.embeddingStatus }}</strong></div>
             <div><span>更新时间</span><strong>{{ doc.updatedAt }}</strong></div>
             <div><span>文档 ID</span><strong>#{{ doc.id }}</strong></div>
+            <div><span>上传人</span><strong>当前用户</strong></div>
+            <div><span>切片数量</span><strong>{{ doc.parseStatus === 'SUCCESS' ? 24 : 0 }}</strong></div>
           </div>
         </div>
       </section>
@@ -42,11 +44,12 @@ const kb = computed(() => knowledgeBases.find((item) => item.name === doc.value.
           <h3 class="section-title">摘要与状态</h3>
           <el-alert type="info" :closable="false" show-icon title="MVP 仅展示摘要卡片，不做全文在线预览。" />
           <div class="summary-box">
-            这份文档的摘要会在后端接入后由文档摘要模块生成，目前仅用作页面占位展示。
+            这份文档的摘要会在后端接入后由文档摘要模块生成。当前页面展示文档状态、失败原因、切片数量和向量化进度。
           </div>
           <div class="status-list">
             <div><span>解析</span><strong>{{ doc.parseStatus }}</strong></div>
             <div><span>向量化</span><strong>{{ doc.embeddingStatus }}</strong></div>
+            <div><span>失败原因</span><strong>{{ doc.parseStatus === 'FAILED' ? '文件格式异常或解析器不支持该内容结构' : '-' }}</strong></div>
           </div>
         </div>
       </section>

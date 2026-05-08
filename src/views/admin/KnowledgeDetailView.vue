@@ -28,6 +28,8 @@ const relatedDocuments = computed(() => documents.filter((item) => item.knowledg
             <div><span>状态</span><strong>{{ kb.status }}</strong></div>
             <div><span>更新时间</span><strong>{{ kb.updatedAt }}</strong></div>
             <div><span>创建时间</span><strong>{{ kb.createdAt }}</strong></div>
+            <div><span>创建人</span><strong>demo_user</strong></div>
+            <div><span>问答次数</span><strong>56</strong></div>
           </div>
         </div>
       </section>

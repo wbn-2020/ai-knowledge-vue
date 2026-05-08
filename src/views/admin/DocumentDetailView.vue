@@ -27,6 +27,9 @@ const doc = computed(() => documents.find((item) => item.id === Number(route.par
             <div><span>解析状态</span><strong>{{ doc.parseStatus }}</strong></div>
             <div><span>向量状态</span><strong>{{ doc.embeddingStatus }}</strong></div>
             <div><span>更新时间</span><strong>{{ doc.updatedAt }}</strong></div>
+            <div><span>上传用户</span><strong>demo_user</strong></div>
+            <div><span>切片数量</span><strong>{{ doc.parseStatus === 'SUCCESS' ? 24 : 0 }}</strong></div>
+            <div><span>失败原因</span><strong>{{ doc.parseStatus === 'FAILED' ? '文档格式异常' : '-' }}</strong></div>
           </div>
         </div>
       </section>
