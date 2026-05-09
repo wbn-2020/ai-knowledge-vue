@@ -7,6 +7,7 @@ import { documentNameOf, statusTagType, textOf, timeOf } from '@/utils/view-adap
 const loading = ref(false)
 const tasks = ref<any[]>([])
 const status = ref('')
+const taskType = ref('')
 const keyword = ref('')
 const pager = reactive({ pageNo: 1, pageSize: 10, total: 0 })
 
@@ -25,16 +26,20 @@ function canRetry(row: any) {
 async function loadTasks() {
   loading.value = true
   try {
-    const data: any = await getDocumentTasks({
+    const params: any = {
       status: status.value,
       keyword: keyword.value,
       pageNo: pager.pageNo,
       pageSize: pager.pageSize,
-    })
+    }
+    if (taskType.value) params.taskType = taskType.value
+    const data: any = await getDocumentTasks(params)
     tasks.value = data?.list || []
     pager.total = data?.total || 0
     pager.pageNo = data?.pageNo || pager.pageNo
     pager.pageSize = data?.pageSize || pager.pageSize
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '任务列表加载失败')
   } finally {
     loading.value = false
   }
@@ -48,7 +53,7 @@ async function retryTask(row: any) {
   await loadTasks()
 }
 
-watch([status, keyword], () => {
+watch([status, taskType, keyword], () => {
   pager.pageNo = 1
   loadTasks()
 })
@@ -74,6 +79,7 @@ onMounted(loadTasks)
         <el-option label="成功" value="SUCCESS" />
         <el-option label="失败" value="FAILED" />
       </el-select>
+      <el-input v-model="taskType" placeholder="任务类型（可选）" clearable style="width: 180px" />
     </div>
 
     <section class="soft-card">

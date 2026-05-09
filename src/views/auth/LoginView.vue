@@ -55,10 +55,6 @@ async function submit() {
           登录系统
         </el-button>
 
-        <div class="switch-row">
-          <span>还没有账号？</span>
-          <el-button link type="primary" @click="router.push('/register')">注册账号</el-button>
-        </div>
       </el-form>
     </section>
   </div>
@@ -138,16 +134,6 @@ h1 {
   width: 100%;
   height: 46px;
   margin-top: 6px;
-}
-
-.switch-row {
-  display: flex;
-  justify-content: center;
-  gap: 6px;
-  margin-top: 18px;
-  font-size: 14px;
-  color: var(--color-text-muted);
-  align-items: center;
 }
 
 @media (max-width: 960px) {

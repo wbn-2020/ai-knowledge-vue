@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { deleteDocument, downloadDocument, getDocument, getDocumentPreview, renameDocument, retryDocument } from '@/api/knowledge'
 import type { DocumentItem } from '@/types'
-import { documentErrorOf, documentNameOf, fileSizeOf, fileTypeOf, kbNameOf, statusTagType, timeOf } from '@/utils/view-adapters'
+import { documentErrorOf, documentNameOf, embeddingStatusText, fileSizeOf, fileTypeOf, kbNameOf, parseStatusText, statusTagType, timeOf } from '@/utils/view-adapters'
 
 const route = useRoute()
 const router = useRouter()
@@ -63,7 +63,7 @@ async function retryParse() {
   try {
     await retryDocument(doc.value.id)
     ElMessage.success('已提交重新解析任务')
-    loadDetail()
+    await loadDetail()
   } finally {
     retrying.value = false
   }
@@ -88,7 +88,7 @@ async function rename() {
   })
   await renameDocument(doc.value.id, result.value.trim())
   ElMessage.success('文档已重命名')
-  loadDetail()
+  await loadDetail()
 }
 
 async function removeDoc() {
@@ -105,13 +105,9 @@ onMounted(loadDetail)
 <template>
   <div v-loading="loading">
     <el-alert v-if="errorMessage" class="state-alert" type="error" show-icon :closable="false" :title="errorMessage" />
-
     <template v-if="doc">
       <div class="page-header">
-        <div>
-          <h1 class="page-title">文档详情</h1>
-          <div class="page-desc">查看文档基础信息、解析状态、向量化状态、失败原因和文本预览。</div>
-        </div>
+        <div><h1 class="page-title">文档详情</h1><div class="page-desc">查看文档状态、失败原因和预览。</div></div>
         <div class="header-actions">
           <el-button plain @click="router.push('/app/documents')">返回列表</el-button>
           <el-button plain @click="rename">重命名</el-button>
@@ -120,96 +116,37 @@ onMounted(loadDetail)
           <el-button type="primary" :loading="downloading" @click="downloadRaw">下载原文件</el-button>
         </div>
       </div>
-
       <div class="detail-grid">
-        <section class="soft-card">
-          <div class="soft-card-body">
-            <span class="subtle-badge">{{ fileTypeOf(doc) }}</span>
-            <h2>{{ documentNameOf(doc) }}</h2>
-            <div class="meta-grid">
-              <div><span>所属知识库</span><strong>{{ kbNameOf(doc) }}</strong></div>
-              <div><span>大小</span><strong>{{ fileSizeOf(doc) }}</strong></div>
-              <div><span>解析状态</span><el-tag :type="statusTagType(doc.parseStatus)">{{ doc.parseStatus }}</el-tag></div>
-              <div><span>向量状态</span><el-tag :type="statusTagType(doc.embeddingStatus)" effect="plain">{{ doc.embeddingStatus }}</el-tag></div>
-              <div><span>更新时间</span><strong>{{ timeOf(doc) }}</strong></div>
-              <div><span>文档 ID</span><strong>#{{ doc.id }}</strong></div>
-              <div><span>切片数量</span><strong>{{ doc.chunkCount || doc.segmentCount || '-' }}</strong></div>
-              <div><span>失败原因</span><strong>{{ documentErrorOf(doc) || '-' }}</strong></div>
-            </div>
+        <section class="soft-card"><div class="soft-card-body">
+          <span class="subtle-badge">{{ fileTypeOf(doc) }}</span>
+          <h2>{{ documentNameOf(doc) }}</h2>
+          <div class="meta-grid">
+            <div><span>所属知识库</span><strong>{{ kbNameOf(doc) }}</strong></div>
+            <div><span>上传人</span><strong>{{ (doc as any).ownerName || (doc as any).username || '-' }}</strong></div>
+            <div><span>大小</span><strong>{{ fileSizeOf(doc) }}</strong></div>
+            <div><span>分块数量</span><strong>{{ (doc as any).chunkCount || (doc as any).segmentCount || 0 }}</strong></div>
+            <div><span>解析状态</span><el-tag :type="statusTagType(doc.parseStatus)">{{ parseStatusText(doc.parseStatus) }}</el-tag></div>
+            <div><span>向量状态</span><el-tag :type="statusTagType(doc.embeddingStatus)" effect="plain">{{ embeddingStatusText(doc.embeddingStatus) }}</el-tag></div>
+            <div><span>更新时间</span><strong>{{ timeOf(doc) }}</strong></div>
+            <div><span>失败原因</span><strong>{{ documentErrorOf(doc) || '-' }}</strong></div>
           </div>
-        </section>
-
-        <section class="soft-card">
-          <div class="soft-card-body">
-            <h3 class="section-title">预览与处理状态</h3>
-            <el-alert v-if="documentErrorOf(doc)" class="state-alert" type="error" :closable="false" show-icon :title="documentErrorOf(doc)" />
-            <el-alert v-if="!preview && !previewLoading" type="info" :closable="false" show-icon title="后端未返回可预览文本，仍可查看状态和下载原文件。" />
-            <div class="summary-box" v-loading="previewLoading">{{ preview || '暂无预览内容' }}</div>
-          </div>
-        </section>
+        </div></section>
+        <section class="soft-card"><div class="soft-card-body">
+          <h3 class="section-title">预览</h3>
+          <div class="summary-box" v-loading="previewLoading">{{ preview || '暂无预览内容' }}</div>
+        </div></section>
       </div>
     </template>
-    <el-empty v-else-if="!loading" description="文档不存在" />
   </div>
 </template>
 
 <style scoped lang="scss">
-.state-alert {
-  margin-bottom: 16px;
-}
-
-.header-actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
-.detail-grid {
-  display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 16px;
-}
-
-h2 {
-  margin: 14px 0 0;
-  font-size: 28px;
-}
-
-.meta-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  margin-top: 18px;
-}
-
-.meta-grid span {
-  display: block;
-  color: var(--color-text-muted);
-  font-size: 13px;
-  margin-bottom: 6px;
-}
-
-.meta-grid strong {
-  display: block;
-}
-
-.summary-box {
-  margin-top: 16px;
-  max-height: 420px;
-  min-height: 220px;
-  overflow: auto;
-  padding: 16px;
-  border-radius: 14px;
-  background: var(--color-surface-soft);
-  color: var(--color-text-muted);
-  line-height: 1.8;
-  white-space: pre-wrap;
-}
-
-@media (max-width: 900px) {
-  .detail-grid {
-    grid-template-columns: 1fr;
-  }
-}
+.state-alert { margin-bottom: 16px; }
+.header-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+.detail-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 16px; }
+h2 { margin: 14px 0 0; font-size: 28px; }
+.meta-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
+.meta-grid span { display: block; color: var(--color-text-muted); font-size: 13px; margin-bottom: 6px; }
+.summary-box { margin-top: 16px; max-height: 420px; min-height: 220px; overflow: auto; padding: 16px; border-radius: 14px; background: var(--color-surface-soft); color: var(--color-text-muted); line-height: 1.8; white-space: pre-wrap; }
+@media (max-width: 900px) { .detail-grid { grid-template-columns: 1fr; } }
 </style>

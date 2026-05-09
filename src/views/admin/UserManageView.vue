@@ -10,6 +10,17 @@ const status = ref('')
 const loading = ref(false)
 const pager = reactive({ pageNo: 1, pageSize: 10, total: 0 })
 
+function statusText(value: string) {
+  const upper = String(value || '').toUpperCase()
+  if (upper === 'ENABLED' || upper === 'NORMAL') return '正常'
+  if (upper === 'DISABLED') return '禁用'
+  return upper || '-'
+}
+
+function statusTag(value: string) {
+  return String(value || '').toUpperCase() === 'DISABLED' ? 'danger' : 'success'
+}
+
 async function loadUsers() {
   loading.value = true
   try {
@@ -29,7 +40,8 @@ async function loadUsers() {
 }
 
 async function toggleStatus(row: UserInfo) {
-  const nextStatus = row.status === 'DISABLED' ? 'ENABLED' : 'DISABLED'
+  const current = String(row.status || '').toUpperCase()
+  const nextStatus = current === 'DISABLED' ? 'ENABLED' : 'DISABLED'
   const action = nextStatus === 'DISABLED' ? '禁用' : '启用'
   await ElMessageBox.confirm(`确认${action}用户「${row.username}」吗？`, `${action}确认`, { type: nextStatus === 'DISABLED' ? 'warning' : 'info' })
   await setAdminUserStatus(row.id, nextStatus)
@@ -47,7 +59,7 @@ async function resetPassword(row: UserInfo) {
       return true
     },
   })
-  await ElMessageBox.confirm(`确认将用户「${row.username}」的密码重置为新密码吗？`, '二次确认', { type: 'warning' })
+  await ElMessageBox.confirm(`确认重置用户「${row.username}」密码吗？`, '二次确认', { type: 'warning' })
   await resetAdminUserPassword(row.id, result.value)
   ElMessage.success('密码已重置')
 }
@@ -77,13 +89,15 @@ onMounted(loadUsers)
         <el-table-column prop="username" label="用户名" min-width="160" />
         <el-table-column prop="email" label="邮箱" min-width="220" show-overflow-tooltip />
         <el-table-column prop="role" label="角色" width="100" />
-        <el-table-column label="状态" width="120"><template #default="{ row }"><el-tag :type="row.status === 'DISABLED' ? 'danger' : 'success'">{{ row.status }}</el-tag></template></el-table-column>
+        <el-table-column label="状态" width="120"><template #default="{ row }"><el-tag :type="statusTag(row.status)">{{ statusText(row.status) }}</el-tag></template></el-table-column>
         <el-table-column label="知识库" width="100"><template #default="{ row }">{{ row.kbCount || row.knowledgeBaseCount || 0 }}</template></el-table-column>
         <el-table-column label="文档" width="100"><template #default="{ row }">{{ row.docCount || row.documentCount || 0 }}</template></el-table-column>
+        <el-table-column label="问答" width="100"><template #default="{ row }">{{ (row as any).qaCount || (row as any).chatCount || 0 }}</template></el-table-column>
+        <el-table-column label="最近登录" width="180"><template #default="{ row }">{{ (row as any).lastLoginTime || '-' }}</template></el-table-column>
         <el-table-column label="操作" width="230" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="$router.push(`/admin/users/${row.id}`)">详情</el-button>
-            <el-button link :type="row.status === 'DISABLED' ? 'success' : 'warning'" @click="toggleStatus(row)">{{ row.status === 'DISABLED' ? '启用' : '禁用' }}</el-button>
+            <el-button link :type="String(row.status || '').toUpperCase() === 'DISABLED' ? 'success' : 'warning'" @click="toggleStatus(row)">{{ String(row.status || '').toUpperCase() === 'DISABLED' ? '启用' : '禁用' }}</el-button>
             <el-button link @click="resetPassword(row)">重置密码</el-button>
           </template>
         </el-table-column>
