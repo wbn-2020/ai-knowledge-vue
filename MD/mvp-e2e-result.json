@@ -1,0 +1,229 @@
+{
+  "startedAt": "2026-05-09T04:49:30.398Z",
+  "pages": [
+    {
+      "name": "1.???",
+      "route": "/register",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/app/dashboard",
+      "action": "try-register:mvp_user_170400",
+      "consoleErrors": 0,
+      "badNet": [],
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "2.???",
+      "route": "/login",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/app/dashboard",
+      "action": "try-login",
+      "consoleErrors": 0,
+      "badNet": [],
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "????????????",
+      "route": "/admin/dashboard",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/login",
+      "action": "",
+      "consoleErrors": 0,
+      "badNet": [],
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "3.?????",
+      "route": "/app/dashboard",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/login",
+      "action": "",
+      "consoleErrors": 0,
+      "badNet": [],
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "4.??????",
+      "route": "/app/knowledge",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/login",
+      "action": "",
+      "consoleErrors": 0,
+      "badNet": [],
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "5.?????",
+      "route": "/app/knowledge/create",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/login",
+      "action": "try-create-kb",
+      "consoleErrors": 1,
+      "badNet": [],
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "6.??????",
+      "route": "/app/knowledge",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/login",
+      "action": "kbId:null",
+      "consoleErrors": 0,
+      "badNet": [],
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "7.?????",
+      "route": "/app/documents",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/login",
+      "action": "file-input-not-found",
+      "consoleErrors": 0,
+      "badNet": [],
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "8.?????",
+      "route": "/app/documents",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/login",
+      "action": "",
+      "consoleErrors": 0,
+      "badNet": [],
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "9.?????",
+      "route": "/app/chat",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/login",
+      "action": "ask-attempted",
+      "consoleErrors": 0,
+      "badNet": [],
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "10.?????",
+      "route": "/app/history",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/login",
+      "action": "",
+      "consoleErrors": 0,
+      "badNet": [],
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "11.?????",
+      "route": "/admin/login",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/dashboard",
+      "action": "after-admin-login:http://127.0.0.1:5173/admin/dashboard",
+      "consoleErrors": 0,
+      "badNet": [],
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "12.????",
+      "route": "/admin/dashboard",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/dashboard",
+      "action": "",
+      "consoleErrors": 0,
+      "badNet": [],
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "13.???????",
+      "route": "/admin/users",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/users",
+      "action": "",
+      "consoleErrors": 0,
+      "badNet": [],
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "14.????????",
+      "route": "/admin/knowledge-bases",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/knowledge-bases",
+      "action": "",
+      "consoleErrors": 0,
+      "badNet": [],
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "15.???????",
+      "route": "/admin/documents",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/documents",
+      "action": "",
+      "consoleErrors": 0,
+      "badNet": [],
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "16.???????",
+      "route": "/admin/tasks",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/tasks",
+      "action": "",
+      "consoleErrors": 0,
+      "badNet": [],
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "17.?????",
+      "route": "/admin/logs",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/logs",
+      "action": "",
+      "consoleErrors": 0,
+      "badNet": [],
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "18.???????",
+      "route": "/admin/ai-models",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/ai-models",
+      "action": "",
+      "consoleErrors": 0,
+      "badNet": [],
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "19.?? Prompt ???",
+      "route": "/admin/prompts",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/prompts",
+      "action": "",
+      "consoleErrors": 0,
+      "badNet": [],
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "20.???????",
+      "route": "/admin/settings",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/settings",
+      "action": "",
+      "consoleErrors": 0,
+      "badNet": [],
+      "hasUndefinedNull": false
+    }
+  ],
+  "proxy": {
+    "ok": true,
+    "sample": {
+      "url": "http://127.0.0.1:5173/api/auth/register",
+      "status": 200,
+      "method": "POST",
+      "page": "http://127.0.0.1:5173/register"
+    }
+  },
+  "apiProblems": [],
+  "notes": [],
+  "consoleErrorTotal": 1,
+  "registerUser": "mvp_user_170400",
+  "finishedAt": "2026-05-09T04:50:34.299Z"
+}

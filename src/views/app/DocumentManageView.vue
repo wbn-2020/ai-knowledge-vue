@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { UploadFile, UploadFiles, UploadInstance } from 'element-plus'
@@ -27,6 +27,7 @@ const uploading = ref(false)
 const uploadProgress = ref(0)
 const uploadError = ref('')
 const pager = reactive({ pageNo: 1, pageSize: 10, total: 0 })
+const hasKnowledgeBases = computed(() => knowledgeBases.value.length > 0)
 
 function validateFile(file: File) {
   const ext = file.name.split('.').pop()?.toLowerCase() || ''
@@ -63,11 +64,21 @@ async function loadDocs() {
 async function loadKnowledgeBases() {
   const data = await getKnowledgeBasePage({ pageNo: 1, pageSize: 100, sortBy: 'updateTime' })
   knowledgeBases.value = data.list || []
+
   const queryKb = Number(route.query.knowledgeBaseId || 0)
   const matchedKb = data.list?.find((item) => item.id === queryKb)
   selectedKb.value = matchedKb?.id || data.list?.[0]?.id
   filterKnowledgeBaseId.value = matchedKb?.id || filterKnowledgeBaseId.value
-  if (route.query.upload === '1' && matchedKb?.id) uploadDialog.value = true
+
+  if (!knowledgeBases.value.length) {
+    selectedKb.value = undefined
+    filterKnowledgeBaseId.value = undefined
+  }
+
+  if (route.query.upload === '1') {
+    if (matchedKb?.id) uploadDialog.value = true
+    else if (!knowledgeBases.value.length) ElMessage.warning('请先创建知识库')
+  }
 }
 
 function onFileChange(file: UploadFile, files: UploadFiles) {
@@ -94,6 +105,10 @@ function resetUpload() {
 }
 
 async function submitUpload() {
+  if (!hasKnowledgeBases.value) {
+    ElMessage.warning('请先创建知识库')
+    return
+  }
   if (!selectedKb.value) {
     ElMessage.warning('请选择目标知识库')
     return
@@ -108,6 +123,7 @@ async function submitUpload() {
     ElMessage.warning(error)
     return
   }
+
   uploading.value = true
   uploadProgress.value = 0
   uploadError.value = ''
@@ -168,21 +184,22 @@ onMounted(() => {
     <div class="page-header">
       <div>
         <h1 class="page-title">文档管理</h1>
-        <div class="page-desc">上传 PDF、DOCX、TXT、MD 文档，跟踪解析状态、向量化状态和失败原因。</div>
+        <div class="page-desc">上传 PDF、DOCX、TXT、MD 文档，查看解析状态与向量状态。</div>
       </div>
-      <el-button type="primary" @click="uploadDialog = true">
+      <el-button type="primary" :disabled="!hasKnowledgeBases" @click="uploadDialog = true">
         <el-icon><Upload /></el-icon>
         上传文档
       </el-button>
     </div>
 
+    <el-alert v-if="!hasKnowledgeBases" class="state-alert" type="warning" show-icon :closable="false" title="请先创建知识库" />
     <el-alert v-if="errorMessage" class="state-alert" type="error" show-icon :closable="false" :title="errorMessage" />
 
     <section class="upload-strip soft-card">
       <div class="soft-card-body upload-inner">
         <div>
           <span class="subtle-badge">异步处理</span>
-          <h2>上传后立即创建文档记录，解析和向量化交给后台任务执行。</h2>
+          <h2>上传后立即创建文档记录，解析和向量化交由后台任务执行。</h2>
           <p>支持格式校验、大小限制、失败重试和解析状态展示，便于演示完整文档处理链路。</p>
         </div>
         <el-upload ref="uploadRef" drag action="#" :auto-upload="false" class="upload-box" :limit="1" :on-change="onFileChange">
@@ -212,39 +229,20 @@ onMounted(() => {
         <el-option label="向量成功" value="SUCCESS" />
         <el-option label="向量失败" value="FAILED" />
       </el-select>
-      <el-button plain :loading="loading" @click="loadDocs">
-        <el-icon><Refresh /></el-icon>
-        刷新
-      </el-button>
+      <el-button plain :loading="loading" @click="loadDocs"><el-icon><Refresh /></el-icon>刷新</el-button>
     </div>
 
     <section class="soft-card">
       <div class="soft-card-body">
         <el-table :data="docs" v-loading="loading" size="large" empty-text="暂无文档">
-          <el-table-column label="文档名称" min-width="240" show-overflow-tooltip>
-            <template #default="{ row }">{{ documentNameOf(row) }}</template>
-          </el-table-column>
-          <el-table-column label="知识库" width="180">
-            <template #default="{ row }">{{ kbNameOf(row) }}</template>
-          </el-table-column>
-          <el-table-column label="类型" width="90">
-            <template #default="{ row }">{{ fileTypeOf(row) }}</template>
-          </el-table-column>
-          <el-table-column label="大小" width="110">
-            <template #default="{ row }">{{ fileSizeOf(row) }}</template>
-          </el-table-column>
-          <el-table-column label="解析状态" width="120">
-            <template #default="{ row }"><el-tag :type="statusTagType(row.parseStatus)">{{ row.parseStatus || '-' }}</el-tag></template>
-          </el-table-column>
-          <el-table-column label="向量状态" width="130">
-            <template #default="{ row }"><el-tag :type="statusTagType(row.embeddingStatus)" effect="plain">{{ row.embeddingStatus || '-' }}</el-tag></template>
-          </el-table-column>
-          <el-table-column label="失败原因" min-width="180" show-overflow-tooltip>
-            <template #default="{ row }">{{ documentErrorOf(row) || '-' }}</template>
-          </el-table-column>
-          <el-table-column label="更新时间" width="170">
-            <template #default="{ row }">{{ timeOf(row) }}</template>
-          </el-table-column>
+          <el-table-column label="文档名称" min-width="240" show-overflow-tooltip><template #default="{ row }">{{ documentNameOf(row) }}</template></el-table-column>
+          <el-table-column label="知识库" width="180"><template #default="{ row }">{{ kbNameOf(row) }}</template></el-table-column>
+          <el-table-column label="类型" width="90"><template #default="{ row }">{{ fileTypeOf(row) }}</template></el-table-column>
+          <el-table-column label="大小" width="110"><template #default="{ row }">{{ fileSizeOf(row) }}</template></el-table-column>
+          <el-table-column label="解析状态" width="120"><template #default="{ row }"><el-tag :type="statusTagType(row.parseStatus)">{{ row.parseStatus || '-' }}</el-tag></template></el-table-column>
+          <el-table-column label="向量状态" width="130"><template #default="{ row }"><el-tag :type="statusTagType(row.embeddingStatus)" effect="plain">{{ row.embeddingStatus || '-' }}</el-tag></template></el-table-column>
+          <el-table-column label="失败原因" min-width="180" show-overflow-tooltip><template #default="{ row }">{{ documentErrorOf(row) || '-' }}</template></el-table-column>
+          <el-table-column label="更新时间" width="170"><template #default="{ row }">{{ timeOf(row) }}</template></el-table-column>
           <el-table-column label="操作" width="230" fixed="right">
             <template #default="{ row }">
               <el-button link type="primary" @click="$router.push(`/app/documents/${row.id}`)">详情</el-button>
@@ -270,6 +268,7 @@ onMounted(() => {
 
     <el-dialog v-model="uploadDialog" title="上传文档" width="580px" @closed="resetUpload">
       <el-form label-position="top">
+        <el-alert v-if="!hasKnowledgeBases" class="state-alert" type="warning" show-icon :closable="false" title="请先创建知识库" />
         <el-form-item label="目标知识库">
           <el-select v-model="selectedKb" placeholder="请选择知识库" style="width: 100%">
             <el-option v-for="kb in knowledgeBases" :key="kb.id" :label="kb.name" :value="kb.id" />
@@ -287,7 +286,7 @@ onMounted(() => {
       </el-form>
       <template #footer>
         <el-button @click="uploadDialog = false">取消</el-button>
-        <el-button type="primary" :loading="uploading" @click="submitUpload">创建处理任务</el-button>
+        <el-button type="primary" :disabled="!hasKnowledgeBases" :loading="uploading" @click="submitUpload">创建处理任务</el-button>
       </template>
     </el-dialog>
   </div>

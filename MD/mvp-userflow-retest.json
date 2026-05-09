@@ -1,0 +1,81 @@
+{
+  "userFlowRetest": [
+    {
+      "name": "3.dashboard",
+      "route": "/app/dashboard",
+      "finalUrl": "http://127.0.0.1:5173/app/dashboard",
+      "action": "",
+      "consoleErrors": 0,
+      "badNet": [],
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "4.kb-list",
+      "route": "/app/knowledge",
+      "finalUrl": "http://127.0.0.1:5173/app/knowledge",
+      "action": "",
+      "consoleErrors": 0,
+      "badNet": [],
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "5.kb-create",
+      "route": "/app/knowledge/create",
+      "finalUrl": "http://127.0.0.1:5173/app/knowledge/create",
+      "action": "",
+      "consoleErrors": 0,
+      "badNet": [],
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "6.kb-detail-probe",
+      "route": "/app/knowledge/1",
+      "finalUrl": "http://127.0.0.1:5173/app/knowledge/1",
+      "action": "",
+      "consoleErrors": 1,
+      "badNet": [],
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "7.doc-upload",
+      "route": "/app/documents",
+      "finalUrl": "http://127.0.0.1:5173/app/documents",
+      "action": "upload-triggered",
+      "consoleErrors": 0,
+      "badNet": [],
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "8.doc-manage",
+      "route": "/app/documents",
+      "finalUrl": "http://127.0.0.1:5173/app/documents",
+      "action": "",
+      "consoleErrors": 0,
+      "badNet": [],
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "9.chat",
+      "route": "/app/chat",
+      "finalUrl": "http://127.0.0.1:5173/app/chat",
+      "action": "ask-triggered",
+      "consoleErrors": 0,
+      "badNet": [],
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "10.history",
+      "route": "/app/history",
+      "finalUrl": "http://127.0.0.1:5173/app/history",
+      "action": "",
+      "consoleErrors": 0,
+      "badNet": [],
+      "hasUndefinedNull": false
+    }
+  ],
+  "notes": [
+    "login-url:http://127.0.0.1:5173/app/dashboard"
+  ],
+  "apiProblems": [],
+  "totalConsoleErrors": 1
+}

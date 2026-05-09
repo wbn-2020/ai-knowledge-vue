@@ -1,0 +1,65 @@
+{
+  "runAt": "2026-05-09T05:01:01.113Z",
+  "kbDetail": {
+    "steps": [
+      "open /login and login as normal user"
+    ],
+    "consoleErrors": [],
+    "pageErrors": [],
+    "network": [],
+    "impact": "No KB found; cannot complete this checkpoint."
+  },
+  "uploadStatus": {
+    "steps": [
+      "open /app/documents, upload test file, refresh and verify status"
+    ],
+    "network": [
+      {
+        "url": "http://127.0.0.1:5173/api/documents?keyword=&parseStatus=&embeddingStatus=&pageNo=1&pageSize=10",
+        "method": "GET",
+        "status": 200,
+        "reqPostData": "",
+        "respPreview": "{\"code\":0,\"message\":\"ok\",\"data\":{\"list\":[],\"total\":0,\"pageNo\":1,\"pageSize\":10}}",
+        "page": "http://127.0.0.1:5173/app/documents",
+        "ts": "2026-05-09T05:01:05.776Z"
+      },
+      {
+        "url": "http://127.0.0.1:5173/api/documents?keyword=&parseStatus=&embeddingStatus=&pageNo=1&pageSize=10",
+        "method": "GET",
+        "status": 200,
+        "reqPostData": "",
+        "respPreview": "{\"code\":0,\"message\":\"ok\",\"data\":{\"list\":[],\"total\":0,\"pageNo\":1,\"pageSize\":10}}",
+        "page": "http://127.0.0.1:5173/app/documents",
+        "ts": "2026-05-09T05:01:11.403Z"
+      }
+    ],
+    "observedStatusesBeforeRefresh": [],
+    "observedStatusesAfterRefresh": [],
+    "impact": "Status labels not observed in this run; recommend quick manual check before demo."
+  },
+  "chatAsk": {
+    "steps": [
+      "open /app/chat, select KB if dropdown exists, submit question",
+      "attempted to select first KB option"
+    ],
+    "network": [
+      {
+        "url": "http://127.0.0.1:5173/api/knowledge-bases?pageNo=1&pageSize=100&sortBy=updateTime",
+        "method": "GET",
+        "status": 200,
+        "reqPostData": "",
+        "respPreview": "{\"code\":0,\"message\":\"ok\",\"data\":{\"list\":[{\"id\":21,\"userId\":17,\"name\":\"Default Knowledge Base\",\"description\":\"Default space created during registration\",\"icon\":\"book\",\"category\":\"default\",\"status\":\"NORMAL\",\"documentCount\":0,\"createTime\":\"2026-05-09T12:49:34\",\"updateTime\":\"2026-05-09T12:49:34\"}],\"total\":1,\"pageNo\":1,\"pageSize\":100}}",
+        "page": "http://127.0.0.1:5173/app/chat",
+        "ts": "2026-05-09T05:01:14.075Z"
+      }
+    ],
+    "hasAnswer": true,
+    "referencesState": "not_detected",
+    "impact": "chat/ask 200 not observed; demo may be affected for QA flow."
+  },
+  "context": {
+    "loginUrlAfterSubmit": "http://127.0.0.1:5173/app/dashboard",
+    "hasToken": true,
+    "selectedKnowledgeBase": null
+  }
+}

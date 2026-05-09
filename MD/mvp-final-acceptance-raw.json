@@ -1,0 +1,245 @@
+{
+  "build": {
+    "status": "pass",
+    "note": "npm run build passed in this run"
+  },
+  "dev": {
+    "status": "running",
+    "url": "http://127.0.0.1:5173"
+  },
+  "userFlow": [
+    {
+      "name": "1.Register page",
+      "route": "/register",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/app/dashboard",
+      "note": "register:mvp_demo_338693",
+      "consoleErrorCount": 0,
+      "apiAbnormalCount": 0,
+      "hasUndefinedOrNullText": false
+    },
+    {
+      "name": "2.Login page",
+      "route": "/login",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/app/chat",
+      "note": "after-login:http://127.0.0.1:5173/app/chat",
+      "consoleErrorCount": 0,
+      "apiAbnormalCount": 0,
+      "hasUndefinedOrNullText": false
+    },
+    {
+      "name": "3.Dashboard",
+      "route": "/app/dashboard",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/app/dashboard",
+      "note": "",
+      "consoleErrorCount": 0,
+      "apiAbnormalCount": 0,
+      "hasUndefinedOrNullText": false
+    },
+    {
+      "name": "4.KB list",
+      "route": "/app/knowledge",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/app/knowledge",
+      "note": "",
+      "consoleErrorCount": 0,
+      "apiAbnormalCount": 0,
+      "hasUndefinedOrNullText": false
+    },
+    {
+      "name": "5.Create KB",
+      "route": "/app/knowledge/create",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/app/knowledge",
+      "note": "create-kb-clicked",
+      "consoleErrorCount": 0,
+      "apiAbnormalCount": 0,
+      "hasUndefinedOrNullText": false
+    },
+    {
+      "name": "6.KB detail",
+      "route": "/app/knowledge/1",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/app/knowledge/1",
+      "note": "",
+      "consoleErrorCount": 1,
+      "apiAbnormalCount": 0,
+      "hasUndefinedOrNullText": false
+    },
+    {
+      "name": "7.Document upload page",
+      "route": "/app/documents",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/app/documents",
+      "note": "upload-attempted",
+      "consoleErrorCount": 0,
+      "apiAbnormalCount": 0,
+      "hasUndefinedOrNullText": false
+    },
+    {
+      "name": "8.Document manage page",
+      "route": "/app/documents",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/app/documents",
+      "note": "",
+      "consoleErrorCount": 0,
+      "apiAbnormalCount": 0,
+      "hasUndefinedOrNullText": false
+    },
+    {
+      "name": "9.Chat page",
+      "route": "/app/chat",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/app/chat",
+      "note": "ask-submitted",
+      "consoleErrorCount": 0,
+      "apiAbnormalCount": 0,
+      "hasUndefinedOrNullText": false
+    },
+    {
+      "name": "10.History page",
+      "route": "/app/history",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/app/history",
+      "note": "",
+      "consoleErrorCount": 0,
+      "apiAbnormalCount": 0,
+      "hasUndefinedOrNullText": false
+    }
+  ],
+  "adminFlow": [
+    {
+      "name": "11.Admin login",
+      "route": "/admin/login",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/dashboard",
+      "note": "after-admin-login:http://127.0.0.1:5173/admin/dashboard",
+      "consoleErrorCount": 0,
+      "apiAbnormalCount": 0,
+      "hasUndefinedOrNullText": false
+    },
+    {
+      "name": "12.Admin dashboard",
+      "route": "/admin/dashboard",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/dashboard",
+      "note": "",
+      "consoleErrorCount": 0,
+      "apiAbnormalCount": 0,
+      "hasUndefinedOrNullText": false
+    },
+    {
+      "name": "13.Admin users",
+      "route": "/admin/users",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/users",
+      "note": "",
+      "consoleErrorCount": 0,
+      "apiAbnormalCount": 0,
+      "hasUndefinedOrNullText": false
+    },
+    {
+      "name": "14.Admin knowledge bases",
+      "route": "/admin/knowledge-bases",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/knowledge-bases",
+      "note": "",
+      "consoleErrorCount": 0,
+      "apiAbnormalCount": 0,
+      "hasUndefinedOrNullText": false
+    },
+    {
+      "name": "15.Admin documents",
+      "route": "/admin/documents",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/documents",
+      "note": "",
+      "consoleErrorCount": 0,
+      "apiAbnormalCount": 0,
+      "hasUndefinedOrNullText": false
+    },
+    {
+      "name": "16.Admin tasks",
+      "route": "/admin/tasks",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/tasks",
+      "note": "",
+      "consoleErrorCount": 0,
+      "apiAbnormalCount": 0,
+      "hasUndefinedOrNullText": false
+    },
+    {
+      "name": "17.Admin logs",
+      "route": "/admin/logs",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/logs",
+      "note": "",
+      "consoleErrorCount": 0,
+      "apiAbnormalCount": 0,
+      "hasUndefinedOrNullText": false
+    },
+    {
+      "name": "18.Admin model config",
+      "route": "/admin/ai-models",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/ai-models",
+      "note": "",
+      "consoleErrorCount": 0,
+      "apiAbnormalCount": 0,
+      "hasUndefinedOrNullText": false
+    },
+    {
+      "name": "19.Admin prompt config",
+      "route": "/admin/prompts",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/prompts",
+      "note": "",
+      "consoleErrorCount": 0,
+      "apiAbnormalCount": 0,
+      "hasUndefinedOrNullText": false
+    },
+    {
+      "name": "20.Admin system config",
+      "route": "/admin/settings",
+      "opened": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/settings",
+      "note": "",
+      "consoleErrorCount": 0,
+      "apiAbnormalCount": 0,
+      "hasUndefinedOrNullText": false
+    }
+  ],
+  "uploadStatusFlow": {
+    "statusesBefore": [],
+    "statusesAfter": [],
+    "longPendingRisk": false
+  },
+  "qaFlow": {
+    "ask200": false,
+    "answerShown": true,
+    "refsEmptyShown": false,
+    "refsListShown": false
+  },
+  "consoleErrors": [
+    {
+      "text": "knowledge base not found",
+      "stack": "Error: knowledge base not found\n    at request.interceptors.response.use.status (http://127.0.0.1:5173/src/api/request.ts?t=1778303757365:25:29)\n    at async Axios.request (http://127.0.0.1:5173/node_modules/.vite/deps/axios.js?v=587b817b:2646:14)\n    at async loadDetail (http://127.0.0.1:5173/src/views/app/KnowledgeBaseDetailView.vue?t=1778303526158:31:22)\n    at async Promise.all (index 0)\n    at async refreshAll (http://127.0.0.1:5173/src/views/app/KnowledgeBaseDetailView.vue?t=1778303526158:61:7)",
+      "page": "http://127.0.0.1:5173/app/knowledge/1"
+    }
+  ],
+  "networkAbnormal": [],
+  "decision": {
+    "canFormalDemo": true,
+    "mustFixBeforeDemo": [
+      "chat/ask ????? answer???????????"
+    ]
+  },
+  "meta": {
+    "username": "mvp_demo_338693",
+    "kbName": "MVP ?????",
+    "file": "C:\\codex-project\\ai-knowledge-vue\\test.txt",
+    "finishedAt": "2026-05-09T05:27:31.308Z"
+  }
+}

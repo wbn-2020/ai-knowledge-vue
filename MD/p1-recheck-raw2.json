@@ -1,0 +1,82 @@
+{
+  "runAt": "2026-05-09T05:02:27.219Z",
+  "setup": {
+    "kbCreateStatus": 404,
+    "uploadStatus": 404,
+    "uploadResp": ""
+  },
+  "kbDetail": {
+    "steps": [
+      "?? /app/knowledge/:id ????????",
+      "??????????????"
+    ],
+    "consoleErrors": [],
+    "pageErrors": [
+      {
+        "message": "系统错误",
+        "stack": "Error: 系统错误\n    at request.interceptors.response.use.status (http://127.0.0.1:5173/src/api/request.ts:25:29)\n    at async Axios.request (http://127.0.0.1:5173/node_modules/.vite/deps/axios.js?v=587b817b:2646:14)\n    at async loadDetail (http://127.0.0.1:5173/src/views/app/KnowledgeBaseDetailView.vue:24:22)\n    at async Promise.all (index 0)\n    at async refreshAll (http://127.0.0.1:5173/src/views/app/KnowledgeBaseDetailView.vue:49:7)",
+        "url": "http://127.0.0.1:5173/app/knowledge/undefined"
+      }
+    ],
+    "network": [
+      {
+        "url": "http://127.0.0.1:5173/api/knowledge-bases/NaN/detail",
+        "method": "GET",
+        "status": 200,
+        "reqBody": "",
+        "resp": "{\"code\":500,\"message\":\"系统错误\",\"data\":null}",
+        "page": "http://127.0.0.1:5173/app/knowledge/undefined"
+      }
+    ],
+    "pageImpact": "??????????????"
+  },
+  "uploadStatus": {
+    "steps": [
+      "?? /app/documents ??????",
+      "?????????????",
+      "?? /api/documents ????"
+    ],
+    "network": [
+      {
+        "url": "http://127.0.0.1:5173/api/documents?keyword=&parseStatus=&embeddingStatus=&pageNo=1&pageSize=10",
+        "method": "GET",
+        "status": 200,
+        "reqBody": "",
+        "resp": "{\"code\":0,\"message\":\"ok\",\"data\":{\"list\":[],\"total\":0,\"pageNo\":1,\"pageSize\":10}}",
+        "page": "http://127.0.0.1:5173/app/documents"
+      },
+      {
+        "url": "http://127.0.0.1:5173/api/documents?keyword=&parseStatus=&embeddingStatus=&pageNo=1&pageSize=10",
+        "method": "GET",
+        "status": 200,
+        "reqBody": "",
+        "resp": "{\"code\":0,\"message\":\"ok\",\"data\":{\"list\":[],\"total\":0,\"pageNo\":1,\"pageSize\":10}}",
+        "page": "http://127.0.0.1:5173/app/documents"
+      }
+    ],
+    "statuses": [],
+    "statusesAfterRefresh": [],
+    "pageImpact": "????????????????????"
+  },
+  "chatAsk": {
+    "steps": [
+      "?? /app/chat ??????",
+      "???????",
+      "?? /api/chat/ask ? answer/references ??"
+    ],
+    "network": [
+      {
+        "url": "http://127.0.0.1:5173/api/knowledge-bases?pageNo=1&pageSize=100&sortBy=updateTime",
+        "method": "GET",
+        "status": 200,
+        "reqBody": "",
+        "resp": "{\"code\":0,\"message\":\"ok\",\"data\":{\"list\":[{\"id\":21,\"userId\":17,\"name\":\"Default Knowledge Base\",\"description\":\"Default space created during registration\",\"icon\":\"book\",\"category\":\"default\",\"status\":\"NORMAL\",\"documentCount\":0,\"createTime\":\"2026-05-09T12:49:34\",\"updateTime\":\"2026-05-09T12:49:34\"}],\"total\":1,\"pageNo\":1,\"pageSize\":100}}",
+        "page": "http://127.0.0.1:5173/app/chat"
+      }
+    ],
+    "ask200": false,
+    "answerVisible": true,
+    "referencesMode": "not-detected",
+    "pageImpact": "??? chat/ask 200?????????"
+  }
+}

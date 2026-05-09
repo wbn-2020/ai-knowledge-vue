@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { deleteKnowledgeBase, getDocumentPage, getKnowledgeBaseDetail, retryDocument } from '@/api/knowledge'
@@ -14,14 +14,21 @@ const kb = ref<KnowledgeBase | null>(null)
 const documents = ref<DocumentItem[]>([])
 const recentSessions = ref<ChatSession[]>([])
 const processingStatus = ref('NORMAL')
+const invalidKb = ref(false)
 const docPager = reactive({ pageNo: 1, pageSize: 10, total: 0 })
 
-const kbId = () => Number(route.params.id)
+const kbId = computed(() => Number(route.params.id))
+const isValidKbId = computed(() => Number.isFinite(kbId.value) && kbId.value > 0)
 
 async function loadDetail() {
+  if (!isValidKbId.value) {
+    invalidKb.value = true
+    kb.value = null
+    return
+  }
   loading.value = true
   try {
-    const data = await getKnowledgeBaseDetail(kbId())
+    const data = await getKnowledgeBaseDetail(kbId.value)
     kb.value = data.knowledgeBase
     recentSessions.value = data.recentSessions || []
     processingStatus.value = data.processingStatus || data.knowledgeBase?.status || 'NORMAL'
@@ -31,10 +38,15 @@ async function loadDetail() {
 }
 
 async function loadDocuments() {
+  if (!isValidKbId.value) {
+    documents.value = []
+    docPager.total = 0
+    return
+  }
   docLoading.value = true
   try {
     const data = await getDocumentPage({
-      knowledgeBaseId: kbId(),
+      knowledgeBaseId: kbId.value,
       pageNo: docPager.pageNo,
       pageSize: docPager.pageSize,
     })
@@ -52,11 +64,13 @@ async function refreshAll() {
 }
 
 function uploadForCurrentKb() {
-  router.push({ path: '/app/documents', query: { knowledgeBaseId: String(kbId()), upload: '1' } })
+  if (!isValidKbId.value) return
+  router.push({ path: '/app/documents', query: { knowledgeBaseId: String(kbId.value), upload: '1' } })
 }
 
 function askInCurrentKb() {
-  router.push({ path: '/app/chat', query: { knowledgeBaseId: String(kbId()) } })
+  if (!isValidKbId.value) return
+  router.push({ path: '/app/chat', query: { knowledgeBaseId: String(kbId.value) } })
 }
 
 async function removeKnowledgeBase() {
@@ -78,10 +92,14 @@ onMounted(refreshAll)
 
 <template>
   <div v-loading="loading">
-    <template v-if="kb">
+    <el-empty v-if="invalidKb" description="无效知识库">
+      <el-button type="primary" @click="router.push('/app/knowledge')">返回知识库列表</el-button>
+    </el-empty>
+
+    <template v-else-if="kb">
       <div class="detail-hero soft-card">
         <div class="soft-card-body hero-inner">
-          <div class="kb-mark">{{ kb.icon || '📚' }}</div>
+          <div class="kb-mark">{{ kb.icon || 'K' }}</div>
           <div class="hero-content">
             <span class="subtle-badge">{{ kb.category || '未分类' }}</span>
             <h1>{{ kb.name }}</h1>
@@ -93,20 +111,11 @@ onMounted(refreshAll)
             </div>
           </div>
           <div class="hero-actions">
-            <el-button plain @click="refreshAll">
-              <el-icon><Refresh /></el-icon>
-              刷新状态
-            </el-button>
+            <el-button plain @click="refreshAll"><el-icon><Refresh /></el-icon>刷新状态</el-button>
             <el-button plain @click="router.push(`/app/knowledge/${kb.id}/edit`)">编辑</el-button>
             <el-button plain type="danger" @click="removeKnowledgeBase">删除</el-button>
-            <el-button plain @click="uploadForCurrentKb">
-              <el-icon><Upload /></el-icon>
-              上传文档
-            </el-button>
-            <el-button type="primary" @click="askInCurrentKb">
-              <el-icon><ChatDotRound /></el-icon>
-              基于此库提问
-            </el-button>
+            <el-button plain @click="uploadForCurrentKb"><el-icon><Upload /></el-icon>上传文档</el-button>
+            <el-button type="primary" @click="askInCurrentKb"><el-icon><ChatDotRound /></el-icon>基于此库提问</el-button>
           </div>
         </div>
       </div>
@@ -116,21 +125,14 @@ onMounted(refreshAll)
           <div class="soft-card-body">
             <div class="section-head">
               <h3 class="section-title">知识库文档</h3>
-              <el-button plain :loading="docLoading" @click="loadDocuments">
-                <el-icon><Refresh /></el-icon>
-                刷新解析状态
-              </el-button>
+              <el-button plain :loading="docLoading" @click="loadDocuments"><el-icon><Refresh /></el-icon>刷新解析状态</el-button>
             </div>
             <el-table :data="documents" v-loading="docLoading" empty-text="暂无文档" size="large">
               <el-table-column label="文档名称" min-width="240" show-overflow-tooltip>
                 <template #default="{ row }">{{ documentNameOf(row) }}</template>
               </el-table-column>
-              <el-table-column label="类型" width="90">
-                <template #default="{ row }">{{ fileTypeOf(row) }}</template>
-              </el-table-column>
-              <el-table-column label="大小" width="110">
-                <template #default="{ row }">{{ fileSizeOf(row) }}</template>
-              </el-table-column>
+              <el-table-column label="类型" width="90"><template #default="{ row }">{{ fileTypeOf(row) }}</template></el-table-column>
+              <el-table-column label="大小" width="110"><template #default="{ row }">{{ fileSizeOf(row) }}</template></el-table-column>
               <el-table-column label="解析状态" width="120">
                 <template #default="{ row }"><el-tag :type="statusTagType(row.parseStatus)">{{ row.parseStatus || '-' }}</el-tag></template>
               </el-table-column>
@@ -140,9 +142,7 @@ onMounted(refreshAll)
               <el-table-column label="失败原因" min-width="170" show-overflow-tooltip>
                 <template #default="{ row }">{{ documentErrorOf(row) || '-' }}</template>
               </el-table-column>
-              <el-table-column label="更新时间" width="170">
-                <template #default="{ row }">{{ timeOf(row) }}</template>
-              </el-table-column>
+              <el-table-column label="更新时间" width="170"><template #default="{ row }">{{ timeOf(row) }}</template></el-table-column>
               <el-table-column label="操作" width="150" fixed="right">
                 <template #default="{ row }">
                   <el-button link type="primary" @click="router.push(`/app/documents/${row.id}`)">详情</el-button>
@@ -179,6 +179,7 @@ onMounted(refreshAll)
         </section>
       </div>
     </template>
+
     <el-empty v-else-if="!loading" description="知识库不存在" />
   </div>
 </template>
