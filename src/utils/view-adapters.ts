@@ -86,12 +86,33 @@ export function statusTagType(status: unknown): 'success' | 'warning' | 'danger'
   return 'info'
 }
 
+export function parseStatusText(status: unknown): string {
+  const value = String(status || '').toUpperCase()
+  if (value === 'PENDING') return '待解析'
+  if (value === 'PARSING' || value === 'PROCESSING') return '解析中'
+  if (value === 'SUCCESS') return '解析成功'
+  if (value === 'FAILED') return '解析失败'
+  return textOf(status)
+}
+
+export function embeddingStatusText(status: unknown): string {
+  const value = String(status || '').toUpperCase()
+  if (value === 'PENDING') return '待向量化'
+  if (value === 'PROCESSING' || value === 'PARSING') return '向量化中'
+  if (value === 'SUCCESS') return '向量化成功'
+  if (value === 'FAILED') return '向量化失败'
+  return textOf(status)
+}
+
 export function documentErrorOf(row: any): string {
-  return textOf(row?.errorMessage || row?.failReason || row?.parseError, '')
+  return textOf(row?.errorMessage || row?.failReason || row?.parseError || row?.failureReason || row?.reason, '')
 }
 
 export function isReadOf(row: any): boolean {
-  return Boolean(row?.isRead ?? row?.read)
+  const value = row?.isRead ?? row?.read ?? row?.readFlag
+  if (value === 1 || value === '1') return true
+  if (value === 0 || value === '0') return false
+  return Boolean(value)
 }
 
 export function searchTitleOf(row: any, index = 0): string {

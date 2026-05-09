@@ -16,6 +16,27 @@ import type {
   UserInfo,
 } from '@/types'
 
+export interface SystemConfig {
+  maxFileSize: number
+  allowedTypes: string[]
+  chunkSize: number
+  chunkOverlap: number
+  topK: number
+  similarityThreshold: number
+  platformName: string
+  adminEmail: string
+}
+
+export interface PromptConfig {
+  id?: number
+  name: string
+  type: 'QA' | 'SUMMARY' | 'KEYWORD' | 'TITLE' | string
+  content: string
+  enabled: boolean
+  createdAt?: string
+  updatedAt?: string
+}
+
 export interface DashboardOverview {
   knowledgeBaseCount: number
   documentCount: number
@@ -288,11 +309,11 @@ export function getPromptConfig(id: number) {
   return request.get(`/admin/config/prompts/${id}`)
 }
 
-export function createPromptConfig(data: any) {
+export function createPromptConfig(data: PromptConfig) {
   return request.post('/admin/config/prompts', data)
 }
 
-export function updatePromptConfig(id: number, data: any) {
+export function updatePromptConfig(id: number, data: PromptConfig) {
   return request.put(`/admin/config/prompts/${id}`, data)
 }
 
@@ -305,10 +326,10 @@ export function setPromptEnabled(id: number, enabled: boolean) {
 }
 
 export function getSystemConfigs() {
-  return request.get('/admin/config/system')
+  return request.get<any, SystemConfig | Array<any>>('/admin/config/system')
 }
 
-export function saveSystemConfig(data: any) {
+export function saveSystemConfig(data: SystemConfig) {
   return request.post('/admin/config/system', data)
 }
 
