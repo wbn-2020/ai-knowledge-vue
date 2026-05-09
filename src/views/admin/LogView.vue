@@ -1,14 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import {
-  exportAdminLog,
-  getAiCallLogs,
-  getAlerts,
-  getLoginLogs,
-  getOperationLogs,
-} from '@/api/knowledge'
+import { exportAdminLog, getAiCallLogs, getAlerts, getLoginLogs, getOperationLogs } from '@/api/knowledge'
 import type { AiCallLog, LogAlert, LoginLog, OperationLog } from '@/types'
+import { textOf } from '@/utils/view-adapters'
 
 type LogTab = 'operations' | 'logins' | 'ai-calls'
 
@@ -39,9 +34,7 @@ const tabTitle = computed(() => {
 })
 
 function cleanParams(params: Record<string, unknown>) {
-  return Object.fromEntries(
-    Object.entries(params).filter(([, value]) => value !== '' && value !== undefined && value !== null),
-  )
+  return Object.fromEntries(Object.entries(params).filter(([, value]) => value !== '' && value !== undefined && value !== null))
 }
 
 function queryParams(includePage = true) {
@@ -51,19 +44,16 @@ function queryParams(includePage = true) {
     ...(includePage ? { pageNo: pager.pageNo, pageSize: pager.pageSize } : {}),
   }
 
-  if (activeTab.value === 'operations') {
-    return cleanParams({ ...base, action: filters.action, userId: filters.userId })
-  }
-  if (activeTab.value === 'logins') {
-    return cleanParams({ ...base, account: filters.account, success: filters.success })
-  }
+  if (activeTab.value === 'operations') return cleanParams({ ...base, action: filters.action, userId: filters.userId })
+  if (activeTab.value === 'logins') return cleanParams({ ...base, account: filters.account, success: filters.success })
   return cleanParams({ ...base, modelName: filters.modelName, callType: filters.callType, success: filters.success })
 }
 
 async function loadAlerts() {
   alertLoading.value = true
   try {
-    alerts.value = await getAlerts()
+    const data = await getAlerts()
+    alerts.value = Array.isArray(data) ? data : []
   } finally {
     alertLoading.value = false
   }
@@ -74,15 +64,16 @@ async function loadLogs() {
   errorMessage.value = ''
   try {
     const params = queryParams()
-    const data = activeTab.value === 'operations'
-      ? await getOperationLogs(params)
-      : activeTab.value === 'logins'
-        ? await getLoginLogs(params)
-        : await getAiCallLogs(params)
-    rows.value = data.list || []
-    pager.total = data.total || 0
-    pager.pageNo = data.pageNo || pager.pageNo
-    pager.pageSize = data.pageSize || pager.pageSize
+    const data =
+      activeTab.value === 'operations'
+        ? await getOperationLogs(params)
+        : activeTab.value === 'logins'
+          ? await getLoginLogs(params)
+          : await getAiCallLogs(params)
+    rows.value = data?.list || []
+    pager.total = data?.total || 0
+    pager.pageNo = data?.pageNo || pager.pageNo
+    pager.pageSize = data?.pageSize || pager.pageSize
   } catch (error) {
     rows.value = []
     pager.total = 0
@@ -108,17 +99,18 @@ function resetFilters() {
 }
 
 function formatTime(row: any) {
-  return row.createTime || row.createdAt || row.time || '-'
+  return textOf(row?.createTime || row?.createdAt || row?.time)
 }
 
 function resultType(row: any) {
-  if (typeof row.success === 'boolean') return row.success ? 'success' : 'danger'
-  return row.result === '成功' || row.result === 'SUCCESS' ? 'success' : 'warning'
+  if (typeof row?.success === 'boolean') return row.success ? 'success' : 'danger'
+  const value = String(row?.result || '').toUpperCase()
+  return value === 'SUCCESS' || value === '成功' ? 'success' : 'warning'
 }
 
 function resultText(row: any) {
-  if (typeof row.success === 'boolean') return row.success ? '成功' : '失败'
-  return row.result || '-'
+  if (typeof row?.success === 'boolean') return row.success ? '成功' : '失败'
+  return textOf(row?.result)
 }
 
 function downloadBlob(response: any, fallbackName: string) {
@@ -172,17 +164,17 @@ onMounted(() => {
     </div>
 
     <section class="alert-grid" v-loading="alertLoading">
-      <article v-for="item in alerts" :key="item.type" class="soft-card alert-card">
+      <article v-for="item in alerts" :key="textOf(item.type)" class="soft-card alert-card">
         <div class="soft-card-body">
           <div class="alert-head">
-            <span>{{ item.type }}</span>
+            <span>{{ textOf(item.type) }}</span>
             <el-tag :type="item.level === 'OK' ? 'success' : item.level === 'WARN' ? 'warning' : 'danger'" effect="plain">
-              {{ item.level }}
+              {{ textOf(item.level) }}
             </el-tag>
           </div>
           <strong>{{ Number(item.failureRate || 0).toFixed(2) }}%</strong>
-          <p>{{ item.message }}</p>
-          <div class="alert-meta">总数 {{ item.total || 0 }} · 失败 {{ item.failed || 0 }}</div>
+          <p>{{ textOf(item.message) }}</p>
+          <div class="alert-meta">总数 {{ item.total || 0 }} / 失败 {{ item.failed || 0 }}</div>
         </div>
       </article>
       <article v-if="!alertLoading && !alerts.length" class="soft-card alert-card">
@@ -235,47 +227,33 @@ onMounted(() => {
 
         <el-table :data="rows" v-loading="loading" size="large" :empty-text="`暂无${tabTitle}`">
           <template v-if="activeTab === 'operations'">
-            <el-table-column prop="id" label="ID" width="90" />
-            <el-table-column label="用户" width="140">
-              <template #default="{ row }">{{ row.username || row.userId || '-' }}</template>
-            </el-table-column>
-            <el-table-column prop="module" label="模块" width="140" />
-            <el-table-column prop="action" label="操作" min-width="180" show-overflow-tooltip />
-            <el-table-column prop="path" label="路径" min-width="220" show-overflow-tooltip />
-            <el-table-column label="结果" width="110">
-              <template #default="{ row }"><el-tag :type="resultType(row)" effect="plain">{{ resultText(row) }}</el-tag></template>
-            </el-table-column>
+            <el-table-column label="ID" width="90"><template #default="{ row }">{{ textOf(row?.id) }}</template></el-table-column>
+            <el-table-column label="用户" width="140"><template #default="{ row }">{{ textOf(row?.username || row?.userId) }}</template></el-table-column>
+            <el-table-column label="模块" width="140"><template #default="{ row }">{{ textOf((row as any)?.module) }}</template></el-table-column>
+            <el-table-column label="操作" min-width="180" show-overflow-tooltip><template #default="{ row }">{{ textOf((row as any)?.action) }}</template></el-table-column>
+            <el-table-column label="路径" min-width="220" show-overflow-tooltip><template #default="{ row }">{{ textOf((row as any)?.path) }}</template></el-table-column>
+            <el-table-column label="结果" width="110"><template #default="{ row }"><el-tag :type="resultType(row)" effect="plain">{{ resultText(row) }}</el-tag></template></el-table-column>
             <el-table-column label="时间" width="180"><template #default="{ row }">{{ formatTime(row) }}</template></el-table-column>
           </template>
 
           <template v-else-if="activeTab === 'logins'">
-            <el-table-column prop="id" label="ID" width="90" />
-            <el-table-column label="账号" min-width="160">
-              <template #default="{ row }">{{ row.account || row.username || '-' }}</template>
-            </el-table-column>
-            <el-table-column prop="ip" label="IP" width="150" />
-            <el-table-column prop="userAgent" label="设备" min-width="220" show-overflow-tooltip />
-            <el-table-column label="结果" width="110">
-              <template #default="{ row }"><el-tag :type="resultType(row)" effect="plain">{{ resultText(row) }}</el-tag></template>
-            </el-table-column>
-            <el-table-column prop="failReason" label="失败原因" min-width="180" show-overflow-tooltip />
+            <el-table-column label="ID" width="90"><template #default="{ row }">{{ textOf(row?.id) }}</template></el-table-column>
+            <el-table-column label="账号" min-width="160"><template #default="{ row }">{{ textOf((row as any)?.account || (row as any)?.username) }}</template></el-table-column>
+            <el-table-column label="IP" width="150"><template #default="{ row }">{{ textOf((row as any)?.ip) }}</template></el-table-column>
+            <el-table-column label="设备" min-width="220" show-overflow-tooltip><template #default="{ row }">{{ textOf((row as any)?.userAgent) }}</template></el-table-column>
+            <el-table-column label="结果" width="110"><template #default="{ row }"><el-tag :type="resultType(row)" effect="plain">{{ resultText(row) }}</el-tag></template></el-table-column>
+            <el-table-column label="失败原因" min-width="180" show-overflow-tooltip><template #default="{ row }">{{ textOf((row as any)?.failReason) }}</template></el-table-column>
             <el-table-column label="时间" width="180"><template #default="{ row }">{{ formatTime(row) }}</template></el-table-column>
           </template>
 
           <template v-else>
-            <el-table-column prop="id" label="ID" width="90" />
-            <el-table-column prop="modelName" label="模型" min-width="180" show-overflow-tooltip />
-            <el-table-column prop="callType" label="类型" width="130" />
-            <el-table-column label="Token" width="130">
-              <template #default="{ row }">{{ row.totalTokens ?? '-' }}</template>
-            </el-table-column>
-            <el-table-column label="耗时" width="120">
-              <template #default="{ row }">{{ row.elapsedMs ? `${row.elapsedMs}ms` : '-' }}</template>
-            </el-table-column>
-            <el-table-column label="结果" width="110">
-              <template #default="{ row }"><el-tag :type="resultType(row)" effect="plain">{{ resultText(row) }}</el-tag></template>
-            </el-table-column>
-            <el-table-column prop="failReason" label="失败原因" min-width="200" show-overflow-tooltip />
+            <el-table-column label="ID" width="90"><template #default="{ row }">{{ textOf(row?.id) }}</template></el-table-column>
+            <el-table-column label="模型" min-width="180" show-overflow-tooltip><template #default="{ row }">{{ textOf((row as any)?.modelName) }}</template></el-table-column>
+            <el-table-column label="类型" width="130"><template #default="{ row }">{{ textOf((row as any)?.callType) }}</template></el-table-column>
+            <el-table-column label="Token" width="130"><template #default="{ row }">{{ (row as any)?.totalTokens ?? '-' }}</template></el-table-column>
+            <el-table-column label="耗时" width="120"><template #default="{ row }">{{ (row as any)?.elapsedMs ? `${(row as any).elapsedMs}ms` : '-' }}</template></el-table-column>
+            <el-table-column label="结果" width="110"><template #default="{ row }"><el-tag :type="resultType(row)" effect="plain">{{ resultText(row) }}</el-tag></template></el-table-column>
+            <el-table-column label="失败原因" min-width="200" show-overflow-tooltip><template #default="{ row }">{{ textOf((row as any)?.failReason) }}</template></el-table-column>
             <el-table-column label="时间" width="180"><template #default="{ row }">{{ formatTime(row) }}</template></el-table-column>
           </template>
         </el-table>
