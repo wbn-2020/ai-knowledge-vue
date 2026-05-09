@@ -16,11 +16,23 @@ function readUser() {
   }
 }
 
+export function isAdminUser(user: Partial<UserInfo> | null | undefined): boolean {
+  if (!user) return false
+  if (user.isAdmin === true) return true
+  const role = String(user.role || '').toUpperCase()
+  if (role === 'ADMIN') return true
+  const userType = String(user.userType || '').toUpperCase()
+  if (userType === 'ADMIN') return true
+  const roles = Array.isArray(user.roles) ? user.roles : user.roles ? [user.roles] : []
+  return roles.some((item) => String(item || '').toUpperCase() === 'ADMIN')
+}
+
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem(TOKEN_KEY) || '')
   const user = ref<UserInfo | null>(readUser())
 
   const isLoggedIn = computed(() => !!token.value)
+  const isAdmin = computed(() => isAdminUser(user.value))
 
   function persist(nextToken: string, nextUser: UserInfo) {
     token.value = nextToken
@@ -66,5 +78,5 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem(USER_KEY)
   }
 
-  return { token, user, isLoggedIn, login, adminLogin, register, fetchMe, logout }
+  return { token, user, isLoggedIn, isAdmin, login, adminLogin, register, fetchMe, logout }
 })

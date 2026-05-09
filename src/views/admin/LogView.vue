@@ -49,6 +49,19 @@ function queryParams(includePage = true) {
   return cleanParams({ ...base, modelName: filters.modelName, callType: filters.callType, success: filters.success })
 }
 
+function failReasonOf(row: any) {
+  return textOf(row?.failureReason || row?.failReason || row?.reason || row?.errorMessage)
+}
+
+function modelNameOf(row: any) {
+  return textOf(row?.modelName || row?.model)
+}
+
+function tokenOf(row: any) {
+  const value = row?.totalTokens ?? row?.tokens
+  return value === null || value === undefined || value === '' ? '-' : String(value)
+}
+
 async function loadAlerts() {
   alertLoading.value = true
   try {
@@ -105,7 +118,7 @@ function formatTime(row: any) {
 function resultType(row: any) {
   if (typeof row?.success === 'boolean') return row.success ? 'success' : 'danger'
   const value = String(row?.result || '').toUpperCase()
-  return value === 'SUCCESS' || value === '成功' ? 'success' : 'warning'
+  return value === 'SUCCESS' ? 'success' : value === 'FAILED' ? 'danger' : 'warning'
 }
 
 function resultText(row: any) {
@@ -177,14 +190,6 @@ onMounted(() => {
           <div class="alert-meta">总数 {{ item.total || 0 }} / 失败 {{ item.failed || 0 }}</div>
         </div>
       </article>
-      <article v-if="!alertLoading && !alerts.length" class="soft-card alert-card">
-        <div class="soft-card-body">
-          <div class="alert-head"><span>告警统计</span><el-tag type="info" effect="plain">暂无</el-tag></div>
-          <strong>0.00%</strong>
-          <p>暂无告警统计数据。</p>
-          <div class="alert-meta">等待后端返回统计结果</div>
-        </div>
-      </article>
     </section>
 
     <section class="soft-card">
@@ -225,7 +230,8 @@ onMounted(() => {
 
         <el-alert v-if="errorMessage" class="state-alert" type="error" show-icon :closable="false" :title="errorMessage" />
 
-        <el-table :data="rows" v-loading="loading" size="large" :empty-text="`暂无${tabTitle}`">
+        <div class="table-wrap">
+          <el-table :data="rows" v-loading="loading" size="large" :empty-text="`暂无${tabTitle}`" class="log-table">
           <template v-if="activeTab === 'operations'">
             <el-table-column label="ID" width="90"><template #default="{ row }">{{ textOf(row?.id) }}</template></el-table-column>
             <el-table-column label="用户" width="140"><template #default="{ row }">{{ textOf(row?.username || row?.userId) }}</template></el-table-column>
@@ -233,6 +239,7 @@ onMounted(() => {
             <el-table-column label="操作" min-width="180" show-overflow-tooltip><template #default="{ row }">{{ textOf((row as any)?.action) }}</template></el-table-column>
             <el-table-column label="路径" min-width="220" show-overflow-tooltip><template #default="{ row }">{{ textOf((row as any)?.path) }}</template></el-table-column>
             <el-table-column label="结果" width="110"><template #default="{ row }"><el-tag :type="resultType(row)" effect="plain">{{ resultText(row) }}</el-tag></template></el-table-column>
+            <el-table-column label="失败原因" min-width="180" show-overflow-tooltip><template #default="{ row }">{{ failReasonOf(row) }}</template></el-table-column>
             <el-table-column label="时间" width="180"><template #default="{ row }">{{ formatTime(row) }}</template></el-table-column>
           </template>
 
@@ -242,21 +249,22 @@ onMounted(() => {
             <el-table-column label="IP" width="150"><template #default="{ row }">{{ textOf((row as any)?.ip) }}</template></el-table-column>
             <el-table-column label="设备" min-width="220" show-overflow-tooltip><template #default="{ row }">{{ textOf((row as any)?.userAgent) }}</template></el-table-column>
             <el-table-column label="结果" width="110"><template #default="{ row }"><el-tag :type="resultType(row)" effect="plain">{{ resultText(row) }}</el-tag></template></el-table-column>
-            <el-table-column label="失败原因" min-width="180" show-overflow-tooltip><template #default="{ row }">{{ textOf((row as any)?.failReason) }}</template></el-table-column>
+            <el-table-column label="失败原因" min-width="180" show-overflow-tooltip><template #default="{ row }">{{ failReasonOf(row) }}</template></el-table-column>
             <el-table-column label="时间" width="180"><template #default="{ row }">{{ formatTime(row) }}</template></el-table-column>
           </template>
 
           <template v-else>
             <el-table-column label="ID" width="90"><template #default="{ row }">{{ textOf(row?.id) }}</template></el-table-column>
-            <el-table-column label="模型" min-width="180" show-overflow-tooltip><template #default="{ row }">{{ textOf((row as any)?.modelName) }}</template></el-table-column>
+            <el-table-column label="模型" min-width="180" show-overflow-tooltip><template #default="{ row }">{{ modelNameOf(row) }}</template></el-table-column>
             <el-table-column label="类型" width="130"><template #default="{ row }">{{ textOf((row as any)?.callType) }}</template></el-table-column>
-            <el-table-column label="Token" width="130"><template #default="{ row }">{{ (row as any)?.totalTokens ?? '-' }}</template></el-table-column>
+            <el-table-column label="Token" width="130"><template #default="{ row }">{{ tokenOf(row) }}</template></el-table-column>
             <el-table-column label="耗时" width="120"><template #default="{ row }">{{ (row as any)?.elapsedMs ? `${(row as any).elapsedMs}ms` : '-' }}</template></el-table-column>
             <el-table-column label="结果" width="110"><template #default="{ row }"><el-tag :type="resultType(row)" effect="plain">{{ resultText(row) }}</el-tag></template></el-table-column>
-            <el-table-column label="失败原因" min-width="200" show-overflow-tooltip><template #default="{ row }">{{ textOf((row as any)?.failReason) }}</template></el-table-column>
+            <el-table-column label="失败原因" min-width="200" show-overflow-tooltip><template #default="{ row }">{{ failReasonOf(row) }}</template></el-table-column>
             <el-table-column label="时间" width="180"><template #default="{ row }">{{ formatTime(row) }}</template></el-table-column>
           </template>
-        </el-table>
+          </el-table>
+        </div>
 
         <div class="pagination-row">
           <el-pagination
@@ -313,42 +321,11 @@ onMounted(() => {
   font-size: 13px;
 }
 
-.filter-bar {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(140px, 1fr)) auto;
-  gap: 12px;
-  align-items: center;
-  margin: 6px 0 16px;
+.log-table {
+  min-width: 1280px;
 }
 
-.filter-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.state-alert {
-  margin-bottom: 12px;
-}
-
-.pagination-row {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
-}
-
-@media (max-width: 1100px) {
-  .alert-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .filter-bar {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-@media (max-width: 680px) {
-  .filter-bar {
-    grid-template-columns: 1fr;
-  }
+.table-wrap {
+  overflow-x: auto;
 }
 </style>

@@ -21,6 +21,10 @@ const menus = [
 
 const currentTitle = computed(() => (route.meta.title as string) || 'KnowFlow AI')
 
+function goAdmin() {
+  router.push('/admin/dashboard')
+}
+
 function logout() {
   authStore.logout()
   router.push('/login')
@@ -55,11 +59,12 @@ function logout() {
 
     <section class="main">
       <header class="topbar">
-        <div>
+        <div class="topbar-left">
           <div class="topbar-title">{{ currentTitle }}</div>
-          <div class="topbar-desc">Modern SaaS style for knowledge management and RAG workflows</div>
+          <div class="topbar-desc">Knowledge management and RAG workflows</div>
         </div>
         <div class="topbar-actions">
+          <el-button v-if="authStore.isAdmin" plain @click="goAdmin">去后台</el-button>
           <el-tag type="info" effect="plain">{{ authStore.user?.role || 'USER' }}</el-tag>
           <el-avatar :size="36">{{ authStore.user?.nickname?.slice(0, 1) || 'K' }}</el-avatar>
           <el-button plain @click="logout">退出</el-button>
@@ -126,14 +131,19 @@ function logout() {
 }
 
 .topbar {
-  height: 76px;
+  min-height: 76px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 28px;
+  gap: 16px;
+  padding: 12px 28px;
   border-bottom: 1px solid var(--color-border);
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(18px);
+}
+
+.topbar-left {
+  min-width: 0;
 }
 
 .topbar-title {
@@ -150,7 +160,9 @@ function logout() {
 .topbar-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .content {
@@ -168,14 +180,14 @@ function logout() {
   }
 
   .topbar {
-    padding: 0 16px;
-    height: auto;
-    min-height: 72px;
+    padding: 14px 16px;
     align-items: flex-start;
-    padding-top: 14px;
-    padding-bottom: 14px;
     flex-direction: column;
-    gap: 12px;
+  }
+
+  .topbar-actions {
+    width: 100%;
+    justify-content: flex-start;
   }
 }
 </style>

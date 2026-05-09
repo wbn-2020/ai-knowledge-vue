@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
+import { isAdminUser } from '@/stores/auth'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -11,7 +13,12 @@ const form = reactive({ username: 'admin', password: '123456' })
 async function submit() {
   loading.value = true
   try {
-    await authStore.adminLogin({ username: form.username, password: form.password })
+    const result = await authStore.adminLogin({ username: form.username, password: form.password })
+    if (!isAdminUser(result?.user)) {
+      ElMessage.warning('无权限访问后台')
+      router.push('/app/dashboard')
+      return
+    }
     router.push('/admin/dashboard')
   } finally {
     loading.value = false

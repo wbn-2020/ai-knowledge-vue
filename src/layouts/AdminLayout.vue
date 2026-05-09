@@ -18,6 +18,10 @@ const menus = [
   { path: '/admin/announcements', label: '公告管理', icon: 'Notification' },
 ]
 
+function goApp() {
+  router.push('/app/dashboard')
+}
+
 function logout() {
   authStore.logout()
   router.push('/login')
@@ -51,12 +55,13 @@ function logout() {
 
     <section class="admin-main">
       <header class="admin-topbar">
-        <div>
+        <div class="admin-topbar-left">
           <div class="admin-page-title">{{ $route.meta.title || '后台管理' }}</div>
           <div class="admin-page-desc">用于管理平台用户、知识库、文档和系统配置</div>
         </div>
         <div class="admin-actions">
-          <el-tag type="warning" effect="plain">{{ authStore.user?.role }}</el-tag>
+          <el-button v-if="authStore.isAdmin" plain @click="goApp">去前台</el-button>
+          <el-tag type="warning" effect="plain">{{ authStore.user?.role || 'ADMIN' }}</el-tag>
           <el-button plain @click="logout">退出</el-button>
         </div>
       </header>
@@ -115,11 +120,12 @@ function logout() {
 }
 
 .admin-topbar {
-  height: 76px;
+  min-height: 76px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 28px;
+  gap: 16px;
+  padding: 12px 28px;
   border-bottom: 1px solid var(--color-border);
   background: rgba(255, 255, 255, 0.72);
   backdrop-filter: blur(18px);
@@ -139,7 +145,9 @@ function logout() {
 .admin-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .admin-content {
@@ -149,6 +157,17 @@ function logout() {
 @media (max-width: 960px) {
   .admin-shell {
     grid-template-columns: 1fr;
+  }
+
+  .admin-topbar {
+    padding: 14px 16px;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .admin-actions {
+    width: 100%;
+    justify-content: flex-start;
   }
 }
 </style>

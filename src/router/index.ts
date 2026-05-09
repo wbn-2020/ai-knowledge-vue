@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
+import { isAdminUser } from '@/stores/auth'
 
 const extensionView = () => import('@/views/common/ExtensionFeatureView.vue')
 
@@ -359,11 +361,12 @@ router.beforeEach((to) => {
   document.title = title
 
   if (to.path === '/login' || to.path === '/register') {
-    if (authStore.isLoggedIn) return '/app/dashboard'
+    if (authStore.isLoggedIn) return isAdminUser(authStore.user) ? '/admin/dashboard' : '/app/dashboard'
     return true
   }
 
   if (to.path === '/admin/login') {
+    if (authStore.isLoggedIn && isAdminUser(authStore.user)) return '/admin/dashboard'
     return true
   }
 
@@ -371,8 +374,9 @@ router.beforeEach((to) => {
     return '/login'
   }
 
-  if (to.meta.requiresAdmin && authStore.user?.role !== 'ADMIN') {
-    return '/admin/login'
+  if (to.meta.requiresAdmin && !isAdminUser(authStore.user)) {
+    ElMessage.warning('无权限访问后台')
+    return '/app/dashboard'
   }
 
   return true

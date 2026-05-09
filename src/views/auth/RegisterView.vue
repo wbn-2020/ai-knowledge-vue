@@ -22,7 +22,7 @@ async function submit() {
     return
   }
   if (form.password !== form.confirmPassword) {
-    ElMessage.warning('两次密码不一致')
+    ElMessage.warning('两次密码输入不一致')
     return
   }
   loading.value = true
@@ -38,7 +38,7 @@ async function submit() {
 
 <template>
   <div class="register-page">
-    <section class="register-card soft-card">
+    <section class="register-card page-card">
       <div class="soft-card-body">
         <span class="subtle-badge">创建 KnowFlow 账号</span>
         <h1>开始搭建你的个人知识库</h1>
@@ -53,7 +53,7 @@ async function submit() {
           <el-button type="primary" size="large" class="submit" :loading="loading" @click="submit">注册账号</el-button>
           <div class="back-login">
             已有账号？
-            <el-button link type="primary" @click="router.push('/login')">去登录</el-button>
+            <el-button link type="primary" @click="router.push('/login')">返回登录</el-button>
           </div>
         </el-form>
       </div>
@@ -96,5 +96,6 @@ p {
   justify-content: center;
   align-items: center;
   color: var(--color-text-muted);
+  gap: 4px;
 }
 </style>

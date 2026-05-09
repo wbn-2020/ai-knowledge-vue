@@ -3,36 +3,23 @@ import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
+import { isAdminUser } from '@/stores/auth'
 
 const router = useRouter()
 const authStore = useAuthStore()
-const isRegister = ref(false)
 const loading = ref(false)
 
 const form = reactive({
   username: 'admin',
   password: '123456',
-  confirmPassword: '123456',
-  nickname: '',
 })
 
 async function submit() {
   loading.value = true
   try {
-    if (isRegister.value) {
-      if (form.password !== form.confirmPassword) {
-        ElMessage.warning('两次密码不一致')
-        return
-      }
-      await authStore.register(form)
-      ElMessage.success('注册成功，请登录')
-      isRegister.value = false
-      return
-    }
-
-    await authStore.login(form)
+    const result = await authStore.login(form)
     ElMessage.success('登录成功')
-    router.push('/app/dashboard')
+    router.push(isAdminUser(result?.user) ? '/admin/dashboard' : '/app/dashboard')
   } finally {
     loading.value = false
   }
@@ -46,64 +33,31 @@ async function submit() {
         <div class="brand-badge">K</div>
         <h1>KnowFlow AI</h1>
         <p>个人知识库与智能文档问答平台。上传、解析、检索、问答一体化呈现。</p>
-
-        <div class="hero-metrics">
-          <div>
-            <strong>12+</strong>
-            <span>知识库</span>
-          </div>
-          <div>
-            <strong>300+</strong>
-            <span>问答记录</span>
-          </div>
-          <div>
-            <strong>86</strong>
-            <span>文档数量</span>
-          </div>
-        </div>
-
-        <div class="hero-tags">
-          <span>Vue 3</span>
-          <span>Element Plus</span>
-          <span>Pinia</span>
-          <span>RAG</span>
-        </div>
       </div>
     </section>
 
     <section class="login-card page-card">
       <div class="card-head">
         <div class="subtle-badge">MVP 版本</div>
-        <h2>{{ isRegister ? '创建账号' : '欢迎回来' }}</h2>
-        <p>{{ isRegister ? '注册账号后即可进入知识库工作台。' : '登录后继续管理知识库与文档。' }}</p>
+        <h2>欢迎回来</h2>
+        <p>登录后继续管理知识库与文档。</p>
       </div>
 
       <el-form label-position="top" class="login-form" @keyup.enter="submit">
         <el-form-item label="用户名">
           <el-input v-model="form.username" placeholder="请输入用户名" />
         </el-form-item>
-        <el-form-item v-if="isRegister" label="昵称">
-          <el-input v-model="form.nickname" placeholder="请输入昵称" />
-        </el-form-item>
         <el-form-item label="密码">
           <el-input v-model="form.password" type="password" show-password placeholder="请输入密码" />
         </el-form-item>
-        <el-form-item v-if="isRegister" label="确认密码">
-          <el-input v-model="form.confirmPassword" type="password" show-password placeholder="请再次输入密码" />
-        </el-form-item>
 
         <el-button type="primary" size="large" class="submit-btn" :loading="loading" @click="submit">
-          {{ isRegister ? '注册账号' : '登录系统' }}
+          登录系统
         </el-button>
 
         <div class="switch-row">
-          <span>{{ isRegister ? '已有账号？' : '还没有账号？' }}</span>
-          <el-button link type="primary" @click="isRegister = !isRegister">
-            {{ isRegister ? '返回登录' : '去注册' }}
-          </el-button>
-          <el-button v-if="!isRegister" link type="primary" @click="router.push('/register')">
-            独立注册页
-          </el-button>
+          <span>还没有账号？</span>
+          <el-button link type="primary" @click="router.push('/register')">注册账号</el-button>
         </div>
       </el-form>
     </section>
@@ -159,48 +113,9 @@ h1 {
   color: rgba(255, 255, 255, 0.84);
 }
 
-.hero-metrics {
-  display: flex;
-  gap: 18px;
-  margin-top: 28px;
-  flex-wrap: wrap;
-}
-
-.hero-metrics div {
-  min-width: 120px;
-  padding: 14px 16px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.10);
-  backdrop-filter: blur(16px);
-}
-
-.hero-metrics strong {
-  display: block;
-  font-size: 24px;
-}
-
-.hero-metrics span {
-  display: block;
-  margin-top: 4px;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.76);
-}
-
-.hero-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 22px;
-}
-
-.hero-tags span {
-  padding: 8px 12px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
-  font-size: 13px;
-}
-
 .login-card {
+  width: min(560px, 100%);
+  justify-self: center;
   align-self: center;
   padding: 28px;
 }
@@ -232,6 +147,7 @@ h1 {
   margin-top: 18px;
   font-size: 14px;
   color: var(--color-text-muted);
+  align-items: center;
 }
 
 @media (max-width: 960px) {

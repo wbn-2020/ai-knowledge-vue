@@ -164,8 +164,16 @@ export function summarizeDocument(documentId: number) {
   return request.post('/summaries/document', null, { params: { documentId } })
 }
 
+export function getDocumentSummary(documentId: number) {
+  return request.get('/summaries/document', { params: { documentId } })
+}
+
 export function summarizeKnowledgeBase(knowledgeBaseId: number) {
   return request.post('/summaries/knowledge-base', null, { params: { knowledgeBaseId } })
+}
+
+export function getKnowledgeBaseSummary(knowledgeBaseId: number) {
+  return request.get('/summaries/knowledge-base', { params: { knowledgeBaseId } })
 }
 
 export function getNotificationPage(params: { pageNo?: number; pageSize?: number }) {

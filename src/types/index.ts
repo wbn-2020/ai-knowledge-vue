@@ -13,6 +13,9 @@ export interface UserInfo {
   email?: string
   bio?: string
   role: 'USER' | 'ADMIN'
+  roles?: string[] | string
+  isAdmin?: boolean
+  userType?: string
   status: 'NORMAL' | 'ENABLED' | 'DISABLED'
   createTime?: string
   createdAt?: string

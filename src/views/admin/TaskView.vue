@@ -11,11 +11,11 @@ const keyword = ref('')
 const pager = reactive({ pageNo: 1, pageSize: 10, total: 0 })
 
 function taskTypeOf(row: any) {
-  return textOf(row.type || row.taskType)
+  return textOf(row?.taskType || row?.type || row?.task_type)
 }
 
 function failReasonOf(row: any) {
-  return textOf(row.reason || row.errorMessage || row.failReason || row.logSummary)
+  return textOf(row?.failureReason || row?.reason || row?.errorMessage || row?.failReason || row?.logSummary)
 }
 
 function canRetry(row: any) {
@@ -77,12 +77,12 @@ onMounted(loadTasks)
     </div>
 
     <section class="soft-card">
-      <div class="soft-card-body">
-        <el-table :data="tasks" v-loading="loading" size="large" empty-text="暂无任务">
+      <div class="soft-card-body table-wrap">
+        <el-table :data="tasks" v-loading="loading" size="large" empty-text="暂无任务" class="task-table">
           <el-table-column label="ID" width="80">
             <template #default="{ row }">{{ textOf(row?.id) }}</template>
           </el-table-column>
-          <el-table-column label="任务类型" width="130">
+          <el-table-column label="任务类型" width="150">
             <template #default="{ row }">{{ taskTypeOf(row) }}</template>
           </el-table-column>
           <el-table-column label="关联文档" min-width="240" show-overflow-tooltip>
@@ -94,10 +94,10 @@ onMounted(loadTasks)
           <el-table-column label="失败原因" min-width="220" show-overflow-tooltip>
             <template #default="{ row }">{{ failReasonOf(row) }}</template>
           </el-table-column>
-          <el-table-column label="创建时间" width="170">
+          <el-table-column label="创建时间" width="180">
             <template #default="{ row }">{{ timeOf(row) }}</template>
           </el-table-column>
-          <el-table-column label="操作" width="160" fixed="right">
+          <el-table-column label="操作" width="170" fixed="right">
             <template #default="{ row }">
               <el-button link type="primary" @click="$router.push(`/admin/tasks/${row.id}`)">详情</el-button>
               <el-button v-if="canRetry(row)" link type="warning" @click="retryTask(row)">重试</el-button>
@@ -122,6 +122,14 @@ onMounted(loadTasks)
 </template>
 
 <style scoped lang="scss">
+.table-wrap {
+  overflow-x: auto;
+}
+
+.task-table {
+  min-width: 1120px;
+}
+
 .pagination-row {
   display: flex;
   justify-content: flex-end;

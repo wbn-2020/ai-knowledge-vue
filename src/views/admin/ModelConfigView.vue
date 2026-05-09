@@ -18,7 +18,7 @@ const form = reactive({
   name: '',
   provider: 'OpenAI Compatible',
   modelName: '',
-  endpoint: '',
+  baseUrl: '',
   apiKey: '',
   modelType: 'LLM' as ModelType,
   enabled: true,
@@ -54,13 +54,12 @@ function payload() {
   return {
     name: form.name.trim(),
     provider: form.provider.trim(),
-    modelName: form.modelName.trim(),
-    model: form.modelName.trim(),
-    endpoint: form.endpoint.trim(),
-    apiKey: form.apiKey.trim() || undefined,
     modelType: form.modelType,
-    enabled: form.enabled,
+    modelName: form.modelName.trim(),
+    baseUrl: form.baseUrl.trim(),
+    apiKey: form.apiKey.trim(),
     temperature: form.modelType === 'LLM' ? form.temperature : undefined,
+    enabled: form.enabled,
   }
 }
 
@@ -81,7 +80,7 @@ function openCreate() {
     name: '',
     provider: 'OpenAI Compatible',
     modelName: '',
-    endpoint: '',
+    baseUrl: '',
     apiKey: '',
     modelType: 'LLM',
     enabled: true,
@@ -97,7 +96,7 @@ function openEdit(row: any) {
     name: row?.name || '',
     provider: row?.provider || 'OpenAI Compatible',
     modelName: row?.modelName || row?.model || '',
-    endpoint: row?.endpoint || '',
+    baseUrl: row?.baseUrl || row?.endpoint || '',
     apiKey: '',
     modelType: modelTypeOf(row),
     enabled: row?.enabled !== false,
@@ -107,14 +106,27 @@ function openEdit(row: any) {
 }
 
 async function save() {
-  if (!form.name.trim() || !form.provider.trim() || !form.modelName.trim() || !form.endpoint.trim()) {
-    ElMessage.warning('请填写配置名称、供应商、模型名称和接口地址')
+  if (!form.provider.trim()) {
+    ElMessage.warning('provider 不能为空')
     return
   }
-  if (!editingId.value && !form.apiKey.trim()) {
-    ElMessage.warning('新增配置时请输入 API Key')
+  if (!form.modelType) {
+    ElMessage.warning('modelType 不能为空')
     return
   }
+  if (!form.modelName.trim()) {
+    ElMessage.warning('modelName 不能为空')
+    return
+  }
+  if (!form.baseUrl.trim()) {
+    ElMessage.warning('baseUrl 不能为空')
+    return
+  }
+  if (!form.apiKey.trim()) {
+    ElMessage.warning('apiKey 不能为空')
+    return
+  }
+
   saving.value = true
   try {
     if (editingId.value) await updateModelConfig(editingId.value, payload())
@@ -184,7 +196,7 @@ onMounted(loadModels)
             <template #default="{ row }">{{ modelNameOf(row) }}</template>
           </el-table-column>
           <el-table-column label="接口地址" min-width="220" show-overflow-tooltip>
-            <template #default="{ row }">{{ textOf(row?.endpoint) }}</template>
+            <template #default="{ row }">{{ textOf(row?.baseUrl || row?.endpoint) }}</template>
           </el-table-column>
           <el-table-column label="API Key" width="150">
             <template #default="{ row }">{{ maskedApiKey(row) }}</template>
@@ -209,10 +221,8 @@ onMounted(loadModels)
         <el-form-item label="模型类型"><el-segmented v-model="form.modelType" :options="modelTypeOptions" /></el-form-item>
         <el-form-item label="供应商"><el-input v-model="form.provider" placeholder="OpenAI Compatible / DashScope / Azure OpenAI" /></el-form-item>
         <el-form-item label="模型名称"><el-input v-model="form.modelName" placeholder="例如：gpt-4o-mini / text-embedding-3-small" /></el-form-item>
-        <el-form-item label="接口地址"><el-input v-model="form.endpoint" placeholder="https://api.example.com/v1" /></el-form-item>
-        <el-form-item label="API Key">
-          <el-input v-model="form.apiKey" type="password" show-password :placeholder="editingId ? '留空表示不修改 API Key' : '请输入 API Key'" />
-        </el-form-item>
+        <el-form-item label="接口地址"><el-input v-model="form.baseUrl" placeholder="https://api.example.com/v1" /></el-form-item>
+        <el-form-item label="API Key"><el-input v-model="form.apiKey" type="password" show-password placeholder="请输入 API Key" /></el-form-item>
         <el-form-item v-if="form.modelType === 'LLM'" label="Temperature"><el-slider v-model="form.temperature" :min="0" :max="1" :step="0.1" /></el-form-item>
         <el-form-item label="启用状态"><el-switch v-model="form.enabled" /></el-form-item>
         <el-button plain :loading="testing" @click="testModel()">测试连接</el-button>

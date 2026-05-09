@@ -1,0 +1,224 @@
+{
+  "buildResult": "pass",
+  "devResult": "running",
+  "userFlow": [
+    {
+      "name": "register",
+      "route": "/register",
+      "ok": true,
+      "finalUrl": "http://127.0.0.1:5173/app/dashboard",
+      "note": "user:retest_253284",
+      "consoleErrInc": 0,
+      "networkErrInc": 0,
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "login",
+      "route": "/login",
+      "ok": true,
+      "finalUrl": "http://127.0.0.1:5173/app/chat",
+      "note": "after:http://127.0.0.1:5173/app/chat",
+      "consoleErrInc": 0,
+      "networkErrInc": 0,
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "dashboard",
+      "route": "/app/dashboard",
+      "ok": true,
+      "finalUrl": "http://127.0.0.1:5173/app/dashboard",
+      "note": "",
+      "consoleErrInc": 0,
+      "networkErrInc": 0,
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "kb-list",
+      "route": "/app/knowledge",
+      "ok": true,
+      "finalUrl": "http://127.0.0.1:5173/app/knowledge",
+      "note": "",
+      "consoleErrInc": 0,
+      "networkErrInc": 0,
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "kb-create",
+      "route": "/app/knowledge/create",
+      "ok": true,
+      "finalUrl": "http://127.0.0.1:5173/app/knowledge",
+      "note": "kb:MVP_KB_3284",
+      "consoleErrInc": 0,
+      "networkErrInc": 0,
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "documents",
+      "route": "/app/documents",
+      "ok": true,
+      "finalUrl": "http://127.0.0.1:5173/app/documents",
+      "note": "upload-attempted",
+      "consoleErrInc": 0,
+      "networkErrInc": 0,
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "chat",
+      "route": "/app/chat",
+      "ok": true,
+      "finalUrl": "http://127.0.0.1:5173/app/chat",
+      "note": "",
+      "consoleErrInc": 0,
+      "networkErrInc": 0,
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "history",
+      "route": "/app/history",
+      "ok": true,
+      "finalUrl": "http://127.0.0.1:5173/app/history",
+      "note": "",
+      "consoleErrInc": 0,
+      "networkErrInc": 0,
+      "hasUndefinedNull": false
+    }
+  ],
+  "uploadAndStatus": {
+    "statusVisibleBefore": [],
+    "statusVisibleAfter": [],
+    "parseStatusFieldVisible": false,
+    "embeddingStatusFieldVisible": false
+  },
+  "qaResult": {
+    "askCallCount": 0,
+    "ask200Count": 0,
+    "answerVisibleCount": 3,
+    "referencesNonEmpty": false,
+    "referencesVisible": false
+  },
+  "adminFlow": [
+    {
+      "name": "admin-login",
+      "route": "/admin/login",
+      "ok": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/dashboard",
+      "note": "after:http://127.0.0.1:5173/admin/dashboard",
+      "consoleErrInc": 0,
+      "networkErrInc": 0,
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "admin-dashboard",
+      "route": "/admin/dashboard",
+      "ok": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/dashboard",
+      "note": "",
+      "consoleErrInc": 0,
+      "networkErrInc": 0,
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "admin-users",
+      "route": "/admin/users",
+      "ok": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/users",
+      "note": "",
+      "consoleErrInc": 0,
+      "networkErrInc": 0,
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "admin-kbs",
+      "route": "/admin/knowledge-bases",
+      "ok": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/knowledge-bases",
+      "note": "",
+      "consoleErrInc": 0,
+      "networkErrInc": 0,
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "admin-docs",
+      "route": "/admin/documents",
+      "ok": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/documents",
+      "note": "",
+      "consoleErrInc": 0,
+      "networkErrInc": 0,
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "admin-tasks",
+      "route": "/admin/tasks",
+      "ok": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/tasks",
+      "note": "",
+      "consoleErrInc": 0,
+      "networkErrInc": 0,
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "admin-logs",
+      "route": "/admin/logs",
+      "ok": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/logs",
+      "note": "",
+      "consoleErrInc": 0,
+      "networkErrInc": 0,
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "admin-models",
+      "route": "/admin/ai-models",
+      "ok": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/ai-models",
+      "note": "",
+      "consoleErrInc": 0,
+      "networkErrInc": 0,
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "admin-prompts",
+      "route": "/admin/prompts",
+      "ok": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/prompts",
+      "note": "",
+      "consoleErrInc": 0,
+      "networkErrInc": 0,
+      "hasUndefinedNull": false
+    },
+    {
+      "name": "admin-settings",
+      "route": "/admin/settings",
+      "ok": true,
+      "finalUrl": "http://127.0.0.1:5173/admin/settings",
+      "note": "",
+      "consoleErrInc": 0,
+      "networkErrInc": 0,
+      "hasUndefinedNull": false
+    }
+  ],
+  "consoleErrors": [],
+  "networkAbnormal": [],
+  "demoReady": false,
+  "issues": {
+    "P0": [],
+    "P1": [
+      "QA flow not fully confirmed: ask/answer/references mismatch.",
+      "Document status labels not observed after refresh."
+    ],
+    "P2": []
+  },
+  "meta": {
+    "user": "retest_253284",
+    "kbName": "MVP_KB_3284",
+    "fileName": "test.txt",
+    "finishedAt": "2026-05-09T06:00:27.351Z"
+  },
+  "adminDataVisible": {
+    "userVisible": false,
+    "kbVisible": true,
+    "docVisible": true,
+    "taskVisible": true
+  }
+}
