@@ -93,7 +93,11 @@ export interface ChatReference {
   chunkIndex?: number
   documentName?: string
   content?: string
+  snippet?: string
   score?: number
+  finalScore?: number
+  hitReason?: string
+  vectorId?: string
 }
 
 export interface ChatMessage {
@@ -101,6 +105,8 @@ export interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
   references?: Array<string | ChatReference>
+  answerType?: 'RAG' | 'NO_CONTEXT' | 'GENERAL' | string
+  canUseGeneralAnswer?: boolean
   found?: boolean
   basedOnKnowledgeBase?: boolean
   noAnswerReason?: string | null

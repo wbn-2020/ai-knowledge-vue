@@ -357,6 +357,12 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   const authStore = useAuthStore()
+  if (!to.meta.layout) {
+    to.meta.layout = to.path.startsWith('/admin') ? 'admin' : 'front'
+  }
+  if (to.path === '/app/dashboard' || to.path === '/admin/dashboard') {
+    to.meta.affix = true
+  }
   const title = to.meta.title ? `${to.meta.title} - KnowFlow AI` : 'KnowFlow AI'
   document.title = title
 

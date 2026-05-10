@@ -2,14 +2,14 @@
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import TagsView from '@/components/TagsView.vue'
 
-const APP_SIDEBAR_KEY = 'app_sidebar_collapsed'
+const APP_SIDEBAR_KEY = 'knowflow-sidebar-collapsed'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
-const collapsed = ref(localStorage.getItem(APP_SIDEBAR_KEY) === '1')
-const isChatRoute = computed(() => route.path.startsWith('/app/chat'))
+const collapsed = ref(localStorage.getItem(APP_SIDEBAR_KEY) === 'true')
 
 const menus = [
   { path: '/app/dashboard', label: '工作台', icon: 'House' },
@@ -27,7 +27,7 @@ const currentTitle = computed(() => (route.meta.title as string) || 'KnowFlow AI
 
 function toggleSidebar() {
   collapsed.value = !collapsed.value
-  localStorage.setItem(APP_SIDEBAR_KEY, collapsed.value ? '1' : '0')
+  localStorage.setItem(APP_SIDEBAR_KEY, String(collapsed.value))
 }
 
 function goAdmin() {
@@ -45,7 +45,7 @@ function logout() {
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-mark">K</div>
-        <div v-show="!collapsed" class="brand-text">
+        <div v-show="!collapsed">
           <div class="brand-name">KnowFlow AI</div>
           <div class="brand-sub">个人知识库与问答平台</div>
         </div>
@@ -55,6 +55,7 @@ function logout() {
         class="menu"
         router
         :collapse="collapsed"
+        :collapse-transition="false"
         :default-active="$route.path"
         background-color="transparent"
         text-color="#5f6b7a"
@@ -65,20 +66,18 @@ function logout() {
           <template #title>{{ menu.label }}</template>
         </el-menu-item>
       </el-menu>
-
-      <div class="sidebar-footer">
-        <el-button class="collapse-btn" plain @click="toggleSidebar">
-          <el-icon><component :is="collapsed ? 'Expand' : 'Fold'" /></el-icon>
-          <span v-show="!collapsed">收起菜单</span>
-        </el-button>
-      </div>
     </aside>
 
     <section class="main">
       <header class="topbar">
         <div class="topbar-left">
-          <div class="topbar-title">{{ currentTitle }}</div>
-          <div class="topbar-desc">Knowledge management and RAG workflows</div>
+          <el-button text class="collapse-btn" @click="toggleSidebar">
+            <el-icon><component :is="collapsed ? 'Expand' : 'Fold'" /></el-icon>
+          </el-button>
+          <div>
+            <div class="topbar-title">{{ currentTitle }}</div>
+            <div class="topbar-desc">Knowledge management and RAG workflows</div>
+          </div>
         </div>
         <div class="topbar-actions">
           <el-button v-if="authStore.isAdmin" plain @click="goAdmin">去后台</el-button>
@@ -88,8 +87,11 @@ function logout() {
         </div>
       </header>
 
-      <main class="content" :class="{ 'content-chat': isChatRoute }">
-        <router-view />
+      <main class="content">
+        <TagsView />
+        <div class="view-wrap">
+          <router-view />
+        </div>
       </main>
     </section>
   </div>
@@ -97,17 +99,21 @@ function logout() {
 
 <style scoped lang="scss">
 .app-shell {
-  min-height: 100vh;
+  --sidebar-width: 260px;
+  height: 100vh;
   display: grid;
-  grid-template-columns: 260px 1fr;
-  transition: grid-template-columns 0.2s ease;
+  grid-template-columns: var(--sidebar-width) 1fr;
+  overflow: hidden;
 }
 
 .app-shell.collapsed {
-  grid-template-columns: 76px 1fr;
+  --sidebar-width: 72px;
 }
 
 .sidebar {
+  width: var(--sidebar-width);
+  overflow: hidden;
+  transition: width 0.2s ease;
   padding: 20px 10px 16px;
   background: rgba(255, 255, 255, 0.82);
   backdrop-filter: blur(18px);
@@ -121,6 +127,10 @@ function logout() {
   align-items: center;
   gap: 12px;
   padding: 12px 10px 20px;
+}
+
+.app-shell.collapsed .brand {
+  justify-content: center;
 }
 
 .brand-mark {
@@ -152,20 +162,17 @@ function logout() {
   flex: 1;
 }
 
-.sidebar-footer {
-  padding: 8px 6px 0;
-}
-
-.collapse-btn {
-  width: 100%;
-}
-
 .main {
   min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .topbar {
   min-height: 76px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -178,6 +185,13 @@ function logout() {
 
 .topbar-left {
   min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.collapse-btn {
+  font-size: 18px;
 }
 
 .topbar-title {
@@ -200,14 +214,19 @@ function logout() {
 }
 
 .content {
-  padding: 24px;
+  flex: 1;
   min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-.content-chat {
-  padding: 16px;
-  height: calc(100vh - 76px);
-  overflow: hidden;
+.view-wrap {
+  flex: 1;
+  min-height: 0;
+  padding: 24px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 @media (max-width: 960px) {
@@ -217,6 +236,7 @@ function logout() {
   }
 
   .sidebar {
+    width: 100%;
     border-right: 0;
     border-bottom: 1px solid var(--color-border);
   }
@@ -225,6 +245,10 @@ function logout() {
     padding: 14px 16px;
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .topbar-left {
+    width: 100%;
   }
 
   .topbar-actions {

@@ -15,7 +15,7 @@ import {
   sendFeedback,
 } from '@/api/knowledge'
 import type { ChatMessage, ChatReference, ChatSession, KnowledgeBase } from '@/types'
-import { normalizeRole, referenceContentOf, referenceScoreOf, referenceTitleOf, timeOf } from '@/utils/view-adapters'
+import { normalizeRole, timeOf } from '@/utils/view-adapters'
 
 const MAX_QUESTION_LENGTH = 1000
 const route = useRoute()
@@ -34,7 +34,12 @@ const askError = ref('')
 const sessionId = ref<number | null>(null)
 const sessionPager = reactive({ pageNo: 1, pageSize: 12, total: 0 })
 const retryGeneralLoading = ref<Record<number, boolean>>({})
+const showAllRefsMap = ref<Record<number, boolean>>({})
 const messageListRef = ref<HTMLElement>()
+
+const referenceDialogVisible = ref(false)
+const currentReference = ref<ChatReference | null>(null)
+const missingRefNameWarned = ref<Record<number, boolean>>({})
 
 const currentSession = computed(() => sessions.value.find((item) => item.id === sessionId.value) || null)
 const canUseSessionActions = computed(() => !!sessionId.value)
@@ -47,33 +52,93 @@ function normalizeMessage(item: any): ChatMessage {
   return {
     ...item,
     role: normalizeRole(item.role),
-    references: item.references || [],
+    content: String(item?.content ?? item?.answer ?? ''),
+    references: Array.isArray(item?.references) ? item.references : [],
+    answerType: item?.answerType,
+    canUseGeneralAnswer: item?.canUseGeneralAnswer,
     found: item?.found,
     basedOnKnowledgeBase: item?.basedOnKnowledgeBase,
     noAnswerReason: item?.noAnswerReason,
   }
 }
 
-function referenceList(message: ChatMessage): Array<string | ChatReference> {
-  return message.references || []
+function answerTypeOf(message: ChatMessage) {
+  if (message.answerType) return String(message.answerType).toUpperCase()
+  if (message.basedOnKnowledgeBase === false) return 'GENERAL'
+  if (message.found === false) return 'NO_CONTEXT'
+  return 'RAG'
 }
 
-function isNoAnswerMessage(message: ChatMessage) {
-  return message.role === 'assistant' && (message.found === false || message.noAnswerReason === 'LOW_SIMILARITY')
+function isNoContextMessage(message: ChatMessage) {
+  return message.role === 'assistant' && answerTypeOf(message) === 'NO_CONTEXT'
 }
 
 function isGeneralAnswer(message: ChatMessage) {
-  return message.role === 'assistant' && message.basedOnKnowledgeBase === false
+  return message.role === 'assistant' && answerTypeOf(message) === 'GENERAL'
+}
+
+function isRagAnswer(message: ChatMessage) {
+  return message.role === 'assistant' && answerTypeOf(message) === 'RAG'
 }
 
 function shouldShowGeneralAnswerButton(message: ChatMessage) {
-  return isNoAnswerMessage(message)
+  return isNoContextMessage(message) && message.canUseGeneralAnswer !== false
 }
 
-function getNoAnswerText(message: ChatMessage) {
-  if (message.noAnswerReason === 'LOW_SIMILARITY') return '当前知识库未找到足够相关的资料'
-  if (message.found === false) return '当前知识库未找到可用答案'
-  return ''
+function getNoContextBody(message: ChatMessage) {
+  if (message.content?.trim()) return message.content
+  return '当前知识库未找到足够相关的资料，无法基于知识库回答。'
+}
+
+function getReferenceDocumentName(ref: ChatReference) {
+  const name =
+    ref.documentName ||
+    (ref as any).name ||
+    (ref as any).title ||
+    (ref as any).fileName ||
+    (ref as any).originalName ||
+    (ref as any).document?.name ||
+    (ref as any).document?.originalName
+  if (name && String(name).trim()) return String(name).trim()
+  if (ref.documentId && !missingRefNameWarned.value[ref.documentId]) {
+    missingRefNameWarned.value = { ...missingRefNameWarned.value, [ref.documentId]: true }
+    console.warn('[Chat] reference documentId exists but documentName is missing.', ref)
+  }
+  return '未命名文档'
+}
+
+function getReferenceChunkLabel(ref: ChatReference) {
+  const chunkIndex = (ref as any).chunkIndex ?? (ref as any).index
+  if (chunkIndex !== undefined && chunkIndex !== null && chunkIndex !== '') return chunkIndex
+  if ((ref as any).chunkId !== undefined && (ref as any).chunkId !== null && (ref as any).chunkId !== '') return (ref as any).chunkId
+  return '-'
+}
+
+function referenceScore(ref: ChatReference) {
+  const value = Number((ref as any).finalScore ?? (ref as any).score ?? 0)
+  return Number.isFinite(value) ? value.toFixed(2) : '0.00'
+}
+
+function validReferences(message: ChatMessage): ChatReference[] {
+  if (!isRagAnswer(message)) return []
+  const refs = Array.isArray(message.references) ? message.references : []
+  return refs
+    .filter((item): item is ChatReference => typeof item === 'object' && !!item)
+    .filter((ref) => Number((ref as any).finalScore ?? (ref as any).score ?? 0) >= 0.7)
+}
+
+function visibleReferences(message: ChatMessage) {
+  const list = validReferences(message)
+  if (showAllRefsMap.value[message.id]) return list
+  return list.slice(0, 3)
+}
+
+function hasMoreReferences(message: ChatMessage) {
+  return validReferences(message).length > 3
+}
+
+function toggleShowAllRefs(messageId: number) {
+  showAllRefsMap.value = { ...showAllRefsMap.value, [messageId]: !showAllRefsMap.value[messageId] }
 }
 
 function setRetryLoading(messageId: number, loading: boolean) {
@@ -97,6 +162,72 @@ function findPreviousUserQuestion(targetIndex: number) {
     if (m?.role === 'user' && m?.content?.trim()) return m.content.trim()
   }
   return ''
+}
+
+function escapeHtml(text: string) {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+function markdownToHtml(text: string) {
+  let html = escapeHtml(text || '')
+  html = html.replace(/```([\s\S]*?)```/g, (_m, p1) => `<pre><code>${p1.trim()}</code></pre>`)
+  html = html.replace(/`([^`]+)`/g, '<code>$1</code>')
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+  html = html.replace(/^######\s+(.*)$/gm, '<h6>$1</h6>')
+  html = html.replace(/^#####\s+(.*)$/gm, '<h5>$1</h5>')
+  html = html.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>')
+  html = html.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>')
+  html = html.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>')
+  html = html.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>')
+
+  const lines = html.split('\n')
+  const out: string[] = []
+  let inUl = false
+  let inOl = false
+  for (const raw of lines) {
+    const line = raw.trim()
+    if (/^[-*]\s+/.test(line)) {
+      if (!inUl) {
+        if (inOl) out.push('</ol>')
+        out.push('<ul>')
+        inUl = true
+        inOl = false
+      }
+      out.push(`<li>${line.replace(/^[-*]\s+/, '')}</li>`)
+      continue
+    }
+    if (/^\d+\.\s+/.test(line)) {
+      if (!inOl) {
+        if (inUl) out.push('</ul>')
+        out.push('<ol>')
+        inOl = true
+        inUl = false
+      }
+      out.push(`<li>${line.replace(/^\d+\.\s+/, '')}</li>`)
+      continue
+    }
+    if (inUl) {
+      out.push('</ul>')
+      inUl = false
+    }
+    if (inOl) {
+      out.push('</ol>')
+      inOl = false
+    }
+    out.push(line ? `<p>${line}</p>` : '<br />')
+  }
+  if (inUl) out.push('</ul>')
+  if (inOl) out.push('</ol>')
+  return out.join('')
+}
+
+function assistantHtml(message: ChatMessage) {
+  return markdownToHtml(message.content || '')
 }
 
 async function loadKnowledgeBases() {
@@ -157,7 +288,6 @@ async function doAsk(allowGeneralAnswer = false, overrideQuestion?: string) {
   }
   thinking.value = true
   askError.value = ''
-
   try {
     const result = await askKnowledgeBase({
       knowledgeBaseId: selectedKb.value,
@@ -166,16 +296,7 @@ async function doAsk(allowGeneralAnswer = false, overrideQuestion?: string) {
       allowGeneralAnswer,
     })
     sessionId.value = result.sessionId
-    const assistantMessage: ChatMessage = {
-      id: Date.now() + 1,
-      role: 'assistant',
-      content: result.answer || '',
-      references: result.references || [],
-      found: result.found,
-      basedOnKnowledgeBase: result.basedOnKnowledgeBase,
-      noAnswerReason: result.noAnswerReason,
-    }
-    chatMessages.value.push(assistantMessage)
+    chatMessages.value.push(normalizeMessage({ id: Date.now() + 1, role: 'assistant', ...result, content: result.answer }))
     await loadSessions()
     await scrollToBottom(true)
   } catch (error) {
@@ -193,7 +314,7 @@ async function askGeneralForMessage(message: ChatMessage, index: number) {
   if (!selectedKb.value || !sessionId.value) return ElMessage.warning('请先选择知识库并开始会话')
   if (isRetryLoading(message.id)) return
   const originalQuestion = findPreviousUserQuestion(index)
-  if (!originalQuestion) return ElMessage.warning('未找到该回复对应的问题')
+  if (!originalQuestion) return ElMessage.warning('未找到该回复对应的用户问题')
   setRetryLoading(message.id, true)
   try {
     const result = await askKnowledgeBase({
@@ -203,14 +324,7 @@ async function askGeneralForMessage(message: ChatMessage, index: number) {
       allowGeneralAnswer: true,
     })
     sessionId.value = result.sessionId
-    chatMessages.value[index] = {
-      ...message,
-      content: result.answer || message.content,
-      references: result.references || [],
-      found: result.found,
-      basedOnKnowledgeBase: result.basedOnKnowledgeBase ?? false,
-      noAnswerReason: result.noAnswerReason ?? null,
-    }
+    chatMessages.value[index] = normalizeMessage({ ...message, ...result, content: result.answer })
     ElMessage.success('已生成通用回答')
     await loadSessions()
     await scrollToBottom(true)
@@ -254,15 +368,7 @@ async function regenerate() {
   thinking.value = true
   try {
     const result = await regenerateAnswer(sessionId.value)
-    chatMessages.value.push({
-      id: Date.now(),
-      role: 'assistant',
-      content: result.answer,
-      references: result.references || [],
-      found: result.found,
-      basedOnKnowledgeBase: result.basedOnKnowledgeBase,
-      noAnswerReason: result.noAnswerReason,
-    })
+    chatMessages.value.push(normalizeMessage({ id: Date.now(), role: 'assistant', ...result, content: result.answer }))
     ElMessage.success('已重新生成回答')
     await scrollToBottom(true)
   } finally {
@@ -272,22 +378,24 @@ async function regenerate() {
 
 async function feedback(message: ChatMessage, feedbackType: 'LIKE' | 'DISLIKE') {
   await sendFeedback({ messageId: message.id, feedbackType })
-  ElMessage.success(feedbackType === 'LIKE' ? '已记录有帮助反馈' : '已记录问题反馈')
+  ElMessage.success(feedbackType === 'LIKE' ? '已记录有帮助反馈' : '已记录不准确反馈')
 }
 
-function openReference(ref: string | ChatReference) {
-  const title = referenceTitleOf(ref)
-  const content = referenceContentOf(ref) || (typeof ref === 'string' ? ref : '后端未返回引用片段内容')
-  const meta =
-    typeof ref === 'string'
-      ? ''
-      : `文档：${ref.documentName || '-'}\n切片序号：${ref.chunkIndex ?? '-'}\n相似度：${ref.score ?? '-'}\n\n`
-  ElMessageBox.alert(`${meta}${content}`, title, {
-    confirmButtonText: typeof ref !== 'string' && ref.documentId ? '查看文档详情' : '知道了',
-    callback: () => {
-      if (typeof ref !== 'string' && ref.documentId) router.push(`/app/documents/${ref.documentId}`)
-    },
-  })
+function openReferenceDialog(ref: ChatReference) {
+  currentReference.value = ref
+  referenceDialogVisible.value = true
+}
+
+function closeReferenceDialog() {
+  referenceDialogVisible.value = false
+}
+
+function goDocumentDetail(ref: ChatReference | null) {
+  if (!ref?.documentId) {
+    ElMessage.warning('缺少文档 ID，无法跳转')
+    return
+  }
+  router.push(`/app/documents/${ref.documentId}`)
 }
 
 function downloadBlob(response: any, fallbackName: string) {
@@ -374,67 +482,108 @@ onMounted(async () => {
       <div ref="messageListRef" class="message-list" v-loading="loadingMessages">
         <el-alert v-if="askError" type="error" show-icon :closable="false" :title="askError" />
         <el-empty v-if="!chatMessages.length && !thinking && !loadingMessages" description="开始一次知识库问答" />
-        <div v-for="(message, index) in chatMessages" :key="message.id" class="message" :class="message.role">
-          <div class="avatar">{{ message.role === 'user' ? '我' : 'AI' }}</div>
-          <div class="bubble">
-            <div v-if="isNoAnswerMessage(message)" class="no-answer-tip">{{ getNoAnswerText(message) }}</div>
-            <el-tag v-if="isGeneralAnswer(message)" type="info" size="small">该回答未基于当前知识库资料生成</el-tag>
-            <p>{{ message.content }}</p>
+        <div v-for="(message, index) in chatMessages" :key="message.id" class="message-row" :class="message.role">
+          <div v-if="message.role === 'assistant'" class="avatar ai">AI</div>
 
-            <div v-if="message.role === 'assistant' && shouldShowGeneralAnswerButton(message)" class="inline-general-action">
-              <el-button type="warning" plain size="small" :loading="isRetryLoading(message.id)" @click="askGeneralForMessage(message, index)">
-                允许 AI 基于通用知识回答
+          <div class="bubble" :class="message.role === 'user' ? 'user-bubble' : 'assistant-bubble'">
+            <p v-if="message.role === 'user'" class="user-text">{{ message.content }}</p>
+            <div v-else class="assistant-content markdown-body" v-html="assistantHtml(message)" />
+
+            <div v-if="isNoContextMessage(message)" class="no-context-box">
+              <div class="no-context-title">当前知识库未找到足够相关资料</div>
+              <div class="no-context-body">{{ getNoContextBody(message) }}</div>
+              <div v-if="shouldShowGeneralAnswerButton(message)" class="no-context-action">
+                <el-button type="warning" plain size="small" :loading="isRetryLoading(message.id)" @click="askGeneralForMessage(message, index)">
+                  允许 AI 基于通用知识回答
+                </el-button>
+              </div>
+              <div class="no-context-hint">通用回答不提供知识库引用来源。</div>
+            </div>
+
+            <div v-if="isGeneralAnswer(message)" class="general-hint">通用回答不提供知识库引用来源。</div>
+
+            <div v-if="isRagAnswer(message) && validReferences(message).length" class="reference-box">
+              <strong>引用来源 {{ validReferences(message).length }} 条</strong>
+              <div
+                v-for="(ref, refIndex) in visibleReferences(message)"
+                :key="`${message.id}-${refIndex}`"
+                class="reference-item"
+                @click="openReferenceDialog(ref)"
+              >
+                [{{ refIndex + 1 }}] {{ getReferenceDocumentName(ref) }} · 切片 {{ getReferenceChunkLabel(ref) }} · 相似度 {{ referenceScore(ref) }}
+              </div>
+              <el-button v-if="hasMoreReferences(message)" link type="primary" @click="toggleShowAllRefs(message.id)">
+                {{ showAllRefsMap[message.id] ? '收起引用' : `查看全部 ${validReferences(message).length} 条引用` }}
               </el-button>
             </div>
 
-            <div v-if="message.role === 'assistant' && !isGeneralAnswer(message)" class="references">
-              <strong>引用来源</strong>
-              <div v-if="!referenceList(message).length" class="empty-reference">暂无引用来源</div>
-              <article v-for="(ref, refIndex) in referenceList(message)" v-else :key="refIndex" class="reference-card" @click="openReference(ref)">
-                <div class="reference-head">
-                  <span>{{ referenceTitleOf(ref, refIndex) }}</span>
-                  <el-tag v-if="referenceScoreOf(ref)" size="small" effect="plain">相似度 {{ referenceScoreOf(ref) }}</el-tag>
-                </div>
-                <p>切片序号：{{ typeof ref === 'string' ? '-' : (ref.chunkIndex ?? '-') }}</p>
-                <p v-if="referenceContentOf(ref)">{{ referenceContentOf(ref) }}</p>
-              </article>
-            </div>
-            <div v-if="message.role === 'assistant' && isGeneralAnswer(message)" class="empty-reference">通用回答不提供知识库引用来源</div>
+            <div v-if="isRagAnswer(message) && !validReferences(message).length" class="empty-reference">暂无引用来源</div>
+
             <div v-if="message.role === 'assistant'" class="message-actions">
               <el-button link type="primary" @click="feedback(message, 'LIKE')">有帮助</el-button>
               <el-button link type="warning" @click="feedback(message, 'DISLIKE')">不准确</el-button>
             </div>
           </div>
+
+          <div v-if="message.role === 'user'" class="avatar me">我</div>
         </div>
       </div>
 
       <div class="input-area">
-        <el-input v-model="question" type="textarea" :rows="3" resize="none" maxlength="1000" show-word-limit placeholder="输入你的问题，Ctrl + Enter 发送" @keyup.ctrl.enter="ask" />
+        <el-input
+          v-model="question"
+          type="textarea"
+          :rows="3"
+          resize="none"
+          maxlength="1000"
+          show-word-limit
+          placeholder="输入你的问题（Enter 发送，Shift + Enter 换行）"
+          @keydown.enter.exact.prevent="ask"
+        />
         <div class="input-footer">
           <div class="input-actions">
             <el-button plain :disabled="!sessionId" :loading="thinking" @click="regenerate">重新生成</el-button>
-            <el-button type="primary" :disabled="!canAsk" :loading="thinking" @click="ask">发送问题</el-button>
+            <el-button type="primary" :disabled="!canAsk" :loading="thinking" @click="ask">发送</el-button>
           </div>
         </div>
       </div>
     </section>
+
+    <el-dialog v-model="referenceDialogVisible" title="引用详情" width="760px" @close="closeReferenceDialog">
+      <div v-if="currentReference" class="reference-dialog-content">
+        <p><strong>文档：</strong>{{ getReferenceDocumentName(currentReference) }}</p>
+        <p><strong>切片序号：</strong>{{ getReferenceChunkLabel(currentReference) }}</p>
+        <p><strong>相似度：</strong>{{ referenceScore(currentReference) }}</p>
+        <p v-if="(currentReference as any).hitReason"><strong>命中原因：</strong>{{ (currentReference as any).hitReason }}</p>
+        <div class="reference-dialog-body">{{ currentReference.content || currentReference.snippet || '后端未返回引用片段内容' }}</div>
+      </div>
+      <template #footer>
+        <el-button @click.stop="closeReferenceDialog">关闭</el-button>
+        <el-button type="primary" @click.stop="goDocumentDetail(currentReference)">查看文档详情</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <style scoped lang="scss">
 .chat-page {
   display: grid;
-  grid-template-columns: 340px 1fr;
+  grid-template-columns: 320px 1fr;
   gap: 16px;
   height: 100%;
   min-height: 0;
   overflow: hidden;
 }
 
+.chat-sidebar,
+.chat-main {
+  min-height: 0;
+}
+
 .sidebar-body {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   height: 100%;
   min-height: 0;
 }
@@ -465,7 +614,7 @@ onMounted(async () => {
   width: 100%;
   padding: 12px;
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: 10px;
   background: var(--color-surface-soft);
   text-align: left;
   cursor: pointer;
@@ -488,133 +637,28 @@ onMounted(async () => {
 .chat-main {
   display: flex;
   flex-direction: column;
-  min-width: 0;
   height: 100%;
   min-height: 0;
 }
 
 .chat-head {
-  padding: 20px;
+  padding: 16px 20px;
   border-bottom: 1px solid var(--color-border);
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
   flex-shrink: 0;
 }
 
 .message-list {
   flex: 1;
   min-height: 0;
-  padding: 22px;
   overflow-y: auto;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-}
-
-.message {
-  display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
-  gap: 12px;
-}
-
-.message.user {
-  grid-template-columns: minmax(0, 1fr) 42px;
-}
-
-.message.user .avatar {
-  grid-column: 2;
-}
-
-.message.user .bubble {
-  grid-column: 1;
-  justify-self: end;
-  background: var(--color-primary);
-  color: #fff;
-}
-
-.avatar {
-  width: 42px;
-  height: 42px;
-  border-radius: 14px;
-  display: grid;
-  place-items: center;
-  background: var(--color-primary-weak);
-  color: var(--color-primary);
-  font-weight: 800;
-}
-
-.bubble {
-  max-width: 820px;
-  padding: 14px 16px;
-  border-radius: 16px;
-  background: var(--color-surface-soft);
-  line-height: 1.7;
-  display: grid;
-  gap: 10px;
-}
-
-.bubble > p {
-  margin: 0;
-  white-space: pre-wrap;
-}
-
-.no-answer-tip {
-  padding: 6px 10px;
-  border-radius: 8px;
-  font-size: 13px;
-  color: #92400e;
-  background: #fef3c7;
-  border: 1px solid #fde68a;
-}
-
-.inline-general-action {
-  margin-top: 2px;
-}
-
-.references {
-  margin-top: 10px;
-  display: grid;
-  gap: 8px;
-}
-
-.reference-card {
-  padding: 10px;
-  border-radius: 10px;
-  background: #fff;
-  border: 1px solid var(--color-border);
-  cursor: pointer;
-}
-
-.reference-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  font-weight: 700;
-}
-
-.reference-card p {
-  margin: 4px 0 0;
-  color: var(--color-text-muted);
-  white-space: pre-wrap;
-}
-
-.reference-card p:last-child {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  word-break: break-word;
-}
-
-.empty-reference {
-  color: var(--color-text-muted);
-  font-size: 13px;
-}
-
-.message-actions {
-  margin-top: 6px;
+  gap: 16px;
+  background: #f6f8fc;
 }
 
 .message-list :deep(.el-empty) {
@@ -622,9 +666,152 @@ onMounted(async () => {
   align-self: center;
 }
 
+.message-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.message-row.user {
+  justify-content: flex-end;
+}
+
+.message-row.assistant {
+  justify-content: flex-start;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.avatar.ai {
+  background: #e8eefc;
+  color: #2563eb;
+}
+
+.avatar.me {
+  background: #2563eb;
+  color: #fff;
+}
+
+.bubble {
+  border-radius: 16px;
+  padding: 12px 16px;
+  word-break: break-word;
+}
+
+.user-bubble {
+  max-width: 70%;
+  background: #2563eb;
+  color: #fff;
+  border-radius: 16px 16px 4px 16px;
+}
+
+.assistant-bubble {
+  max-width: 75%;
+  background: #fff;
+  color: #1f2937;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px 16px 16px 4px;
+}
+
+.user-text {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.markdown-body :deep(p),
+.markdown-body :deep(ul),
+.markdown-body :deep(ol),
+.markdown-body :deep(pre),
+.markdown-body :deep(h1),
+.markdown-body :deep(h2),
+.markdown-body :deep(h3),
+.markdown-body :deep(h4),
+.markdown-body :deep(h5),
+.markdown-body :deep(h6) {
+  margin: 0 0 8px;
+}
+
+.markdown-body :deep(pre) {
+  background: #111827;
+  color: #f9fafb;
+  border-radius: 8px;
+  padding: 10px;
+  overflow-x: auto;
+}
+
+.markdown-body :deep(code) {
+  background: #f3f4f6;
+  border-radius: 4px;
+  padding: 1px 4px;
+}
+
+.no-context-box {
+  padding: 8px 10px;
+  border: 1px solid #fde68a;
+  background: #fef3c7;
+  border-radius: 8px;
+  display: grid;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.no-context-title {
+  font-size: 13px;
+  color: #92400e;
+  font-weight: 700;
+}
+
+.no-context-body,
+.no-context-hint {
+  font-size: 13px;
+  color: #92400e;
+}
+
+.general-hint,
+.empty-reference {
+  margin-top: 8px;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.reference-box {
+  margin-top: 12px;
+  padding: 8px 10px;
+  border: 1px solid #e5e7eb;
+  background: #f8fafc;
+  border-radius: 8px;
+  font-size: 13px;
+  display: grid;
+  gap: 6px;
+}
+
+.reference-item {
+  padding: 4px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.reference-item:hover {
+  background: #eff6ff;
+}
+
+.message-actions {
+  margin-top: 8px;
+}
+
 .input-area {
-  padding: 18px;
   border-top: 1px solid var(--color-border);
+  padding: 14px 16px;
+  background: #fff;
   flex-shrink: 0;
 }
 
@@ -634,14 +821,28 @@ onMounted(async () => {
   justify-content: flex-end;
 }
 
+.reference-dialog-content {
+  max-height: 56vh;
+  overflow: auto;
+}
+
+.reference-dialog-content p {
+  margin: 0 0 8px;
+}
+
+.reference-dialog-body {
+  margin-top: 10px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 10px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 @media (max-width: 1080px) {
   .chat-page {
     grid-template-columns: 1fr;
-    height: 100%;
-  }
-
-  .chat-main {
-    min-height: 560px;
   }
 
   .chat-head {

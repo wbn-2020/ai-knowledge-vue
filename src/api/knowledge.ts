@@ -91,6 +91,8 @@ export interface DashboardOverview {
 export interface AskResponse {
   sessionId: number
   answer: string
+  answerType?: 'RAG' | 'NO_CONTEXT' | 'GENERAL' | string
+  canUseGeneralAnswer?: boolean
   found?: boolean
   basedOnKnowledgeBase?: boolean
   noAnswerReason?: string | null
@@ -102,6 +104,10 @@ export interface AskResponse {
     documentName: string
     content: string
     score: number
+    finalScore?: number
+    snippet?: string
+    hitReason?: string
+    vectorId?: string
   }>
 }
 
