@@ -5,6 +5,7 @@ import { ElMessage } from 'element-plus'
 import { exportAdminLog, getAiCallLogs, getAlerts, getLoginLogs, getOperationLogs } from '@/api/knowledge'
 import type { AiCallLog, LogAlert, LoginLog, OperationLog } from '@/types'
 import { textOf } from '@/utils/view-adapters'
+import { aiModelTypeLabel, operationActionLabel, operationModuleLabel, resultLabel } from '@/utils/enumLabel'
 
 type LogTab = 'operations' | 'logins' | 'ai-calls'
 
@@ -90,8 +91,7 @@ function resultType(row: any) {
 }
 
 function resultText(row: any) {
-  if (typeof row?.success === 'boolean') return row.success ? '成功' : '失败'
-  return textOf(row?.result)
+  return resultLabel(row?.result, row?.success)
 }
 
 async function loadAlerts() {
@@ -252,11 +252,15 @@ onMounted(() => {
             <template v-if="activeTab === 'operations'">
               <el-table-column label="ID" width="90"><template #default="{ row }">{{ textOf(row?.id) }}</template></el-table-column>
               <el-table-column label="用户" width="140"><template #default="{ row }">{{ textOf(row?.username || row?.userId) }}</template></el-table-column>
-              <el-table-column label="模块" width="140"><template #default="{ row }">{{ textOf((row as any)?.module) }}</template></el-table-column>
-              <el-table-column label="操作" min-width="180" show-overflow-tooltip><template #default="{ row }">{{ textOf((row as any)?.action) }}</template></el-table-column>
-              <el-table-column label="路径" min-width="220" show-overflow-tooltip><template #default="{ row }">{{ textOf((row as any)?.path) }}</template></el-table-column>
+              <el-table-column label="模块" width="160" show-overflow-tooltip>
+                <template #default="{ row }"><span class="nowrap-cell">{{ operationModuleLabel((row as any)?.module) }}</span></template>
+              </el-table-column>
+              <el-table-column label="操作" min-width="220" show-overflow-tooltip>
+                <template #default="{ row }"><span class="nowrap-cell">{{ operationActionLabel((row as any)?.action) }}</span></template>
+              </el-table-column>
+              <el-table-column label="路径" min-width="260" show-overflow-tooltip><template #default="{ row }">{{ textOf((row as any)?.path) }}</template></el-table-column>
               <el-table-column label="结果" width="110"><template #default="{ row }"><el-tag :type="resultType(row)" effect="plain">{{ resultText(row) }}</el-tag></template></el-table-column>
-              <el-table-column label="失败原因" min-width="180" show-overflow-tooltip><template #default="{ row }">{{ failReasonOf(row) }}</template></el-table-column>
+              <el-table-column label="失败原因" min-width="220" show-overflow-tooltip><template #default="{ row }">{{ failReasonOf(row) }}</template></el-table-column>
               <el-table-column label="时间" width="180"><template #default="{ row }">{{ formatTime(row) }}</template></el-table-column>
             </template>
 
@@ -264,22 +268,22 @@ onMounted(() => {
               <el-table-column label="ID" width="90"><template #default="{ row }">{{ textOf(row?.id) }}</template></el-table-column>
               <el-table-column label="账号" min-width="160"><template #default="{ row }">{{ textOf((row as any)?.account || (row as any)?.username) }}</template></el-table-column>
               <el-table-column label="IP" width="150"><template #default="{ row }">{{ textOf((row as any)?.ip) }}</template></el-table-column>
-              <el-table-column label="设备" min-width="220" show-overflow-tooltip><template #default="{ row }">{{ textOf((row as any)?.userAgent) }}</template></el-table-column>
+              <el-table-column label="设备" min-width="260" show-overflow-tooltip><template #default="{ row }">{{ textOf((row as any)?.userAgent) }}</template></el-table-column>
               <el-table-column label="结果" width="110"><template #default="{ row }"><el-tag :type="resultType(row)" effect="plain">{{ resultText(row) }}</el-tag></template></el-table-column>
-              <el-table-column label="失败原因" min-width="180" show-overflow-tooltip><template #default="{ row }">{{ failReasonOf(row) }}</template></el-table-column>
+              <el-table-column label="失败原因" min-width="220" show-overflow-tooltip><template #default="{ row }">{{ failReasonOf(row) }}</template></el-table-column>
               <el-table-column label="时间" width="180"><template #default="{ row }">{{ formatTime(row) }}</template></el-table-column>
             </template>
 
             <template v-else>
               <el-table-column label="ID" width="90"><template #default="{ row }">{{ textOf(row?.id) }}</template></el-table-column>
-              <el-table-column label="场景" width="130"><template #default="{ row }">{{ sceneOf(row) }}</template></el-table-column>
+              <el-table-column label="场景" width="140" show-overflow-tooltip><template #default="{ row }">{{ sceneOf(row) }}</template></el-table-column>
               <el-table-column label="模型" min-width="180" show-overflow-tooltip><template #default="{ row }">{{ modelNameOf(row) }}</template></el-table-column>
-              <el-table-column label="模型类型" width="120"><template #default="{ row }">{{ modelTypeOf(row) }}</template></el-table-column>
-              <el-table-column label="Provider" width="130"><template #default="{ row }">{{ textOf((row as any)?.provider) }}</template></el-table-column>
+              <el-table-column label="模型类型" width="150" show-overflow-tooltip><template #default="{ row }">{{ aiModelTypeLabel(modelTypeOf(row)) }}</template></el-table-column>
+              <el-table-column label="Provider" width="170" show-overflow-tooltip><template #default="{ row }">{{ textOf((row as any)?.provider) }}</template></el-table-column>
               <el-table-column label="Token" width="130"><template #default="{ row }">{{ tokenOf(row) }}</template></el-table-column>
               <el-table-column label="耗时" width="120"><template #default="{ row }">{{ durationOf(row) }}</template></el-table-column>
               <el-table-column label="结果" width="110"><template #default="{ row }"><el-tag :type="resultType(row)" effect="plain">{{ resultText(row) }}</el-tag></template></el-table-column>
-              <el-table-column label="失败原因" min-width="220" show-overflow-tooltip><template #default="{ row }">{{ failReasonOf(row) }}</template></el-table-column>
+              <el-table-column label="失败原因" min-width="240" show-overflow-tooltip><template #default="{ row }">{{ failReasonOf(row) }}</template></el-table-column>
               <el-table-column label="知识库ID" width="120"><template #default="{ row }">{{ textOf((row as any)?.knowledgeBaseId) }}</template></el-table-column>
               <el-table-column label="会话ID" width="120"><template #default="{ row }">{{ textOf((row as any)?.sessionId) }}</template></el-table-column>
               <el-table-column label="时间" width="180"><template #default="{ row }">{{ formatTime(row) }}</template></el-table-column>
@@ -343,7 +347,7 @@ onMounted(() => {
 }
 
 .log-table {
-  min-width: 1600px;
+  min-width: 1720px;
 }
 
 .table-wrap {
@@ -354,5 +358,9 @@ onMounted(() => {
   display: flex;
   justify-content: flex-end;
   margin-top: 16px;
+}
+
+.nowrap-cell {
+  white-space: nowrap;
 }
 </style>

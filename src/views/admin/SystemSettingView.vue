@@ -22,6 +22,20 @@ const config = reactive<SystemConfigWithRag>({
   adminEmail: '',
   rag: { similarityThreshold: 0.65 },
 })
+const allowedTypeOptions = ['PDF', 'DOCX', 'TXT', 'MD']
+
+function normalizeAllowedTypes(value: any) {
+  const raw = Array.isArray(value)
+    ? value
+    : typeof value === 'string'
+      ? value.split(',').map((v) => v.trim())
+      : []
+  const normalized = raw
+    .map((v: any) => String(v || '').trim().replace(/^\./, '').toUpperCase())
+    .filter(Boolean)
+  const valid = normalized.filter((v) => allowedTypeOptions.includes(v))
+  return Array.from(new Set(valid.length ? valid : allowedTypeOptions))
+}
 
 function resolveSimilarityThreshold(data: any) {
   const value =
@@ -39,7 +53,7 @@ function applyConfig(data: any) {
   const threshold = resolveSimilarityThreshold(data)
   Object.assign(config, {
     maxFileSize: Number(data?.maxFileSize ?? config.maxFileSize),
-    allowedTypes: Array.isArray(data?.allowedTypes) && data.allowedTypes.length ? data.allowedTypes : config.allowedTypes,
+    allowedTypes: normalizeAllowedTypes(data?.allowedTypes),
     chunkSize: Number(data?.chunkSize ?? config.chunkSize),
     chunkOverlap: Number(data?.chunkOverlap ?? config.chunkOverlap),
     topK: Number(data?.topK ?? config.topK),
@@ -59,7 +73,7 @@ function adaptListToObject(list: any[]) {
   })
   applyConfig({
     maxFileSize: map.maxFileSize,
-    allowedTypes: typeof map.allowedTypes === 'string' ? map.allowedTypes.split(',').map((v: string) => v.trim()).filter(Boolean) : map.allowedTypes,
+    allowedTypes: map.allowedTypes,
     chunkSize: map.chunkSize,
     chunkOverlap: map.chunkOverlap,
     topK: map.topK,
@@ -90,7 +104,7 @@ async function save() {
     const threshold = Number(config.similarityThreshold)
     await saveSystemConfig({
       maxFileSize: config.maxFileSize,
-      allowedTypes: config.allowedTypes,
+      allowedTypes: normalizeAllowedTypes(config.allowedTypes),
       chunkSize: config.chunkSize,
       chunkOverlap: config.chunkOverlap,
       topK: config.topK,
@@ -125,10 +139,7 @@ onMounted(loadConfig)
           <el-form-item label="单文件大小上限（MB）"><el-input-number v-model="config.maxFileSize" :min="1" :max="200" /></el-form-item>
           <el-form-item label="允许上传类型">
             <el-checkbox-group v-model="config.allowedTypes">
-              <el-checkbox label="PDF" />
-              <el-checkbox label="DOCX" />
-              <el-checkbox label="TXT" />
-              <el-checkbox label="MD" />
+              <el-checkbox v-for="item in allowedTypeOptions" :key="item" :label="item" />
             </el-checkbox-group>
           </el-form-item>
           <el-form-item label="文本切片长度"><el-input-number v-model="config.chunkSize" :min="200" :max="3000" /></el-form-item>

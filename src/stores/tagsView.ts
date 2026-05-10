@@ -26,6 +26,32 @@ function isAffixRoute(route: any) {
   return Boolean(route?.meta?.affix) || path === '/app/dashboard' || path === '/admin/dashboard'
 }
 
+function normalizeTaskDetailTag(route: any) {
+  const path = String(route?.path || '')
+  const fullPath = String(route?.fullPath || path)
+  const match = path.match(/^\/admin\/tasks\/(.+)$/)
+  if (!match) {
+    return {
+      path,
+      fullPath,
+      title: titleOf(route),
+    }
+  }
+  const id = Number(match[1])
+  if (!Number.isFinite(id) || id <= 0) {
+    return {
+      path: '/admin/tasks',
+      fullPath: '/admin/tasks',
+      title: '任务管理',
+    }
+  }
+  return {
+    path,
+    fullPath,
+    title: `任务详情 #${id}`,
+  }
+}
+
 export const useTagsViewStore = defineStore('tagsView', {
   state: () => ({
     visitedViewsMap: {
@@ -43,14 +69,15 @@ export const useTagsViewStore = defineStore('tagsView', {
     },
     addVisitedView(route: any) {
       const layout = layoutOf(route)
-      const fullPath = String(route?.fullPath || route?.path || '')
+      const normalized = normalizeTaskDetailTag(route)
+      const fullPath = normalized.fullPath
       if (!fullPath) return
       const list = this.visitedViewsMap[layout]
       if (list.some((item) => item.fullPath === fullPath)) return
       list.push({
-        path: String(route?.path || fullPath),
+        path: normalized.path,
         fullPath,
-        title: titleOf(route),
+        title: normalized.title,
         affix: isAffixRoute(route),
       })
     },

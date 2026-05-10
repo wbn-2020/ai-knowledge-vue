@@ -19,15 +19,26 @@ const saving = ref(false)
 const togglingId = ref<number | null>(null)
 const deletingId = ref<number | null>(null)
 const form = reactive<PromptConfig>({ name: '', type: 'QA', content: '', enabled: true })
-const typeOptions = ['QA', 'SUMMARY', 'KEYWORD', 'TITLE']
-
+const typeOptions = ref<string[]>(['QA', 'SUMMARY', 'KEYWORD', 'TITLE', 'RAG', 'RAG_QA'])
 const drawerTitle = computed(() => (editingId.value ? '编辑 Prompt' : '新增 Prompt'))
+
+function normalizeTypeValue(value: unknown) {
+  const type = String(value || '').trim().toUpperCase()
+  if (!type) return 'QA'
+  if (type === 'RAG-QA') return 'RAG_QA'
+  return type
+}
+
+function mergeTypeOptions(values: unknown[]) {
+  const merged = Array.from(new Set([...typeOptions.value, ...values.map(normalizeTypeValue).filter(Boolean)]))
+  typeOptions.value = merged
+}
 
 function normalizePrompt(row: any): PromptConfig {
   return {
     id: row?.id,
     name: String(row?.name || ''),
-    type: String(row?.type || 'QA'),
+    type: normalizeTypeValue(row?.type || 'QA'),
     content: String(row?.content || ''),
     enabled: row?.enabled !== false,
     createdAt: row?.createdAt || row?.createTime,
@@ -45,6 +56,7 @@ async function loadPrompts() {
   try {
     const data: any = await getPromptConfigs()
     const list = Array.isArray(data) ? data : data?.list || []
+    mergeTypeOptions(list.map((item: any) => item?.type))
     prompts.value = list.map(normalizePrompt)
   } catch (error) {
     ElMessage.error(error instanceof Error ? error.message : 'Prompt 列表加载失败')
@@ -63,11 +75,16 @@ function openEdit(row: PromptConfig) {
   editingId.value = row?.id || null
   Object.assign(form, {
     name: row?.name || '',
-    type: row?.type || 'QA',
+    type: normalizeTypeValue(row?.type || 'QA'),
     content: row?.content || '',
     enabled: row?.enabled !== false,
   })
   drawerVisible.value = true
+}
+
+async function submitPrompt(payload: PromptConfig) {
+  if (editingId.value) return updatePromptConfig(editingId.value, payload)
+  return createPromptConfig(payload)
 }
 
 async function save() {
@@ -77,14 +94,37 @@ async function save() {
   }
   saving.value = true
   try {
+    const normalizedType = normalizeTypeValue(form.type)
     const payload: PromptConfig = {
       name: form.name.trim(),
-      type: form.type.trim(),
+      type: normalizedType,
       content: form.content.trim(),
       enabled: form.enabled,
     }
-    if (editingId.value) await updatePromptConfig(editingId.value, payload)
-    else await createPromptConfig(payload)
+
+    try {
+      await submitPrompt(payload)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Prompt 保存失败'
+      // Backward-compatible fallback for environments requiring RAG_QA / QA.
+      if (message.includes('invalid prompt type') && normalizedType === 'RAG') {
+        let saved = false
+        for (const fallbackType of ['RAG_QA', 'QA']) {
+          try {
+            await submitPrompt({ ...payload, type: fallbackType })
+            form.type = fallbackType
+            saved = true
+            break
+          } catch {
+            // continue
+          }
+        }
+        if (!saved) throw error
+      } else {
+        throw error
+      }
+    }
+
     drawerVisible.value = false
     ElMessage.success('Prompt 已保存')
     await loadPrompts()

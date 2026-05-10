@@ -358,6 +358,9 @@ export function getDocumentTasks(params: {
 }
 
 export function getDocumentTask(id: number) {
+  if (!Number.isFinite(Number(id)) || Number(id) <= 0) {
+    return Promise.reject(new Error('invalid task id'))
+  }
   return request.get<any, DocumentTaskVO>(`/admin/document-tasks/${id}`)
 }
 
