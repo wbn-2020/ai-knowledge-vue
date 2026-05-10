@@ -16,6 +16,7 @@ import {
 } from '@/api/knowledge'
 import type { ChatMessage, ChatReference, ChatSession, KnowledgeBase } from '@/types'
 import { normalizeRole, timeOf } from '@/utils/view-adapters'
+import { renderMarkdownSafe } from '@/utils/markdown'
 
 const MAX_QUESTION_LENGTH = 1000
 const route = useRoute()
@@ -164,70 +165,12 @@ function findPreviousUserQuestion(targetIndex: number) {
   return ''
 }
 
-function escapeHtml(text: string) {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-}
-
-function markdownToHtml(text: string) {
-  let html = escapeHtml(text || '')
-  html = html.replace(/```([\s\S]*?)```/g, (_m, p1) => `<pre><code>${p1.trim()}</code></pre>`)
-  html = html.replace(/`([^`]+)`/g, '<code>$1</code>')
-  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-  html = html.replace(/^######\s+(.*)$/gm, '<h6>$1</h6>')
-  html = html.replace(/^#####\s+(.*)$/gm, '<h5>$1</h5>')
-  html = html.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>')
-  html = html.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>')
-  html = html.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>')
-  html = html.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>')
-
-  const lines = html.split('\n')
-  const out: string[] = []
-  let inUl = false
-  let inOl = false
-  for (const raw of lines) {
-    const line = raw.trim()
-    if (/^[-*]\s+/.test(line)) {
-      if (!inUl) {
-        if (inOl) out.push('</ol>')
-        out.push('<ul>')
-        inUl = true
-        inOl = false
-      }
-      out.push(`<li>${line.replace(/^[-*]\s+/, '')}</li>`)
-      continue
-    }
-    if (/^\d+\.\s+/.test(line)) {
-      if (!inOl) {
-        if (inUl) out.push('</ul>')
-        out.push('<ol>')
-        inOl = true
-        inUl = false
-      }
-      out.push(`<li>${line.replace(/^\d+\.\s+/, '')}</li>`)
-      continue
-    }
-    if (inUl) {
-      out.push('</ul>')
-      inUl = false
-    }
-    if (inOl) {
-      out.push('</ol>')
-      inOl = false
-    }
-    out.push(line ? `<p>${line}</p>` : '<br />')
-  }
-  if (inUl) out.push('</ul>')
-  if (inOl) out.push('</ol>')
-  return out.join('')
-}
-
 function assistantHtml(message: ChatMessage) {
-  return markdownToHtml(message.content || '')
+  return renderMarkdownSafe(message.content || '')
+}
+
+function referenceDialogHtml(ref: ChatReference | null) {
+  return renderMarkdownSafe(ref?.content || ref?.snippet || '后端未返回引用片段内容')
 }
 
 async function loadKnowledgeBases() {
@@ -555,7 +498,7 @@ onMounted(async () => {
         <p><strong>切片序号：</strong>{{ getReferenceChunkLabel(currentReference) }}</p>
         <p><strong>相似度：</strong>{{ referenceScore(currentReference) }}</p>
         <p v-if="(currentReference as any).hitReason"><strong>命中原因：</strong>{{ (currentReference as any).hitReason }}</p>
-        <div class="reference-dialog-body">{{ currentReference.content || currentReference.snippet || '后端未返回引用片段内容' }}</div>
+        <div class="reference-dialog-body markdown-body" v-html="referenceDialogHtml(currentReference)" />
       </div>
       <template #footer>
         <el-button @click.stop="closeReferenceDialog">关闭</el-button>

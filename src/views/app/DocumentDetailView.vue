@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { deleteDocument, downloadDocument, getDocument, getDocumentChunks, getDocumentPreview, renameDocument, retryDocument } from '@/api/knowledge'
 import type { DocumentItem } from '@/types'
 import { documentErrorOf, documentNameOf, embeddingStatusText, fileSizeOf, fileTypeOf, kbNameOf, parseStatusText, statusTagType, timeOf } from '@/utils/view-adapters'
+import { renderMarkdownSafe } from '@/utils/markdown'
 
 const route = useRoute()
 const router = useRouter()
@@ -20,6 +21,8 @@ const errorMessage = ref('')
 const chunkDialogVisible = ref(false)
 const activeChunk = ref<any | null>(null)
 const chunkPager = reactive({ pageNo: 1, pageSize: 10, total: 0 })
+const previewHtml = computed(() => renderMarkdownSafe(preview.value || '暂无预览内容'))
+const activeChunkHtml = computed(() => renderMarkdownSafe(activeChunk.value?.content || '-'))
 
 function downloadBlob(response: any, fallbackName: string) {
   const blob = response?.data instanceof Blob ? response.data : new Blob([response?.data || ''])
@@ -166,7 +169,7 @@ onMounted(loadDetail)
         <section class="soft-card">
           <div class="soft-card-body">
             <h3 class="section-title">预览</h3>
-            <div class="summary-box" v-loading="previewLoading">{{ preview || '暂无预览内容' }}</div>
+            <div class="summary-box markdown-body" v-loading="previewLoading" v-html="previewHtml" />
           </div>
         </section>
       </div>
@@ -214,7 +217,7 @@ onMounted(loadDetail)
           <p>Token 数：{{ activeChunk.tokenCount ?? '-' }}</p>
           <p>Vector ID：{{ activeChunk.vectorId || '-' }}</p>
           <p>创建时间：{{ activeChunk.createdAt || activeChunk.createTime || '-' }}</p>
-          <div class="chunk-dialog-content">{{ activeChunk.content || '-' }}</div>
+          <div class="chunk-dialog-content markdown-body" v-html="activeChunkHtml" />
         </div>
       </el-dialog>
     </template>
@@ -228,7 +231,7 @@ onMounted(loadDetail)
 h2 { margin: 14px 0 0; font-size: 28px; }
 .meta-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
 .meta-grid span { display: block; color: var(--color-text-muted); font-size: 13px; margin-bottom: 6px; }
-.summary-box { margin-top: 16px; max-height: 420px; min-height: 220px; overflow: auto; padding: 16px; border-radius: 14px; background: var(--color-surface-soft); color: var(--color-text-muted); line-height: 1.8; white-space: pre-wrap; }
+.summary-box { margin-top: 16px; max-height: 420px; min-height: 220px; overflow: auto; padding: 16px; border-radius: 14px; background: var(--color-surface-soft); color: var(--color-text-muted); line-height: 1.8; }
 .chunk-content {
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -243,10 +246,33 @@ h2 { margin: 14px 0 0; font-size: 28px; }
   padding: 12px;
   border-radius: 8px;
   background: var(--color-surface-soft);
-  white-space: pre-wrap;
   word-break: break-word;
   max-height: 420px;
   overflow: auto;
+}
+.markdown-body :deep(p),
+.markdown-body :deep(ul),
+.markdown-body :deep(ol),
+.markdown-body :deep(pre),
+.markdown-body :deep(h1),
+.markdown-body :deep(h2),
+.markdown-body :deep(h3),
+.markdown-body :deep(h4),
+.markdown-body :deep(h5),
+.markdown-body :deep(h6) {
+  margin: 0 0 8px;
+}
+.markdown-body :deep(pre) {
+  background: #111827;
+  color: #f9fafb;
+  border-radius: 8px;
+  padding: 10px;
+  overflow-x: auto;
+}
+.markdown-body :deep(code) {
+  background: #f3f4f6;
+  border-radius: 4px;
+  padding: 1px 4px;
 }
 .pagination-row { display: flex; justify-content: flex-end; margin-top: 16px; }
 @media (max-width: 900px) { .detail-grid { grid-template-columns: 1fr; } }

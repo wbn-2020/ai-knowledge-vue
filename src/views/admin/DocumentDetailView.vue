@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { deleteAdminDocument, getAdminDocument, getAdminDocumentChunks, retryAdminDocument } from '@/api/knowledge'
 import type { DocumentItem } from '@/types'
 import { documentErrorOf, documentNameOf, embeddingStatusText, fileSizeOf, fileTypeOf, kbNameOf, parseStatusText, statusTagType, timeOf } from '@/utils/view-adapters'
+import { renderMarkdownSafe } from '@/utils/markdown'
 
 const route = useRoute()
 const doc = ref<DocumentItem | null>(null)
@@ -14,6 +15,7 @@ const chunks = ref<any[]>([])
 const chunkDialogVisible = ref(false)
 const activeChunk = ref<any | null>(null)
 const chunkPager = reactive({ pageNo: 1, pageSize: 10, total: 0 })
+const activeChunkHtml = computed(() => renderMarkdownSafe(activeChunk.value?.content || '-'))
 
 async function loadChunks(id: number) {
   chunkLoading.value = true
@@ -143,7 +145,7 @@ onMounted(loadDetail)
         <p>Token 数：{{ activeChunk.tokenCount ?? '-' }}</p>
         <p>Vector ID：{{ activeChunk.vectorId || '-' }}</p>
         <p>创建时间：{{ activeChunk.createdAt || activeChunk.createTime || '-' }}</p>
-        <div class="chunk-dialog-content">{{ activeChunk.content || '-' }}</div>
+        <div class="chunk-dialog-content markdown-body" v-html="activeChunkHtml" />
       </div>
     </el-dialog>
   </div>
@@ -206,10 +208,33 @@ h2 {
   padding: 12px;
   border-radius: 8px;
   background: var(--color-surface-soft);
-  white-space: pre-wrap;
   word-break: break-word;
   max-height: 420px;
   overflow: auto;
+}
+.markdown-body :deep(p),
+.markdown-body :deep(ul),
+.markdown-body :deep(ol),
+.markdown-body :deep(pre),
+.markdown-body :deep(h1),
+.markdown-body :deep(h2),
+.markdown-body :deep(h3),
+.markdown-body :deep(h4),
+.markdown-body :deep(h5),
+.markdown-body :deep(h6) {
+  margin: 0 0 8px;
+}
+.markdown-body :deep(pre) {
+  background: #111827;
+  color: #f9fafb;
+  border-radius: 8px;
+  padding: 10px;
+  overflow-x: auto;
+}
+.markdown-body :deep(code) {
+  background: #f3f4f6;
+  border-radius: 4px;
+  padding: 1px 4px;
 }
 
 .pagination-row {
