@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { Download } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { exportAdminLog, getAiCallLogs, getAlerts, getLoginLogs, getOperationLogs } from '@/api/knowledge'
 import type { AiCallLog, LogAlert, LoginLog, OperationLog } from '@/types'
@@ -43,7 +44,6 @@ function queryParams(includePage = true) {
     endTime: filters.endTime,
     ...(includePage ? { pageNo: pager.pageNo, pageSize: pager.pageSize } : {}),
   }
-
   if (activeTab.value === 'operations') return cleanParams({ ...base, action: filters.action, userId: filters.userId })
   if (activeTab.value === 'logins') return cleanParams({ ...base, account: filters.account, success: filters.success })
   return cleanParams({ ...base, modelName: filters.modelName, callType: filters.callType, success: filters.success })
@@ -54,12 +54,44 @@ function failReasonOf(row: any) {
 }
 
 function modelNameOf(row: any) {
-  return textOf(row?.modelName || row?.model)
+  return textOf(row?.modelName || row?.model || row?.provider)
+}
+
+function sceneOf(row: any) {
+  return textOf(row?.scene || row?.callType || row?.type)
+}
+
+function modelTypeOf(row: any) {
+  return textOf(row?.modelType || row?.type)
 }
 
 function tokenOf(row: any) {
-  const value = row?.totalTokens ?? row?.tokens
-  return value === null || value === undefined || value === '' ? '-' : String(value)
+  const total = row?.totalTokens ?? row?.tokens
+  if (total !== null && total !== undefined && total !== '') return String(total)
+  const input = row?.inputTokens
+  const output = row?.outputTokens
+  if ((input ?? '') === '' && (output ?? '') === '') return '-'
+  return `${input ?? 0}/${output ?? 0}`
+}
+
+function durationOf(row: any) {
+  const ms = row?.durationMs ?? row?.elapsedMs
+  return ms === null || ms === undefined || ms === '' ? '-' : `${ms}ms`
+}
+
+function formatTime(row: any) {
+  return textOf(row?.createTime || row?.createdAt || row?.time)
+}
+
+function resultType(row: any) {
+  if (typeof row?.success === 'boolean') return row.success ? 'success' : 'danger'
+  const value = String(row?.result || '').toUpperCase()
+  return value === 'SUCCESS' ? 'success' : value === 'FAILED' ? 'danger' : 'warning'
+}
+
+function resultText(row: any) {
+  if (typeof row?.success === 'boolean') return row.success ? '成功' : '失败'
+  return textOf(row?.result)
 }
 
 async function loadAlerts() {
@@ -109,21 +141,6 @@ function resetFilters() {
   })
   pager.pageNo = 1
   loadLogs()
-}
-
-function formatTime(row: any) {
-  return textOf(row?.createTime || row?.createdAt || row?.time)
-}
-
-function resultType(row: any) {
-  if (typeof row?.success === 'boolean') return row.success ? 'success' : 'danger'
-  const value = String(row?.result || '').toUpperCase()
-  return value === 'SUCCESS' ? 'success' : value === 'FAILED' ? 'danger' : 'warning'
-}
-
-function resultText(row: any) {
-  if (typeof row?.success === 'boolean') return row.success ? '成功' : '失败'
-  return textOf(row?.result)
 }
 
 function downloadBlob(response: any, fallbackName: string) {
@@ -214,7 +231,7 @@ onMounted(() => {
           </template>
           <template v-else>
             <el-input v-model="filters.modelName" clearable placeholder="模型名称" />
-            <el-input v-model="filters.callType" clearable placeholder="调用类型" />
+            <el-input v-model="filters.callType" clearable placeholder="场景/类型" />
             <el-select v-model="filters.success" clearable placeholder="调用结果">
               <el-option label="成功" value="true" />
               <el-option label="失败" value="false" />
@@ -232,37 +249,41 @@ onMounted(() => {
 
         <div class="table-wrap">
           <el-table :data="rows" v-loading="loading" size="large" :empty-text="`暂无${tabTitle}`" class="log-table">
-          <template v-if="activeTab === 'operations'">
-            <el-table-column label="ID" width="90"><template #default="{ row }">{{ textOf(row?.id) }}</template></el-table-column>
-            <el-table-column label="用户" width="140"><template #default="{ row }">{{ textOf(row?.username || row?.userId) }}</template></el-table-column>
-            <el-table-column label="模块" width="140"><template #default="{ row }">{{ textOf((row as any)?.module) }}</template></el-table-column>
-            <el-table-column label="操作" min-width="180" show-overflow-tooltip><template #default="{ row }">{{ textOf((row as any)?.action) }}</template></el-table-column>
-            <el-table-column label="路径" min-width="220" show-overflow-tooltip><template #default="{ row }">{{ textOf((row as any)?.path) }}</template></el-table-column>
-            <el-table-column label="结果" width="110"><template #default="{ row }"><el-tag :type="resultType(row)" effect="plain">{{ resultText(row) }}</el-tag></template></el-table-column>
-            <el-table-column label="失败原因" min-width="180" show-overflow-tooltip><template #default="{ row }">{{ failReasonOf(row) }}</template></el-table-column>
-            <el-table-column label="时间" width="180"><template #default="{ row }">{{ formatTime(row) }}</template></el-table-column>
-          </template>
+            <template v-if="activeTab === 'operations'">
+              <el-table-column label="ID" width="90"><template #default="{ row }">{{ textOf(row?.id) }}</template></el-table-column>
+              <el-table-column label="用户" width="140"><template #default="{ row }">{{ textOf(row?.username || row?.userId) }}</template></el-table-column>
+              <el-table-column label="模块" width="140"><template #default="{ row }">{{ textOf((row as any)?.module) }}</template></el-table-column>
+              <el-table-column label="操作" min-width="180" show-overflow-tooltip><template #default="{ row }">{{ textOf((row as any)?.action) }}</template></el-table-column>
+              <el-table-column label="路径" min-width="220" show-overflow-tooltip><template #default="{ row }">{{ textOf((row as any)?.path) }}</template></el-table-column>
+              <el-table-column label="结果" width="110"><template #default="{ row }"><el-tag :type="resultType(row)" effect="plain">{{ resultText(row) }}</el-tag></template></el-table-column>
+              <el-table-column label="失败原因" min-width="180" show-overflow-tooltip><template #default="{ row }">{{ failReasonOf(row) }}</template></el-table-column>
+              <el-table-column label="时间" width="180"><template #default="{ row }">{{ formatTime(row) }}</template></el-table-column>
+            </template>
 
-          <template v-else-if="activeTab === 'logins'">
-            <el-table-column label="ID" width="90"><template #default="{ row }">{{ textOf(row?.id) }}</template></el-table-column>
-            <el-table-column label="账号" min-width="160"><template #default="{ row }">{{ textOf((row as any)?.account || (row as any)?.username) }}</template></el-table-column>
-            <el-table-column label="IP" width="150"><template #default="{ row }">{{ textOf((row as any)?.ip) }}</template></el-table-column>
-            <el-table-column label="设备" min-width="220" show-overflow-tooltip><template #default="{ row }">{{ textOf((row as any)?.userAgent) }}</template></el-table-column>
-            <el-table-column label="结果" width="110"><template #default="{ row }"><el-tag :type="resultType(row)" effect="plain">{{ resultText(row) }}</el-tag></template></el-table-column>
-            <el-table-column label="失败原因" min-width="180" show-overflow-tooltip><template #default="{ row }">{{ failReasonOf(row) }}</template></el-table-column>
-            <el-table-column label="时间" width="180"><template #default="{ row }">{{ formatTime(row) }}</template></el-table-column>
-          </template>
+            <template v-else-if="activeTab === 'logins'">
+              <el-table-column label="ID" width="90"><template #default="{ row }">{{ textOf(row?.id) }}</template></el-table-column>
+              <el-table-column label="账号" min-width="160"><template #default="{ row }">{{ textOf((row as any)?.account || (row as any)?.username) }}</template></el-table-column>
+              <el-table-column label="IP" width="150"><template #default="{ row }">{{ textOf((row as any)?.ip) }}</template></el-table-column>
+              <el-table-column label="设备" min-width="220" show-overflow-tooltip><template #default="{ row }">{{ textOf((row as any)?.userAgent) }}</template></el-table-column>
+              <el-table-column label="结果" width="110"><template #default="{ row }"><el-tag :type="resultType(row)" effect="plain">{{ resultText(row) }}</el-tag></template></el-table-column>
+              <el-table-column label="失败原因" min-width="180" show-overflow-tooltip><template #default="{ row }">{{ failReasonOf(row) }}</template></el-table-column>
+              <el-table-column label="时间" width="180"><template #default="{ row }">{{ formatTime(row) }}</template></el-table-column>
+            </template>
 
-          <template v-else>
-            <el-table-column label="ID" width="90"><template #default="{ row }">{{ textOf(row?.id) }}</template></el-table-column>
-            <el-table-column label="模型" min-width="180" show-overflow-tooltip><template #default="{ row }">{{ modelNameOf(row) }}</template></el-table-column>
-            <el-table-column label="类型" width="130"><template #default="{ row }">{{ textOf((row as any)?.callType) }}</template></el-table-column>
-            <el-table-column label="Token" width="130"><template #default="{ row }">{{ tokenOf(row) }}</template></el-table-column>
-            <el-table-column label="耗时" width="120"><template #default="{ row }">{{ (row as any)?.elapsedMs ? `${(row as any).elapsedMs}ms` : '-' }}</template></el-table-column>
-            <el-table-column label="结果" width="110"><template #default="{ row }"><el-tag :type="resultType(row)" effect="plain">{{ resultText(row) }}</el-tag></template></el-table-column>
-            <el-table-column label="失败原因" min-width="200" show-overflow-tooltip><template #default="{ row }">{{ failReasonOf(row) }}</template></el-table-column>
-            <el-table-column label="时间" width="180"><template #default="{ row }">{{ formatTime(row) }}</template></el-table-column>
-          </template>
+            <template v-else>
+              <el-table-column label="ID" width="90"><template #default="{ row }">{{ textOf(row?.id) }}</template></el-table-column>
+              <el-table-column label="场景" width="130"><template #default="{ row }">{{ sceneOf(row) }}</template></el-table-column>
+              <el-table-column label="模型" min-width="180" show-overflow-tooltip><template #default="{ row }">{{ modelNameOf(row) }}</template></el-table-column>
+              <el-table-column label="模型类型" width="120"><template #default="{ row }">{{ modelTypeOf(row) }}</template></el-table-column>
+              <el-table-column label="Provider" width="130"><template #default="{ row }">{{ textOf((row as any)?.provider) }}</template></el-table-column>
+              <el-table-column label="Token" width="130"><template #default="{ row }">{{ tokenOf(row) }}</template></el-table-column>
+              <el-table-column label="耗时" width="120"><template #default="{ row }">{{ durationOf(row) }}</template></el-table-column>
+              <el-table-column label="结果" width="110"><template #default="{ row }"><el-tag :type="resultType(row)" effect="plain">{{ resultText(row) }}</el-tag></template></el-table-column>
+              <el-table-column label="失败原因" min-width="220" show-overflow-tooltip><template #default="{ row }">{{ failReasonOf(row) }}</template></el-table-column>
+              <el-table-column label="知识库ID" width="120"><template #default="{ row }">{{ textOf((row as any)?.knowledgeBaseId) }}</template></el-table-column>
+              <el-table-column label="会话ID" width="120"><template #default="{ row }">{{ textOf((row as any)?.sessionId) }}</template></el-table-column>
+              <el-table-column label="时间" width="180"><template #default="{ row }">{{ formatTime(row) }}</template></el-table-column>
+            </template>
           </el-table>
         </div>
 
@@ -322,10 +343,16 @@ onMounted(() => {
 }
 
 .log-table {
-  min-width: 1280px;
+  min-width: 1600px;
 }
 
 .table-wrap {
   overflow-x: auto;
+}
+
+.pagination-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
 }
 </style>

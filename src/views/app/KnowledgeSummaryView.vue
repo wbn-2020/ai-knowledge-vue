@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
   getDocumentPage,
@@ -14,6 +15,7 @@ import { documentNameOf } from '@/utils/view-adapters'
 
 const EMPTY_DOC_SUMMARY_TEXT = '选择文档后点击生成摘要。'
 const EMPTY_KB_SUMMARY_TEXT = '选择知识库后点击生成整体摘要。'
+const route = useRoute()
 
 const selectedDocument = ref<number>()
 const selectedKb = ref<number>()
@@ -50,7 +52,7 @@ async function queryDocumentSummary(documentId?: number) {
     docSummary.value = extractSummaryText(data)
   } catch (error) {
     docSummary.value = ''
-    ElMessage.error(errorMessageOf(error, '查询文档摘要失败'))
+    ElMessage.warning(errorMessageOf(error, '暂无已生成的文档摘要'))
   } finally {
     queryDocLoading.value = false
   }
@@ -67,7 +69,7 @@ async function queryKnowledgeBaseSummary(knowledgeBaseId?: number) {
     kbSummary.value = extractSummaryText(data)
   } catch (error) {
     kbSummary.value = ''
-    ElMessage.error(errorMessageOf(error, '查询知识库摘要失败'))
+    ElMessage.warning(errorMessageOf(error, '暂无已生成的知识库摘要'))
   } finally {
     queryKbLoading.value = false
   }
@@ -80,8 +82,10 @@ async function loadOptions() {
   ])
   documents.value = docData.list || []
   knowledgeBases.value = kbData.list || []
-  selectedDocument.value = documents.value[0]?.id
-  selectedKb.value = knowledgeBases.value[0]?.id
+  const queryDocumentId = Number(route.query.documentId || 0)
+  const queryKbId = Number(route.query.knowledgeBaseId || 0)
+  selectedDocument.value = documents.value.find((d) => d.id === queryDocumentId)?.id || documents.value[0]?.id
+  selectedKb.value = knowledgeBases.value.find((k) => k.id === queryKbId)?.id || knowledgeBases.value[0]?.id
 
   await Promise.all([
     queryDocumentSummary(selectedDocument.value),

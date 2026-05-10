@@ -11,6 +11,8 @@ const knowledgeBases = ref<KnowledgeBase[]>([])
 const keyword = ref('')
 const knowledgeBaseId = ref<number>()
 const parseStatus = ref('')
+const fileType = ref('')
+const username = ref('')
 const pager = reactive({ pageNo: 1, pageSize: 10, total: 0 })
 
 async function loadKnowledgeBases() {
@@ -25,6 +27,8 @@ async function loadDocs() {
       keyword: keyword.value,
       knowledgeBaseId: knowledgeBaseId.value,
       parseStatus: parseStatus.value,
+      fileType: fileType.value || undefined,
+      username: username.value || undefined,
       pageNo: pager.pageNo,
       pageSize: pager.pageSize,
     })
@@ -52,7 +56,7 @@ async function remove(row: DocumentItem) {
   await loadDocs()
 }
 
-watch([keyword, knowledgeBaseId, parseStatus], () => {
+watch([keyword, knowledgeBaseId, parseStatus, fileType, username], () => {
   pager.pageNo = 1
   loadDocs()
 })
@@ -80,6 +84,8 @@ onMounted(() => {
       <el-select v-model="parseStatus" placeholder="解析状态" clearable style="width: 160px">
         <el-option label="待解析" value="PENDING" /><el-option label="解析中" value="PARSING" /><el-option label="解析成功" value="SUCCESS" /><el-option label="解析失败" value="FAILED" />
       </el-select>
+      <el-input v-model="fileType" placeholder="文件类型" clearable style="width: 140px" />
+      <el-input v-model="username" placeholder="上传账号" clearable style="width: 160px" />
     </div>
     <section class="soft-card">
       <div class="soft-card-body">

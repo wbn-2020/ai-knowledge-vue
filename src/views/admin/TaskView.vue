@@ -9,6 +9,7 @@ const tasks = ref<any[]>([])
 const status = ref('')
 const taskType = ref('')
 const keyword = ref('')
+const documentId = ref<number>()
 const pager = reactive({ pageNo: 1, pageSize: 10, total: 0 })
 
 function taskTypeOf(row: any) {
@@ -27,12 +28,13 @@ async function loadTasks() {
   loading.value = true
   try {
     const params: any = {
-      status: status.value,
-      keyword: keyword.value,
+      status: status.value || undefined,
+      keyword: keyword.value || undefined,
       pageNo: pager.pageNo,
       pageSize: pager.pageSize,
     }
     if (taskType.value) params.taskType = taskType.value
+    if (documentId.value) params.documentId = documentId.value
     const data: any = await getDocumentTasks(params)
     tasks.value = data?.list || []
     pager.total = data?.total || 0
@@ -53,7 +55,7 @@ async function retryTask(row: any) {
   await loadTasks()
 }
 
-watch([status, taskType, keyword], () => {
+watch([status, taskType, keyword, documentId], () => {
   pager.pageNo = 1
   loadTasks()
 })
@@ -80,6 +82,7 @@ onMounted(loadTasks)
         <el-option label="失败" value="FAILED" />
       </el-select>
       <el-input v-model="taskType" placeholder="任务类型（可选）" clearable style="width: 180px" />
+      <el-input-number v-model="documentId" :min="1" placeholder="文档ID" style="width: 150px" />
     </div>
 
     <section class="soft-card">

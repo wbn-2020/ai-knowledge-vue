@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+
+const APP_SIDEBAR_KEY = 'app_sidebar_collapsed'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+const collapsed = ref(localStorage.getItem(APP_SIDEBAR_KEY) === '1')
+const isChatRoute = computed(() => route.path.startsWith('/app/chat'))
 
 const menus = [
   { path: '/app/dashboard', label: '工作台', icon: 'House' },
@@ -21,6 +25,11 @@ const menus = [
 
 const currentTitle = computed(() => (route.meta.title as string) || 'KnowFlow AI')
 
+function toggleSidebar() {
+  collapsed.value = !collapsed.value
+  localStorage.setItem(APP_SIDEBAR_KEY, collapsed.value ? '1' : '0')
+}
+
 function goAdmin() {
   router.push('/admin/dashboard')
 }
@@ -32,11 +41,11 @@ function logout() {
 </script>
 
 <template>
-  <div class="app-shell">
+  <div class="app-shell" :class="{ collapsed }">
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-mark">K</div>
-        <div>
+        <div v-show="!collapsed" class="brand-text">
           <div class="brand-name">KnowFlow AI</div>
           <div class="brand-sub">个人知识库与问答平台</div>
         </div>
@@ -45,6 +54,7 @@ function logout() {
       <el-menu
         class="menu"
         router
+        :collapse="collapsed"
         :default-active="$route.path"
         background-color="transparent"
         text-color="#5f6b7a"
@@ -52,9 +62,16 @@ function logout() {
       >
         <el-menu-item v-for="menu in menus" :key="menu.path" :index="menu.path">
           <el-icon><component :is="menu.icon" /></el-icon>
-          <span>{{ menu.label }}</span>
+          <template #title>{{ menu.label }}</template>
         </el-menu-item>
       </el-menu>
+
+      <div class="sidebar-footer">
+        <el-button class="collapse-btn" plain @click="toggleSidebar">
+          <el-icon><component :is="collapsed ? 'Expand' : 'Fold'" /></el-icon>
+          <span v-show="!collapsed">收起菜单</span>
+        </el-button>
+      </div>
     </aside>
 
     <section class="main">
@@ -71,7 +88,7 @@ function logout() {
         </div>
       </header>
 
-      <main class="content">
+      <main class="content" :class="{ 'content-chat': isChatRoute }">
         <router-view />
       </main>
     </section>
@@ -83,13 +100,20 @@ function logout() {
   min-height: 100vh;
   display: grid;
   grid-template-columns: 260px 1fr;
+  transition: grid-template-columns 0.2s ease;
+}
+
+.app-shell.collapsed {
+  grid-template-columns: 76px 1fr;
 }
 
 .sidebar {
-  padding: 20px 16px;
+  padding: 20px 10px 16px;
   background: rgba(255, 255, 255, 0.82);
   backdrop-filter: blur(18px);
   border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
 }
 
 .brand {
@@ -109,6 +133,7 @@ function logout() {
   font-weight: 800;
   background: linear-gradient(135deg, #2563eb, #14b8a6);
   box-shadow: var(--shadow-card);
+  flex-shrink: 0;
 }
 
 .brand-name {
@@ -124,6 +149,15 @@ function logout() {
 
 .menu {
   border-right: 0;
+  flex: 1;
+}
+
+.sidebar-footer {
+  padding: 8px 6px 0;
+}
+
+.collapse-btn {
+  width: 100%;
 }
 
 .main {
@@ -167,10 +201,18 @@ function logout() {
 
 .content {
   padding: 24px;
+  min-height: 0;
+}
+
+.content-chat {
+  padding: 16px;
+  height: calc(100vh - 76px);
+  overflow: hidden;
 }
 
 @media (max-width: 960px) {
-  .app-shell {
+  .app-shell,
+  .app-shell.collapsed {
     grid-template-columns: 1fr;
   }
 

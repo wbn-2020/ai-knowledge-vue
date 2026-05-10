@@ -3,29 +3,50 @@ import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { getSystemConfigs, saveSystemConfig, type SystemConfig } from '@/api/knowledge'
 
+type SystemConfigWithRag = SystemConfig & {
+  rag?: { similarityThreshold?: number; minScore?: number }
+  ['rag.similarityThreshold']?: number
+  ['rag.minScore']?: number
+}
+
 const loading = ref(false)
 const saving = ref(false)
-const config = reactive<SystemConfig>({
+const config = reactive<SystemConfigWithRag>({
   maxFileSize: 20,
   allowedTypes: ['PDF', 'DOCX', 'TXT', 'MD'],
   chunkSize: 1000,
   chunkOverlap: 150,
   topK: 5,
-  similarityThreshold: 0.72,
+  similarityThreshold: 0.65,
   platformName: 'KnowFlow AI',
   adminEmail: '',
+  rag: { similarityThreshold: 0.65 },
 })
 
+function resolveSimilarityThreshold(data: any) {
+  const value =
+    data?.['rag.similarityThreshold'] ??
+    data?.similarityThreshold ??
+    data?.rag?.similarityThreshold ??
+    data?.rag?.minScore ??
+    data?.['rag.minScore'] ??
+    data?.minScore
+  const num = Number(value)
+  return Number.isFinite(num) ? num : 0.65
+}
+
 function applyConfig(data: any) {
+  const threshold = resolveSimilarityThreshold(data)
   Object.assign(config, {
     maxFileSize: Number(data?.maxFileSize ?? config.maxFileSize),
     allowedTypes: Array.isArray(data?.allowedTypes) && data.allowedTypes.length ? data.allowedTypes : config.allowedTypes,
     chunkSize: Number(data?.chunkSize ?? config.chunkSize),
     chunkOverlap: Number(data?.chunkOverlap ?? config.chunkOverlap),
     topK: Number(data?.topK ?? config.topK),
-    similarityThreshold: Number(data?.similarityThreshold ?? data?.threshold ?? config.similarityThreshold),
+    similarityThreshold: threshold,
     platformName: String(data?.platformName ?? config.platformName),
     adminEmail: String(data?.adminEmail ?? config.adminEmail),
+    rag: { similarityThreshold: threshold },
   })
 }
 
@@ -34,8 +55,7 @@ function adaptListToObject(list: any[]) {
   list.forEach((item) => {
     const key = String(item?.key || item?.configKey || item?.name || '').trim()
     if (!key) return
-    const value = item?.value ?? item?.configValue
-    map[key] = value
+    map[key] = item?.value ?? item?.configValue
   })
   applyConfig({
     maxFileSize: map.maxFileSize,
@@ -43,7 +63,9 @@ function adaptListToObject(list: any[]) {
     chunkSize: map.chunkSize,
     chunkOverlap: map.chunkOverlap,
     topK: map.topK,
-    similarityThreshold: map.similarityThreshold ?? map.threshold,
+    similarityThreshold: map.similarityThreshold,
+    ['rag.similarityThreshold']: map['rag.similarityThreshold'],
+    ['rag.minScore']: map['rag.minScore'],
     platformName: map.platformName,
     adminEmail: map.adminEmail,
   })
@@ -65,13 +87,14 @@ async function loadConfig() {
 async function save() {
   saving.value = true
   try {
+    const threshold = Number(config.similarityThreshold)
     await saveSystemConfig({
       maxFileSize: config.maxFileSize,
       allowedTypes: config.allowedTypes,
       chunkSize: config.chunkSize,
       chunkOverlap: config.chunkOverlap,
       topK: config.topK,
-      similarityThreshold: config.similarityThreshold,
+      similarityThreshold: Number.isFinite(threshold) ? threshold : 0.65,
       platformName: config.platformName.trim(),
       adminEmail: config.adminEmail.trim(),
     })
@@ -111,7 +134,7 @@ onMounted(loadConfig)
           <el-form-item label="文本切片长度"><el-input-number v-model="config.chunkSize" :min="200" :max="3000" /></el-form-item>
           <el-form-item label="切片重叠长度"><el-input-number v-model="config.chunkOverlap" :min="0" :max="800" /></el-form-item>
           <el-form-item label="召回 TopK"><el-input-number v-model="config.topK" :min="1" :max="20" /></el-form-item>
-          <el-form-item label="最低相似度阈值"><el-input-number v-model="config.similarityThreshold" :min="0" :max="1" :step="0.01" /></el-form-item>
+          <el-form-item label="相似度阈值（rag.similarityThreshold）"><el-input-number v-model="config.similarityThreshold" :min="0" :max="1" :step="0.01" /></el-form-item>
           <el-button type="primary" :loading="saving" @click="save">保存配置</el-button>
         </el-form>
       </div>

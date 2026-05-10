@@ -90,6 +90,7 @@ export interface ChatReference {
   id?: number
   documentId?: number
   chunkId?: number
+  chunkIndex?: number
   documentName?: string
   content?: string
   score?: number
@@ -100,6 +101,9 @@ export interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
   references?: Array<string | ChatReference>
+  found?: boolean
+  basedOnKnowledgeBase?: boolean
+  noAnswerReason?: string | null
   createdAt?: string
   createTime?: string
   modelName?: string
@@ -177,6 +181,15 @@ export interface AiCallLog {
   elapsedMs?: number
   success?: boolean
   failReason?: string
+  knowledgeBaseId?: number
+  sessionId?: number
+  scene?: string
+  modelType?: string
+  provider?: string
+  inputTokens?: number
+  outputTokens?: number
+  durationMs?: number
+  errorMessage?: string
   createTime?: string
   createdAt?: string
 }

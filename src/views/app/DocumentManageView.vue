@@ -45,6 +45,7 @@ async function loadDocs() {
       keyword: keyword.value,
       parseStatus: parseStatus.value,
       embeddingStatus: embeddingStatus.value,
+      vectorStatus: embeddingStatus.value,
       pageNo: pager.pageNo,
       pageSize: pager.pageSize,
     })

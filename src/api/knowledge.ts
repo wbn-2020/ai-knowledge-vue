@@ -37,6 +37,48 @@ export interface PromptConfig {
   updatedAt?: string
 }
 
+export interface KnowledgeBaseVO extends KnowledgeBase {}
+export interface DocumentVO extends DocumentItem {}
+export interface SummaryVO {
+  summary?: string
+  content?: string
+}
+export interface DocumentChunkVO {
+  chunkId?: number
+  id?: number
+  chunkIndex?: number
+  content?: string
+  tokenCount?: number
+  vectorId?: string
+  createdAt?: string
+  createTime?: string
+}
+export interface DocumentTaskVO {
+  id: number
+  status: string
+  taskType?: string
+  type?: string
+  task_type?: string
+  documentId?: number
+  documentName?: string
+  failureReason?: string
+  reason?: string
+  errorMessage?: string
+  createTime?: string
+  createdAt?: string
+}
+export interface AdminDashboardOverview {
+  userCount?: number
+  knowledgeBaseCount?: number
+  documentCount?: number
+  aiCallCount?: number
+  chatSessionCount?: number
+  recentUsers?: UserInfo[]
+  recentDocuments?: DocumentVO[]
+  recentFailedTasks?: DocumentTaskVO[]
+  recentAiErrors?: Array<Record<string, any>>
+}
+
 export interface DashboardOverview {
   knowledgeBaseCount: number
   documentCount: number
@@ -49,10 +91,14 @@ export interface DashboardOverview {
 export interface AskResponse {
   sessionId: number
   answer: string
+  found?: boolean
+  basedOnKnowledgeBase?: boolean
+  noAnswerReason?: string | null
   references: Array<{
     id: number
     documentId: number
     chunkId: number
+    chunkIndex?: number
     documentName: string
     content: string
     score: number
@@ -99,6 +145,7 @@ export function getDocumentPage(params: {
   keyword?: string
   parseStatus?: string
   embeddingStatus?: string
+  vectorStatus?: string
   pageNo?: number
   pageSize?: number
 }) {
@@ -121,6 +168,10 @@ export function getDocumentPreview(id: number) {
   return request.get<any, string>(`/documents/${id}/preview`)
 }
 
+export function getDocumentChunks(documentId: number, params: { pageNo?: number; pageSize?: number }) {
+  return request.get<any, PageResponse<DocumentChunkVO>>(`/documents/${documentId}/chunks`, { params })
+}
+
 export function downloadDocument(id: number) {
   return request.get(`/documents/${id}/download`, { responseType: 'blob' })
 }
@@ -129,7 +180,14 @@ export function retryDocument(id: number) {
   return request.post<any, DocumentItem>(`/documents/${id}/retry`)
 }
 
-export function askKnowledgeBase(data: { knowledgeBaseId: number; sessionId?: number | null; question: string }) {
+export interface AskRequest {
+  knowledgeBaseId: number
+  sessionId?: number | null
+  question: string
+  allowGeneralAnswer?: boolean
+}
+
+export function askKnowledgeBase(data: AskRequest) {
   return request.post<any, AskResponse>('/chat/ask', data)
 }
 
@@ -186,7 +244,7 @@ export function summarizeDocument(documentId: number) {
 }
 
 export function getDocumentSummary(documentId: number) {
-  return request.get('/summaries/document', { params: { documentId } })
+  return request.get<any, SummaryVO>('/summaries/document', { params: { documentId } })
 }
 
 export function summarizeKnowledgeBase(knowledgeBaseId: number) {
@@ -194,7 +252,7 @@ export function summarizeKnowledgeBase(knowledgeBaseId: number) {
 }
 
 export function getKnowledgeBaseSummary(knowledgeBaseId: number) {
-  return request.get('/summaries/knowledge-base', { params: { knowledgeBaseId } })
+  return request.get<any, SummaryVO>('/summaries/knowledge-base', { params: { knowledgeBaseId } })
 }
 
 export function getNotificationPage(params: { pageNo?: number; pageSize?: number }) {
@@ -218,7 +276,7 @@ export function getAnnouncements(params: { pageNo?: number; pageSize?: number })
 }
 
 export function getAdminDashboardOverview() {
-  return request.get('/admin/dashboard/overview')
+  return request.get<any, AdminDashboardOverview>('/admin/dashboard/overview')
 }
 
 export function getAdminUsers(params: { keyword?: string; status?: string; pageNo?: number; pageSize?: number }) {
@@ -237,7 +295,7 @@ export function resetAdminUserPassword(id: number, password: string) {
   return request.put(`/admin/users/${id}/password`, { password })
 }
 
-export function getAdminKnowledgeBases(params: { keyword?: string; status?: string; pageNo?: number; pageSize?: number }) {
+export function getAdminKnowledgeBases(params: { keyword?: string; status?: 'NORMAL' | 'PROCESSING' | 'FAILED' | 'DISABLED' | string; pageNo?: number; pageSize?: number }) {
   return request.get<any, PageResponse<KnowledgeBase>>('/admin/knowledge-bases', { params })
 }
 
@@ -253,12 +311,25 @@ export function deleteAdminKnowledgeBase(id: number) {
   return request.delete(`/admin/knowledge-bases/${id}`)
 }
 
-export function getAdminDocuments(params: { keyword?: string; knowledgeBaseId?: number; parseStatus?: string; pageNo?: number; pageSize?: number }) {
+export function getAdminDocuments(params: {
+  keyword?: string
+  knowledgeBaseId?: number
+  parseStatus?: string
+  fileType?: string
+  userId?: number
+  username?: string
+  pageNo?: number
+  pageSize?: number
+}) {
   return request.get<any, PageResponse<DocumentItem>>('/admin/documents', { params })
 }
 
 export function getAdminDocument(id: number) {
   return request.get<any, DocumentItem>(`/admin/documents/${id}`)
+}
+
+export function getAdminDocumentChunks(documentId: number, params: { pageNo?: number; pageSize?: number }) {
+  return request.get<any, PageResponse<DocumentChunkVO>>(`/admin/documents/${documentId}/chunks`, { params })
 }
 
 export function deleteAdminDocument(id: number) {
@@ -269,12 +340,19 @@ export function retryAdminDocument(id: number) {
   return request.post(`/admin/documents/${id}/retry`)
 }
 
-export function getDocumentTasks(params: { status?: string; taskType?: string; keyword?: string; pageNo?: number; pageSize?: number }) {
-  return request.get('/admin/document-tasks', { params })
+export function getDocumentTasks(params: {
+  status?: string
+  taskType?: string
+  keyword?: string
+  documentId?: number
+  pageNo?: number
+  pageSize?: number
+}) {
+  return request.get<any, PageResponse<DocumentTaskVO>>('/admin/document-tasks', { params })
 }
 
 export function getDocumentTask(id: number) {
-  return request.get(`/admin/document-tasks/${id}`)
+  return request.get<any, DocumentTaskVO>(`/admin/document-tasks/${id}`)
 }
 
 export function retryDocumentTask(id: number) {

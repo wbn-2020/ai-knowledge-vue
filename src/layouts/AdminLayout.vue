@@ -1,9 +1,13 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
+const ADMIN_SIDEBAR_KEY = 'admin_sidebar_collapsed'
+
 const router = useRouter()
 const authStore = useAuthStore()
+const collapsed = ref(localStorage.getItem(ADMIN_SIDEBAR_KEY) === '1')
 
 const menus = [
   { path: '/admin/dashboard', label: '数据看板', icon: 'DataBoard' },
@@ -18,6 +22,11 @@ const menus = [
   { path: '/admin/announcements', label: '公告管理', icon: 'Notification' },
 ]
 
+function toggleSidebar() {
+  collapsed.value = !collapsed.value
+  localStorage.setItem(ADMIN_SIDEBAR_KEY, collapsed.value ? '1' : '0')
+}
+
 function goApp() {
   router.push('/app/dashboard')
 }
@@ -29,18 +38,20 @@ function logout() {
 </script>
 
 <template>
-  <div class="admin-shell">
+  <div class="admin-shell" :class="{ collapsed }">
     <aside class="admin-sidebar">
       <div class="admin-brand">
         <div class="admin-badge">A</div>
-        <div>
+        <div v-show="!collapsed" class="admin-brand-text">
           <div class="admin-title">KnowFlow Admin</div>
           <div class="admin-sub">后台管理控制台</div>
         </div>
       </div>
 
       <el-menu
+        class="menu"
         router
+        :collapse="collapsed"
         :default-active="$route.path"
         background-color="transparent"
         text-color="#64748b"
@@ -48,9 +59,16 @@ function logout() {
       >
         <el-menu-item v-for="menu in menus" :key="menu.path" :index="menu.path">
           <el-icon><component :is="menu.icon" /></el-icon>
-          <span>{{ menu.label }}</span>
+          <template #title>{{ menu.label }}</template>
         </el-menu-item>
       </el-menu>
+
+      <div class="sidebar-footer">
+        <el-button class="collapse-btn" plain @click="toggleSidebar">
+          <el-icon><component :is="collapsed ? 'Expand' : 'Fold'" /></el-icon>
+          <span v-show="!collapsed">收起菜单</span>
+        </el-button>
+      </div>
     </aside>
 
     <section class="admin-main">
@@ -78,12 +96,19 @@ function logout() {
   min-height: 100vh;
   display: grid;
   grid-template-columns: 250px 1fr;
+  transition: grid-template-columns 0.2s ease;
+}
+
+.admin-shell.collapsed {
+  grid-template-columns: 76px 1fr;
 }
 
 .admin-sidebar {
-  padding: 20px 16px;
+  padding: 20px 10px 16px;
   background: rgba(255, 255, 255, 0.9);
   border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
 }
 
 .admin-brand {
@@ -102,6 +127,7 @@ function logout() {
   color: #fff;
   font-weight: 800;
   background: linear-gradient(135deg, #0f172a, #2563eb);
+  flex-shrink: 0;
 }
 
 .admin-title {
@@ -113,6 +139,19 @@ function logout() {
   margin-top: 3px;
   font-size: 12px;
   color: var(--color-text-muted);
+}
+
+.sidebar-footer {
+  padding: 8px 6px 0;
+}
+
+.menu {
+  border-right: 0;
+  flex: 1;
+}
+
+.collapse-btn {
+  width: 100%;
 }
 
 .admin-main {
@@ -155,7 +194,8 @@ function logout() {
 }
 
 @media (max-width: 960px) {
-  .admin-shell {
+  .admin-shell,
+  .admin-shell.collapsed {
     grid-template-columns: 1fr;
   }
 
