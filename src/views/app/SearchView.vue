@@ -1,9 +1,10 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { getKnowledgeBasePage, keywordSearch, semanticSearch } from '@/api/knowledge'
 import type { KnowledgeBase, SearchResult } from '@/types'
 import { searchContentOf } from '@/utils/view-adapters'
+import { BusinessError, isRagFriendlyCode } from '@/utils/business-error'
 
 const query = ref('')
 const mode = ref<'semantic' | 'keyword'>('semantic')
@@ -14,8 +15,7 @@ const loading = ref(false)
 const errorMessage = ref('')
 const searched = ref(false)
 const results = ref<SearchResult[]>([])
-
-const SCORE_THRESHOLD = 0.7
+const emptyHint = ref('')
 
 async function loadKnowledgeBases() {
   const data = await getKnowledgeBasePage({ pageNo: 1, pageSize: 100, sortBy: 'updateTime' })
@@ -24,14 +24,16 @@ async function loadKnowledgeBases() {
 }
 
 function resultScore(item: SearchResult) {
-  const raw = (item as any)?.finalScore ?? (item as any)?.score
+  const raw = (item as any)?.similarityScore ?? (item as any)?.finalScore ?? (item as any)?.score ?? (item as any)?.similarity
   const score = Number(raw)
   return Number.isFinite(score) ? score : NaN
 }
 
 function resultScoreText(item: SearchResult) {
   const score = resultScore(item)
-  return Number.isFinite(score) ? score.toFixed(2) : '-'
+  if (!Number.isFinite(score)) return '-'
+  const percent = score <= 1 ? score * 100 : score
+  return `${percent.toFixed(2)}%`
 }
 
 function resultDocumentName(item: SearchResult, index: number) {
@@ -44,7 +46,7 @@ function resultDocumentName(item: SearchResult, index: number) {
     (item as any)?.originalName ||
     (item as any)?.document?.name ||
     (item as any)?.document?.originalName
-  return name && String(name).trim() ? String(name).trim() : `检索结果 ${index + 1}`
+  return name && String(name).trim() ? String(name).trim() : `搜索结果 ${index + 1}`
 }
 
 function resultChunkIndex(item: SearchResult) {
@@ -54,14 +56,7 @@ function resultChunkIndex(item: SearchResult) {
   return '-'
 }
 
-const visibleResults = computed(() => {
-  const list = Array.isArray(results.value) ? results.value : []
-  if (mode.value !== 'semantic') return list
-  return list.filter((item) => {
-    const score = resultScore(item)
-    return Number.isFinite(score) && score >= SCORE_THRESHOLD
-  })
-})
+const visibleResults = computed(() => (Array.isArray(results.value) ? results.value : []))
 
 async function search() {
   if (!selectedKb.value) {
@@ -75,6 +70,7 @@ async function search() {
 
   loading.value = true
   errorMessage.value = ''
+  emptyHint.value = ''
   searched.value = true
   try {
     const data =
@@ -82,9 +78,17 @@ async function search() {
         ? await semanticSearch({ knowledgeBaseId: selectedKb.value, query: query.value.trim(), topK: topK.value })
         : await keywordSearch({ knowledgeBaseId: selectedKb.value, keyword: query.value.trim(), topK: topK.value })
     results.value = Array.isArray(data) ? data : []
+    if (!results.value.length) {
+      emptyHint.value = '未找到相关内容，请尝试调整问题或上传更多文档。'
+    }
   } catch (error) {
     results.value = []
-    errorMessage.value = error instanceof Error ? error.message : '搜索失败，请稍后重试'
+    if (error instanceof BusinessError && isRagFriendlyCode(error.bizCode)) {
+      emptyHint.value = error.message || '未找到相关内容，请尝试调整问题或上传更多文档。'
+      errorMessage.value = ''
+    } else {
+      errorMessage.value = error instanceof Error ? error.message : '搜索失败，请稍后重试'
+    }
   } finally {
     loading.value = false
   }
@@ -98,7 +102,7 @@ onMounted(loadKnowledgeBases)
     <div class="page-header">
       <div>
         <h1 class="page-title">语义搜索</h1>
-        <div class="page-desc">在指定知识库中检索相关文档切片，支持语义召回和关键词搜索。</div>
+        <div class="page-desc">在指定知识库中检索相关文档片段，支持语义检索和关键词检索。</div>
       </div>
     </div>
 
@@ -128,13 +132,13 @@ onMounted(loadKnowledgeBases)
             </div>
             <el-tag effect="plain">相似度 {{ resultScoreText(item) }}</el-tag>
           </div>
-          <p>{{ searchContentOf(item) }}</p>
+          <p>{{ (item as any)?.snippet || searchContentOf(item) }}</p>
         </div>
       </article>
 
       <el-empty
         v-if="searched && !loading && !visibleResults.length && !errorMessage"
-        :description="mode === 'semantic' ? '未找到足够相关内容，请换个关键词或检查知识库文档。' : '暂无搜索结果'"
+        :description="emptyHint || (mode === 'semantic' ? '未找到相关内容，请尝试调整问题或上传更多文档。' : '暂无搜索结果')"
       />
       <el-empty v-if="!searched && !loading" description="选择知识库并输入内容后开始搜索" />
     </div>

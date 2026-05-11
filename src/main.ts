@@ -7,15 +7,23 @@ import 'element-plus/dist/index.css'
 import App from './App.vue'
 import router from './router'
 import './styles/global.scss'
+import { useAuthStore } from '@/stores/auth'
+import { AUTH_EXPIRED_EVENT } from '@/constants/auth'
 
 const app = createApp(App)
 
-app.use(createPinia())
+const pinia = createPinia()
+app.use(pinia)
 app.use(router)
 app.use(ElementPlus, { locale: zhCn })
 
 Object.entries(ElementPlusIconsVue).forEach(([name, component]) => {
   app.component(name, component)
+})
+
+window.addEventListener(AUTH_EXPIRED_EVENT, () => {
+  const authStore = useAuthStore(pinia)
+  authStore.forceLogout()
 })
 
 app.mount('#app')

@@ -95,6 +95,7 @@ export interface ChatReference {
   content?: string
   snippet?: string
   score?: number
+  similarityScore?: number
   finalScore?: number
   hitReason?: string
   vectorId?: string
@@ -188,6 +189,7 @@ export interface AiCallLog {
   success?: boolean
   failReason?: string
   knowledgeBaseId?: number
+  question?: string
   sessionId?: number
   scene?: string
   modelType?: string
@@ -195,6 +197,12 @@ export interface AiCallLog {
   inputTokens?: number
   outputTokens?: number
   durationMs?: number
+  retrieveCount?: number
+  effectiveRetrieveCount?: number
+  topK?: number
+  similarityThreshold?: number
+  maxSimilarityScore?: number
+  llmCalled?: boolean
   errorMessage?: string
   createTime?: string
   createdAt?: string
@@ -220,5 +228,9 @@ export interface SearchResult {
   summary?: string
   text?: string
   score?: number
+  finalScore?: number
+  similarityScore?: number
   similarity?: number
+  snippet?: string
+  chunkIndex?: number
 }

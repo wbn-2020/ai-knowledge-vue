@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -17,6 +17,7 @@ import {
 import type { ChatMessage, ChatReference, ChatSession, KnowledgeBase } from '@/types'
 import { normalizeRole, timeOf } from '@/utils/view-adapters'
 import { renderMarkdownSafe } from '@/utils/markdown'
+import { asBizCode, BusinessError, friendlyRagMessage, isRagFriendlyCode } from '@/utils/business-error'
 
 const MAX_QUESTION_LENGTH = 1000
 const route = useRoute()
@@ -88,7 +89,8 @@ function shouldShowGeneralAnswerButton(message: ChatMessage) {
 
 function getNoContextBody(message: ChatMessage) {
   if (message.content?.trim()) return message.content
-  return '当前知识库未找到足够相关的资料，无法基于知识库回答。'
+  const fallback = friendlyRagMessage(message.noAnswerReason)
+  return message.noAnswerReason ? friendlyRagMessage(message.noAnswerReason, fallback) : fallback
 }
 
 function getReferenceDocumentName(ref: ChatReference) {
@@ -116,16 +118,16 @@ function getReferenceChunkLabel(ref: ChatReference) {
 }
 
 function referenceScore(ref: ChatReference) {
-  const value = Number((ref as any).finalScore ?? (ref as any).score ?? 0)
-  return Number.isFinite(value) ? value.toFixed(2) : '0.00'
+  const value = Number((ref as any).similarityScore ?? (ref as any).finalScore ?? (ref as any).score)
+  if (!Number.isFinite(value)) return '-'
+  const percent = value <= 1 ? value * 100 : value
+  return `${percent.toFixed(2)}%`
 }
 
 function validReferences(message: ChatMessage): ChatReference[] {
   if (!isRagAnswer(message)) return []
   const refs = Array.isArray(message.references) ? message.references : []
-  return refs
-    .filter((item): item is ChatReference => typeof item === 'object' && !!item)
-    .filter((ref) => Number((ref as any).finalScore ?? (ref as any).score ?? 0) >= 0.7)
+  return refs.filter((item): item is ChatReference => typeof item === 'object' && !!item)
 }
 
 function visibleReferences(message: ChatMessage) {
@@ -171,6 +173,27 @@ function assistantHtml(message: ChatMessage) {
 
 function referenceDialogHtml(ref: ChatReference | null) {
   return renderMarkdownSafe(ref?.content || ref?.snippet || '后端未返回引用片段内容')
+}
+
+function referencePreview(ref: ChatReference) {
+  const content = String((ref as any).snippet || ref.content || '').trim()
+  if (!content) return '暂无片段摘要'
+  return content.length > 200 ? `${content.slice(0, 200)}...` : content
+}
+
+function appendFriendlyAssistantMessage(code: unknown, message?: string) {
+  chatMessages.value.push(
+    normalizeMessage({
+      id: Date.now() + 1,
+      role: 'assistant',
+      answerType: 'NO_CONTEXT',
+      content: message || friendlyRagMessage(code),
+      noAnswerReason: asBizCode(code),
+      references: [],
+      found: false,
+      basedOnKnowledgeBase: true,
+    }),
+  )
 }
 
 async function loadKnowledgeBases() {
@@ -243,7 +266,12 @@ async function doAsk(allowGeneralAnswer = false, overrideQuestion?: string) {
     await loadSessions()
     await scrollToBottom(true)
   } catch (error) {
-    askError.value = error instanceof Error ? error.message : '问答请求失败，请稍后重试'
+    if (error instanceof BusinessError && isRagFriendlyCode(error.bizCode)) {
+      appendFriendlyAssistantMessage(error.bizCode, error.message)
+      await scrollToBottom(true)
+    } else {
+      askError.value = error instanceof Error ? error.message : '问答请求失败，请稍后重试'
+    }
   } finally {
     thinking.value = false
   }
@@ -272,7 +300,12 @@ async function askGeneralForMessage(message: ChatMessage, index: number) {
     await loadSessions()
     await scrollToBottom(true)
   } catch (error) {
-    ElMessage.error(error instanceof Error ? error.message : '通用回答生成失败，请稍后重试')
+    if (error instanceof BusinessError && isRagFriendlyCode(error.bizCode)) {
+      chatMessages.value[index] = normalizeMessage({ ...message, content: error.message || friendlyRagMessage(error.bizCode), references: [] })
+      await scrollToBottom(true)
+    } else {
+      ElMessage.error(error instanceof Error ? error.message : '通用回答生成失败，请稍后重试')
+    }
   } finally {
     setRetryLoading(message.id, false)
   }
@@ -453,7 +486,8 @@ onMounted(async () => {
                 class="reference-item"
                 @click="openReferenceDialog(ref)"
               >
-                [{{ refIndex + 1 }}] {{ getReferenceDocumentName(ref) }} · 切片 {{ getReferenceChunkLabel(ref) }} · 相似度 {{ referenceScore(ref) }}
+                <div>[{{ refIndex + 1 }}] {{ getReferenceDocumentName(ref) }} · 切片 {{ getReferenceChunkLabel(ref) }} · 相似度：{{ referenceScore(ref) }}</div>
+                <div class="reference-snippet">{{ referencePreview(ref) }}</div>
               </div>
               <el-button v-if="hasMoreReferences(message)" link type="primary" @click="toggleShowAllRefs(message.id)">
                 {{ showAllRefsMap[message.id] ? '收起引用' : `查看全部 ${validReferences(message).length} 条引用` }}
@@ -745,6 +779,12 @@ onMounted(async () => {
 
 .reference-item:hover {
   background: #eff6ff;
+}
+
+.reference-snippet {
+  margin-top: 4px;
+  color: #64748b;
+  line-height: 1.5;
 }
 
 .message-actions {

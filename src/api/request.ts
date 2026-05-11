@@ -1,10 +1,12 @@
-import axios from 'axios'
+﻿import axios from 'axios'
 import type { AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 import { ElMessage } from 'element-plus'
 import router from '@/router'
+import { AUTH_EXPIRED_EVENT, TOKEN_KEY, USER_KEY } from '@/constants/auth'
+import { asBizCode, BusinessError, isRagFriendlyCode } from '@/utils/business-error'
 
 export interface ApiResponse<T = any> {
-  code: number
+  code: number | string
   message: string
   data: T
 }
@@ -21,8 +23,10 @@ const request = axios.create({
   timeout: 30000,
 })
 
+let handlingUnauthorized = false
+
 request.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const token = localStorage.getItem('knowflow_token')
+  const token = localStorage.getItem(TOKEN_KEY)
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
@@ -43,28 +47,57 @@ request.interceptors.response.use(
     }
 
     const body = response.data
-    if (body && typeof body.code === 'number' && 'data' in body) {
-      if (body.code === 0) return body.data
-      ElMessage.error(body.message || '请求失败')
-      return Promise.reject(new Error(body.message || '请求失败'))
+    if (body && typeof body === 'object' && 'code' in body && 'data' in body) {
+      const codeValue = (body as ApiResponse).code
+      const code = asBizCode(codeValue)
+      if (code === '0' || code === 'SUCCESS') return body.data
+
+      const message = (body as ApiResponse).message || '请求失败'
+      const error = new BusinessError(message, { bizCode: codeValue, bizData: (body as ApiResponse).data })
+      if (!isRagFriendlyCode(codeValue)) ElMessage.error(message)
+      return Promise.reject(error)
     }
 
     return body
   },
   (error) => {
     const status = error.response?.status
+
     if (status === 401) {
-      localStorage.removeItem('knowflow_token')
-      localStorage.removeItem('knowflow_user')
-      router.push('/login')
+      if (handlingUnauthorized) return Promise.reject(error)
+      handlingUnauthorized = true
+
+      localStorage.removeItem(TOKEN_KEY)
+      localStorage.removeItem(USER_KEY)
+      window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT))
+
+      const currentPath = router.currentRoute.value.path
+      if (currentPath !== '/login') {
+        router.replace('/login').finally(() => {
+          handlingUnauthorized = false
+        })
+      } else {
+        handlingUnauthorized = false
+      }
+
       ElMessage.error('登录已过期，请重新登录')
-    } else if (status === 403) {
-      ElMessage.error('暂无权限')
-    } else {
-      ElMessage.error(error.response?.data?.message || '网络请求失败')
+      return Promise.reject(error)
     }
+
+    if (status === 403) {
+      ElMessage.error('暂无权限')
+      return Promise.reject(error)
+    }
+
+    if (status >= 500) {
+      ElMessage.error(error.response?.data?.message || '服务异常，请稍后重试')
+      return Promise.reject(error)
+    }
+
+    ElMessage.error(error.response?.data?.message || '网络请求失败，请检查网络后重试')
     return Promise.reject(error)
   },
 )
 
 export default request
+

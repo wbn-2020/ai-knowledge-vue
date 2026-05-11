@@ -2,9 +2,9 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import type { LoginForm, RegisterForm, UserInfo } from '@/types'
 import { adminLogin as adminLoginApi, getCurrentUser, login as loginApi, logout as logoutApi, register as registerApi } from '@/api/auth'
-
-const TOKEN_KEY = 'knowflow_token'
-const USER_KEY = 'knowflow_user'
+import { useTagsViewStore } from '@/stores/tagsView'
+import { useUiStore } from '@/stores/ui'
+import { TOKEN_KEY, USER_KEY } from '@/constants/auth'
 
 function readUser() {
   const raw = localStorage.getItem(USER_KEY)
@@ -66,17 +66,31 @@ export const useAuthStore = defineStore('auth', () => {
     return result
   }
 
+  function clearClientAuthState() {
+    token.value = ''
+    user.value = null
+    localStorage.removeItem(TOKEN_KEY)
+    localStorage.removeItem(USER_KEY)
+
+    const tagsStore = useTagsViewStore()
+    tagsStore.$reset()
+
+    const uiStore = useUiStore()
+    uiStore.resetState()
+  }
+
   async function logout() {
     try {
       if (token.value) await logoutApi()
     } catch {
       // JWT is stateless; local cleanup is still required.
     }
-    token.value = ''
-    user.value = null
-    localStorage.removeItem(TOKEN_KEY)
-    localStorage.removeItem(USER_KEY)
+    clearClientAuthState()
   }
 
-  return { token, user, isLoggedIn, isAdmin, login, adminLogin, register, fetchMe, logout }
+  function forceLogout() {
+    clearClientAuthState()
+  }
+
+  return { token, user, isLoggedIn, isAdmin, login, adminLogin, register, fetchMe, logout, forceLogout }
 })

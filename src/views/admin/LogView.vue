@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { Download } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
@@ -96,6 +96,33 @@ function resultType(row: any) {
 
 function resultText(row: any) {
   return resultLabel(row?.result, row?.success)
+}
+
+function questionOf(row: any) {
+  return textOf(row?.question || row?.prompt || row?.query)
+}
+
+function llmCalledText(row: any) {
+  if (typeof row?.llmCalled === 'boolean') return row.llmCalled ? '是' : '否'
+  if (row?.llmCalled === 1 || row?.llmCalled === '1') return '是'
+  if (row?.llmCalled === 0 || row?.llmCalled === '0') return '否'
+  return '-'
+}
+
+function retrieveCountOf(row: any) {
+  return textOf(row?.retrieveCount ?? row?.recallCount)
+}
+
+function effectiveRetrieveCountOf(row: any) {
+  return textOf(row?.effectiveRetrieveCount ?? row?.effectiveRecallCount)
+}
+
+function maxSimilarityText(row: any) {
+  const raw = row?.maxSimilarityScore ?? row?.maxScore
+  const score = Number(raw)
+  if (!Number.isFinite(score)) return '-'
+  const percent = score <= 1 ? score * 100 : score
+  return `${percent.toFixed(2)}%`
 }
 
 async function loadAlerts() {
@@ -279,18 +306,24 @@ onMounted(() => {
             </template>
 
             <template v-else>
-              <el-table-column label="ID" width="90"><template #default="{ row }">{{ textOf(row?.id) }}</template></el-table-column>
-              <el-table-column label="场景" width="140" show-overflow-tooltip><template #default="{ row }">{{ sceneOf(row) }}</template></el-table-column>
-              <el-table-column label="模型" min-width="180" show-overflow-tooltip><template #default="{ row }">{{ modelNameOf(row) }}</template></el-table-column>
-              <el-table-column label="模型类型" width="150" show-overflow-tooltip><template #default="{ row }">{{ aiModelTypeLabel(modelTypeOf(row)) }}</template></el-table-column>
-              <el-table-column label="Provider" width="170" show-overflow-tooltip><template #default="{ row }">{{ textOf((row as any)?.provider) }}</template></el-table-column>
-              <el-table-column label="Token" width="130"><template #default="{ row }">{{ tokenOf(row) }}</template></el-table-column>
-              <el-table-column label="耗时" width="120"><template #default="{ row }">{{ durationOf(row) }}</template></el-table-column>
-              <el-table-column label="结果" width="110"><template #default="{ row }"><el-tag :type="resultType(row)" effect="plain">{{ resultText(row) }}</el-tag></template></el-table-column>
-              <el-table-column label="失败原因" min-width="240" show-overflow-tooltip><template #default="{ row }">{{ failReasonOf(row) }}</template></el-table-column>
-              <el-table-column label="知识库ID" width="120"><template #default="{ row }">{{ textOf((row as any)?.knowledgeBaseId) }}</template></el-table-column>
-              <el-table-column label="会话ID" width="120"><template #default="{ row }">{{ textOf((row as any)?.sessionId) }}</template></el-table-column>
-              <el-table-column label="时间" width="180"><template #default="{ row }">{{ formatTime(row) }}</template></el-table-column>
+              <el-table-column label="调用时间" width="180"><template #default="{ row }">{{ formatTime(row) }}</template></el-table-column>
+              <el-table-column label="用户" width="120"><template #default="{ row }">{{ textOf((row as any)?.username || (row as any)?.userId) }}</template></el-table-column>
+              <el-table-column label="场景" width="120" show-overflow-tooltip><template #default="{ row }">{{ sceneOf(row) }}</template></el-table-column>
+              <el-table-column label="模型" min-width="160" show-overflow-tooltip><template #default="{ row }">{{ modelNameOf(row) }}</template></el-table-column>
+              <el-table-column label="问题" min-width="240" show-overflow-tooltip><template #default="{ row }">{{ questionOf(row) }}</template></el-table-column>
+              <el-table-column label="Provider" width="140" show-overflow-tooltip><template #default="{ row }">{{ textOf((row as any)?.provider) }}</template></el-table-column>
+              <el-table-column label="是否调用模型" width="120"><template #default="{ row }">{{ llmCalledText(row) }}</template></el-table-column>
+              <el-table-column label="召回数量" width="100"><template #default="{ row }">{{ retrieveCountOf(row) }}</template></el-table-column>
+              <el-table-column label="有效召回" width="100"><template #default="{ row }">{{ effectiveRetrieveCountOf(row) }}</template></el-table-column>
+              <el-table-column label="最高相似度" width="120"><template #default="{ row }">{{ maxSimilarityText(row) }}</template></el-table-column>
+              <el-table-column label="耗时" width="110"><template #default="{ row }">{{ durationOf(row) }}</template></el-table-column>
+              <el-table-column label="结果" width="100"><template #default="{ row }"><el-tag :type="resultType(row)" effect="plain">{{ resultText(row) }}</el-tag></template></el-table-column>
+              <el-table-column label="失败/无召回原因" min-width="220" show-overflow-tooltip><template #default="{ row }">{{ failReasonOf(row) }}</template></el-table-column>
+              <el-table-column label="知识库ID" width="110"><template #default="{ row }">{{ textOf((row as any)?.knowledgeBaseId) }}</template></el-table-column>
+              <el-table-column label="TopK" width="80"><template #default="{ row }">{{ textOf((row as any)?.topK) }}</template></el-table-column>
+              <el-table-column label="阈值" width="90"><template #default="{ row }">{{ textOf((row as any)?.similarityThreshold) }}</template></el-table-column>
+              <el-table-column label="模型类型" width="120" show-overflow-tooltip><template #default="{ row }">{{ aiModelTypeLabel(modelTypeOf(row)) }}</template></el-table-column>
+              <el-table-column label="Token" width="120"><template #default="{ row }">{{ tokenOf(row) }}</template></el-table-column>
             </template>
           </el-table>
         </div>
@@ -351,7 +384,7 @@ onMounted(() => {
 }
 
 .log-table {
-  min-width: 1720px;
+  min-width: 2300px;
 }
 
 .table-wrap {

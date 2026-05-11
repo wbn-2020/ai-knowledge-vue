@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import type { FormInstance, FormRules } from 'element-plus'
@@ -37,12 +37,8 @@ const profileRules: FormRules = {
     { required: true, message: '请输入邮箱', trigger: 'blur' },
     { type: 'email', message: '请输入有效邮箱', trigger: ['blur', 'change'] },
   ],
-  avatar: [
-    { max: 500, message: '头像地址过长', trigger: 'blur' },
-  ],
-  bio: [
-    { max: 200, message: '个人简介最多 200 个字符', trigger: 'blur' },
-  ],
+  avatar: [{ max: 500, message: '头像地址过长', trigger: 'blur' }],
+  bio: [{ max: 200, message: '个人简介最多 200 个字符', trigger: 'blur' }],
 }
 
 const passwordRules: FormRules = {
@@ -114,7 +110,7 @@ async function savePassword() {
     passwordFormRef.value?.clearValidate()
     await authStore.logout()
     ElMessage.success('密码已修改，请重新登录')
-    router.push('/login')
+    router.replace('/login')
   } finally {
     savingPassword.value = false
   }
@@ -127,12 +123,12 @@ onMounted(loadCurrentUser)
   <div v-loading="loading">
     <div class="page-header">
       <div>
-        <h1 class="page-title">用户设置</h1>
-        <div class="page-desc">维护账号资料和登录密码，保持知识库归属与通知信息准确。</div>
+        <h1 class="page-title">个人设置</h1>
+        <div class="page-desc">维护账号资料和登录密码</div>
       </div>
       <el-button plain :loading="loading" @click="loadCurrentUser">
         <el-icon><Refresh /></el-icon>
-        刷新信息
+        刷新
       </el-button>
     </div>
 
@@ -147,23 +143,15 @@ onMounted(loadCurrentUser)
             </el-avatar>
             <div>
               <h3>{{ profileForm.nickname || authStore.user?.username || '当前用户' }}</h3>
-              <p>{{ authStore.user?.role || 'USER' }} · {{ authStore.user?.status || '-' }}</p>
+              <p>{{ authStore.user?.role || 'USER' }} | {{ authStore.user?.status || '-' }}</p>
             </div>
           </div>
 
           <el-form ref="profileFormRef" :model="profileForm" :rules="profileRules" label-position="top">
-            <el-form-item label="昵称" prop="nickname">
-              <el-input v-model="profileForm.nickname" maxlength="30" show-word-limit placeholder="请输入昵称" />
-            </el-form-item>
-            <el-form-item label="邮箱" prop="email">
-              <el-input v-model="profileForm.email" placeholder="demo@knowflow.local" />
-            </el-form-item>
-            <el-form-item label="头像地址" prop="avatar">
-              <el-input v-model="profileForm.avatar" placeholder="https://example.com/avatar.png" />
-            </el-form-item>
-            <el-form-item label="个人简介" prop="bio">
-              <el-input v-model="profileForm.bio" type="textarea" :rows="4" maxlength="200" show-word-limit placeholder="写一句个人说明" />
-            </el-form-item>
+            <el-form-item label="昵称" prop="nickname"><el-input v-model="profileForm.nickname" maxlength="30" show-word-limit /></el-form-item>
+            <el-form-item label="邮箱" prop="email"><el-input v-model="profileForm.email" /></el-form-item>
+            <el-form-item label="头像地址" prop="avatar"><el-input v-model="profileForm.avatar" /></el-form-item>
+            <el-form-item label="个人简介" prop="bio"><el-input v-model="profileForm.bio" type="textarea" :rows="4" maxlength="200" show-word-limit /></el-form-item>
             <el-button type="primary" :loading="savingProfile" @click="saveProfile">保存资料</el-button>
           </el-form>
         </div>
@@ -173,16 +161,10 @@ onMounted(loadCurrentUser)
         <div class="soft-card-body">
           <h3 class="section-title">修改密码</h3>
           <el-form ref="passwordFormRef" :model="passwordForm" :rules="passwordRules" label-position="top">
-            <el-form-item label="旧密码" prop="oldPassword">
-              <el-input v-model="passwordForm.oldPassword" type="password" show-password autocomplete="current-password" />
-            </el-form-item>
-            <el-form-item label="新密码" prop="newPassword">
-              <el-input v-model="passwordForm.newPassword" type="password" show-password autocomplete="new-password" />
-            </el-form-item>
-            <el-form-item label="确认新密码" prop="confirmPassword">
-              <el-input v-model="passwordForm.confirmPassword" type="password" show-password autocomplete="new-password" />
-            </el-form-item>
-            <el-alert class="password-tip" type="info" show-icon :closable="false" title="密码修改成功后将清除当前登录态，并返回登录页。" />
+            <el-form-item label="旧密码" prop="oldPassword"><el-input v-model="passwordForm.oldPassword" type="password" show-password /></el-form-item>
+            <el-form-item label="新密码" prop="newPassword"><el-input v-model="passwordForm.newPassword" type="password" show-password /></el-form-item>
+            <el-form-item label="确认新密码" prop="confirmPassword"><el-input v-model="passwordForm.confirmPassword" type="password" show-password /></el-form-item>
+            <el-alert class="password-tip" type="info" show-icon :closable="false" title="密码修改成功后将清理当前登录态，并返回登录页" />
             <el-button type="primary" :loading="savingPassword" @click="savePassword">修改密码</el-button>
           </el-form>
         </div>
@@ -192,43 +174,11 @@ onMounted(loadCurrentUser)
 </template>
 
 <style scoped lang="scss">
-.state-alert {
-  margin-bottom: 16px;
-}
-
-.settings-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(360px, 0.72fr);
-  gap: 16px;
-  align-items: start;
-}
-
-.profile-head {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 22px;
-  padding-bottom: 18px;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.profile-head h3 {
-  margin: 0;
-  font-size: 20px;
-}
-
-.profile-head p {
-  margin: 6px 0 0;
-  color: var(--color-text-muted);
-}
-
-.password-tip {
-  margin-bottom: 16px;
-}
-
-@media (max-width: 980px) {
-  .settings-grid {
-    grid-template-columns: 1fr;
-  }
-}
+.state-alert { margin-bottom: 16px; }
+.settings-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 0.72fr); gap: 16px; align-items: start; }
+.profile-head { display: flex; align-items: center; gap: 16px; margin-bottom: 22px; padding-bottom: 18px; border-bottom: 1px solid var(--color-border); }
+.profile-head h3 { margin: 0; font-size: 20px; }
+.profile-head p { margin: 6px 0 0; color: var(--color-text-muted); }
+.password-tip { margin-bottom: 16px; }
+@media (max-width: 980px) { .settings-grid { grid-template-columns: 1fr; } }
 </style>

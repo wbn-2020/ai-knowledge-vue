@@ -9,5 +9,10 @@ export const useUiStore = defineStore('ui', () => {
     adminCollapsed.value = !adminCollapsed.value
   }
 
-  return { adminCollapsed, activeWorkspace, toggleAdminSidebar }
+  function resetState() {
+    adminCollapsed.value = false
+    activeWorkspace.value = 'knowledge'
+  }
+
+  return { adminCollapsed, activeWorkspace, toggleAdminSidebar, resetState }
 })
