@@ -129,3 +129,36 @@ export function searchScoreOf(row: any): string {
   const score = Number(value)
   return Number.isNaN(score) ? String(value) : score.toFixed(2)
 }
+
+export function formatDateTimeValue(value: unknown, fallback = '-'): string {
+  if (value === null || value === undefined || value === '') return fallback
+  if (value instanceof Date) {
+    const y = value.getFullYear()
+    const m = String(value.getMonth() + 1).padStart(2, '0')
+    const d = String(value.getDate()).padStart(2, '0')
+    const hh = String(value.getHours()).padStart(2, '0')
+    const mm = String(value.getMinutes()).padStart(2, '0')
+    const ss = String(value.getSeconds()).padStart(2, '0')
+    return `${y}-${m}-${d} ${hh}:${mm}:${ss}`
+  }
+
+  const text = String(value).trim()
+  if (!text) return fallback
+  const normalized = text.replace('T', ' ').replace(/\.\d+$/, '')
+  const match = normalized.match(/^(\d{4}-\d{2}-\d{2})[ ](\d{2}:\d{2}:\d{2})/)
+  if (match) return `${match[1]} ${match[2]}`
+
+  const parsed = new Date(text)
+  if (Number.isNaN(parsed.getTime())) return text
+  return formatDateTimeValue(parsed, fallback)
+}
+
+export function timeDisplayOf(row: any, keys: string[] = ['updatedAt', 'updateTime', 'createdAt', 'createTime', 'startedAt', 'finishedAt']): string {
+  for (const key of keys) {
+    const value = row?.[key]
+    if (value !== undefined && value !== null && value !== '') {
+      return formatDateTimeValue(value)
+    }
+  }
+  return '-'
+}

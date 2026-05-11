@@ -76,8 +76,12 @@ function tokenOf(row: any) {
 }
 
 function durationOf(row: any) {
-  const ms = row?.durationMs ?? row?.elapsedMs
-  return ms === null || ms === undefined || ms === '' ? '-' : `${ms}ms`
+  const raw = row?.durationMs ?? row?.costMs ?? row?.elapsedMs ?? row?.duration
+  if (raw === null || raw === undefined || raw === '') return '-'
+  const ms = Number(raw)
+  if (!Number.isFinite(ms)) return '-'
+  if (ms >= 1000) return `${(ms / 1000).toFixed(2)} s`
+  return `${ms} ms`
 }
 
 function formatTime(row: any) {
