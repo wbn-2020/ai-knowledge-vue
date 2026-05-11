@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { deleteAdminDocument, getAdminDocuments, getAdminKnowledgeBases, retryAdminDocument } from '@/api/knowledge'
+import {
+  deleteAdminDocument,
+  downloadAdminDocument,
+  getAdminDocuments,
+  getAdminKnowledgeBases,
+  retryAdminDocument,
+} from '@/api/knowledge'
 import type { DocumentItem, KnowledgeBase } from '@/types'
 import {
   documentErrorOf,
@@ -22,9 +28,48 @@ const knowledgeBases = ref<KnowledgeBase[]>([])
 const keyword = ref('')
 const knowledgeBaseId = ref<number>()
 const parseStatus = ref('')
+const embeddingStatus = ref('')
 const fileType = ref('')
 const username = ref('')
 const pager = reactive({ pageNo: 1, pageSize: 10, total: 0 })
+
+const fileTypeOptions = [
+  { label: '全部', value: '' },
+  { label: 'PDF', value: 'PDF' },
+  { label: 'DOCX', value: 'DOCX' },
+  { label: 'TXT', value: 'TXT' },
+  { label: 'MD', value: 'MD' },
+]
+
+const embeddingStatusOptions = [
+  { label: '全部', value: '' },
+  { label: '待向量化', value: 'PENDING' },
+  { label: '向量化中', value: 'PROCESSING' },
+  { label: '向量化成功', value: 'SUCCESS' },
+  { label: '向量化失败', value: 'FAILED' },
+]
+
+function extractErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message) return error.message
+  const maybeAxios = error as any
+  const backendMessage = maybeAxios?.response?.data?.message || maybeAxios?.response?.data?.msg
+  return backendMessage ? String(backendMessage) : fallback
+}
+
+function preferredDownloadName(row: any) {
+  return row?.originalName || row?.documentName || row?.name || `document-${row?.id ?? 'unknown'}`
+}
+
+function triggerDownload(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
 
 async function loadKnowledgeBases() {
   const data = await getAdminKnowledgeBases({ pageNo: 1, pageSize: 100 })
@@ -35,9 +80,10 @@ async function loadDocs() {
   loading.value = true
   try {
     const data = await getAdminDocuments({
-      keyword: keyword.value,
+      keyword: keyword.value || undefined,
       knowledgeBaseId: knowledgeBaseId.value,
-      parseStatus: parseStatus.value,
+      parseStatus: parseStatus.value || undefined,
+      embeddingStatus: embeddingStatus.value || undefined,
       fileType: fileType.value || undefined,
       username: username.value || undefined,
       pageNo: pager.pageNo,
@@ -47,6 +93,8 @@ async function loadDocs() {
     pager.total = data?.total || 0
     pager.pageNo = data?.pageNo || pager.pageNo
     pager.pageSize = data?.pageSize || pager.pageSize
+  } catch (error) {
+    ElMessage.error(extractErrorMessage(error, '文档列表加载失败'))
   } finally {
     loading.value = false
   }
@@ -67,7 +115,18 @@ async function remove(row: DocumentItem) {
   await loadDocs()
 }
 
-watch([keyword, knowledgeBaseId, parseStatus, fileType, username], () => {
+async function download(row: DocumentItem) {
+  try {
+    const response: any = await downloadAdminDocument(row.id)
+    const blob = response?.data instanceof Blob ? response.data : new Blob([response?.data ?? ''])
+    triggerDownload(blob, preferredDownloadName(row))
+    ElMessage.success('下载已开始')
+  } catch (error) {
+    ElMessage.error(extractErrorMessage(error, '下载失败'))
+  }
+}
+
+watch([keyword, knowledgeBaseId, parseStatus, embeddingStatus, fileType, username], () => {
   pager.pageNo = 1
   loadDocs()
 })
@@ -89,18 +148,23 @@ onMounted(() => {
     </div>
 
     <div class="toolbar">
-      <el-input v-model="keyword" placeholder="搜索文档名称" clearable style="max-width: 300px" />
+      <el-input v-model="keyword" placeholder="搜索文档名称" clearable style="max-width: 280px" />
       <el-select v-model="knowledgeBaseId" placeholder="所属知识库" clearable style="width: 220px">
         <el-option v-for="kb in knowledgeBases" :key="kb.id" :label="textOf(kb.name)" :value="kb.id" />
       </el-select>
-      <el-select v-model="parseStatus" placeholder="解析状态" clearable style="width: 160px">
+      <el-select v-model="parseStatus" placeholder="解析状态" clearable style="width: 150px">
         <el-option label="待解析" value="PENDING" />
         <el-option label="解析中" value="PARSING" />
         <el-option label="解析成功" value="SUCCESS" />
         <el-option label="解析失败" value="FAILED" />
       </el-select>
-      <el-input v-model="fileType" placeholder="文件类型" clearable style="width: 140px" />
-      <el-input v-model="username" placeholder="上传账号" clearable style="width: 160px" />
+      <el-select v-model="embeddingStatus" placeholder="向量状态" clearable style="width: 170px">
+        <el-option v-for="item in embeddingStatusOptions" :key="item.value || 'all'" :label="item.label" :value="item.value" />
+      </el-select>
+      <el-select v-model="fileType" placeholder="文件类型" clearable style="width: 120px">
+        <el-option v-for="item in fileTypeOptions" :key="item.label" :label="item.label" :value="item.value" />
+      </el-select>
+      <el-input v-model="username" placeholder="上传账号" clearable style="width: 140px" />
     </div>
 
     <section class="soft-card">
@@ -136,9 +200,10 @@ onMounted(() => {
           <el-table-column label="更新时间" width="190">
             <template #default="{ row }"><span class="time-cell">{{ timeDisplayOf(row) }}</span></template>
           </el-table-column>
-          <el-table-column label="操作" width="190" fixed="right">
+          <el-table-column label="操作" width="240" fixed="right">
             <template #default="{ row }">
               <el-button link type="primary" @click="$router.push(`/admin/documents/${row.id}`)">详情</el-button>
+              <el-button link type="primary" @click="download(row)">下载</el-button>
               <el-button v-if="String(row.parseStatus).toUpperCase() === 'FAILED'" link type="warning" @click="retry(row)">重新解析</el-button>
               <el-button link type="danger" @click="remove(row)">删除</el-button>
             </template>

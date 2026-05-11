@@ -32,9 +32,9 @@ function goApp() {
   router.push('/app/dashboard')
 }
 
-function logout() {
-  authStore.logout()
-  router.push('/login')
+async function logout() {
+  await authStore.logout()
+  await router.replace('/login')
 }
 </script>
 

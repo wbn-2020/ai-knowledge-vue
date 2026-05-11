@@ -321,6 +321,8 @@ export function getAdminDocuments(params: {
   keyword?: string
   knowledgeBaseId?: number
   parseStatus?: string
+  embeddingStatus?: string
+  vectorStatus?: string
   fileType?: string
   userId?: number
   username?: string
@@ -332,6 +334,10 @@ export function getAdminDocuments(params: {
 
 export function getAdminDocument(id: number) {
   return request.get<any, DocumentItem>(`/admin/documents/${id}`)
+}
+
+export function downloadAdminDocument(id: number) {
+  return request.get(`/admin/documents/${id}/download`, { responseType: 'blob' })
 }
 
 export function getAdminDocumentChunks(documentId: number, params: { pageNo?: number; pageSize?: number }) {

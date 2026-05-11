@@ -2,9 +2,26 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { deleteAdminDocument, getAdminDocument, getAdminDocumentChunks, retryAdminDocument } from '@/api/knowledge'
+import {
+  deleteAdminDocument,
+  downloadAdminDocument,
+  getAdminDocument,
+  getAdminDocumentChunks,
+  retryAdminDocument,
+} from '@/api/knowledge'
 import type { DocumentItem } from '@/types'
-import { documentErrorOf, documentNameOf, embeddingStatusText, fileSizeOf, fileTypeOf, kbNameOf, parseStatusText, statusTagType, timeOf } from '@/utils/view-adapters'
+import {
+  documentErrorOf,
+  documentNameOf,
+  embeddingStatusText,
+  fileSizeOf,
+  fileTypeOf,
+  formatDateTimeValue,
+  kbNameOf,
+  parseStatusText,
+  statusTagType,
+  timeDisplayOf,
+} from '@/utils/view-adapters'
 import { renderMarkdownSafe } from '@/utils/markdown'
 
 const route = useRoute()
@@ -16,6 +33,28 @@ const chunkDialogVisible = ref(false)
 const activeChunk = ref<any | null>(null)
 const chunkPager = reactive({ pageNo: 1, pageSize: 10, total: 0 })
 const activeChunkHtml = computed(() => renderMarkdownSafe(activeChunk.value?.content || '-'))
+
+function extractErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message) return error.message
+  const maybeAxios = error as any
+  const backendMessage = maybeAxios?.response?.data?.message || maybeAxios?.response?.data?.msg
+  return backendMessage ? String(backendMessage) : fallback
+}
+
+function preferredDownloadName(row: any) {
+  return row?.originalName || row?.documentName || row?.name || `document-${row?.id ?? 'unknown'}`
+}
+
+function triggerDownload(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
 
 async function loadChunks(id: number) {
   chunkLoading.value = true
@@ -58,6 +97,18 @@ async function remove() {
   history.back()
 }
 
+async function download() {
+  if (!doc.value) return
+  try {
+    const response: any = await downloadAdminDocument(doc.value.id)
+    const blob = response?.data instanceof Blob ? response.data : new Blob([response?.data ?? ''])
+    triggerDownload(blob, preferredDownloadName(doc.value))
+    ElMessage.success('下载已开始')
+  } catch (error) {
+    ElMessage.error(extractErrorMessage(error, '下载失败'))
+  }
+}
+
 function openChunkDialog(row: any) {
   activeChunk.value = row
   chunkDialogVisible.value = true
@@ -84,7 +135,7 @@ onMounted(loadDetail)
             <div><span>大小</span><strong>{{ fileSizeOf(doc) }}</strong></div>
             <div><span>解析状态</span><el-tag :type="statusTagType(doc.parseStatus)">{{ parseStatusText(doc.parseStatus) }}</el-tag></div>
             <div><span>向量状态</span><el-tag :type="statusTagType(doc.embeddingStatus)" effect="plain">{{ embeddingStatusText(doc.embeddingStatus) }}</el-tag></div>
-            <div><span>更新时间</span><strong>{{ timeOf(doc) }}</strong></div>
+            <div><span>更新时间</span><strong>{{ timeDisplayOf(doc) }}</strong></div>
             <div><span>上传用户</span><strong>{{ (doc as any).ownerName || (doc as any).username || '-' }}</strong></div>
             <div><span>分块数量</span><strong>{{ (doc as any).chunkCount || (doc as any).segmentCount || 0 }}</strong></div>
             <div><span>失败原因</span><strong>{{ documentErrorOf(doc) || '-' }}</strong></div>
@@ -95,6 +146,7 @@ onMounted(loadDetail)
         <div class="soft-card-body">
           <h3 class="section-title">操作</h3>
           <div class="action-list">
+            <el-button type="primary" @click="download">下载原文件</el-button>
             <el-button type="warning" @click="retry">重新解析</el-button>
             <el-button type="danger" @click="remove">删除文档</el-button>
           </div>
@@ -122,7 +174,7 @@ onMounted(loadDetail)
             <template #default="{ row }">{{ row.vectorId || '-' }}</template>
           </el-table-column>
           <el-table-column label="创建时间" width="180">
-            <template #default="{ row }">{{ row.createdAt || row.createTime || '-' }}</template>
+            <template #default="{ row }">{{ formatDateTimeValue(row.createdAt || row.createTime || '') }}</template>
           </el-table-column>
         </el-table>
         <div class="pagination-row">
@@ -144,7 +196,7 @@ onMounted(loadDetail)
         <p>切片序号：{{ activeChunk.chunkIndex ?? '-' }}</p>
         <p>Token 数：{{ activeChunk.tokenCount ?? '-' }}</p>
         <p>Vector ID：{{ activeChunk.vectorId || '-' }}</p>
-        <p>创建时间：{{ activeChunk.createdAt || activeChunk.createTime || '-' }}</p>
+        <p>创建时间：{{ formatDateTimeValue(activeChunk.createdAt || activeChunk.createTime || '') }}</p>
         <div class="chunk-dialog-content markdown-body" v-html="activeChunkHtml" />
       </div>
     </el-dialog>
@@ -212,6 +264,7 @@ h2 {
   max-height: 420px;
   overflow: auto;
 }
+
 .markdown-body :deep(p),
 .markdown-body :deep(ul),
 .markdown-body :deep(ol),
@@ -224,6 +277,7 @@ h2 {
 .markdown-body :deep(h6) {
   margin: 0 0 8px;
 }
+
 .markdown-body :deep(pre) {
   background: #111827;
   color: #f9fafb;
@@ -231,6 +285,7 @@ h2 {
   padding: 10px;
   overflow-x: auto;
 }
+
 .markdown-body :deep(code) {
   background: #f3f4f6;
   border-radius: 4px;

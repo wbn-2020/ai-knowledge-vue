@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import {
   getAnnouncements,
@@ -9,7 +9,7 @@ import {
   markNotificationRead,
 } from '@/api/knowledge'
 import type { NotificationItem } from '@/types'
-import { isReadOf, statusTagType, timeOf } from '@/utils/view-adapters'
+import { isReadOf, statusTagType, timeDisplayOf } from '@/utils/view-adapters'
 
 type NoticeTab = 'notifications' | 'announcements'
 
@@ -19,6 +19,29 @@ const errorMessage = ref('')
 const unreadCount = ref(0)
 const noticeList = ref<NotificationItem[]>([])
 const pager = reactive({ pageNo: 1, pageSize: 10, total: 0 })
+
+const detailVisible = ref(false)
+const selectedAnnouncement = ref<NotificationItem | null>(null)
+
+const selectedAnnouncementTime = computed(() =>
+  selectedAnnouncement.value ? timeDisplayOf(selectedAnnouncement.value) : '-',
+)
+
+function summaryOf(text: string, maxLength = 180) {
+  const normalized = String(text || '').replace(/\s+/g, ' ').trim()
+  if (normalized.length <= maxLength) return normalized
+  return `${normalized.slice(0, maxLength)}...`
+}
+
+function openAnnouncementDetail(item: NotificationItem) {
+  selectedAnnouncement.value = item
+  detailVisible.value = true
+}
+
+function closeAnnouncementDetail() {
+  detailVisible.value = false
+  selectedAnnouncement.value = null
+}
 
 async function loadUnreadCount() {
   try {
@@ -32,9 +55,10 @@ async function loadNotices() {
   loading.value = true
   errorMessage.value = ''
   try {
-    const data = activeTab.value === 'notifications'
-      ? await getNotificationPage({ pageNo: pager.pageNo, pageSize: pager.pageSize })
-      : await getAnnouncements({ pageNo: pager.pageNo, pageSize: pager.pageSize })
+    const data =
+      activeTab.value === 'notifications'
+        ? await getNotificationPage({ pageNo: pager.pageNo, pageSize: pager.pageSize })
+        : await getAnnouncements({ pageNo: pager.pageNo, pageSize: pager.pageSize })
     noticeList.value = data.list || []
     pager.total = data.total || 0
     pager.pageNo = data.pageNo || pager.pageNo
@@ -63,6 +87,7 @@ async function markRead(id: number) {
 
 watch(activeTab, () => {
   pager.pageNo = 1
+  closeAnnouncementDetail()
   loadNotices()
 })
 
@@ -97,7 +122,13 @@ onMounted(() => {
         <el-alert v-if="errorMessage" class="state-alert" type="error" show-icon :closable="false" :title="errorMessage" />
 
         <div class="notice-list" v-loading="loading">
-          <article v-for="item in noticeList" :key="item.id" class="notice-item" :class="{ unread: activeTab === 'notifications' && !isReadOf(item) }">
+          <article
+            v-for="item in noticeList"
+            :key="item.id"
+            class="notice-item"
+            :class="{ unread: activeTab === 'notifications' && !isReadOf(item), announcement: activeTab === 'announcements' }"
+            @click="activeTab === 'announcements' ? openAnnouncementDetail(item) : null"
+          >
             <div class="notice-head">
               <div>
                 <el-tag :type="activeTab === 'announcements' ? statusTagType(item.enabled === false ? 'DISABLED' : 'ENABLED') : 'info'" effect="plain">
@@ -105,11 +136,30 @@ onMounted(() => {
                 </el-tag>
                 <span v-if="activeTab === 'notifications' && !isReadOf(item)" class="unread-dot">未读</span>
               </div>
-              <span class="notice-time">{{ timeOf(item) }}</span>
+              <span class="notice-time">{{ timeDisplayOf(item) }}</span>
             </div>
-            <h3>{{ item.title }}</h3>
-            <p>{{ item.content }}</p>
-            <el-button v-if="activeTab === 'notifications' && !isReadOf(item)" link type="primary" @click="markRead(item.id)">标记已读</el-button>
+            <h3 :class="{ 'notice-title-clamp': activeTab === 'announcements' }">{{ item.title }}</h3>
+            <p :class="{ 'notice-content-clamp': activeTab === 'announcements' }">
+              {{ activeTab === 'announcements' ? summaryOf(item.content || '') : item.content }}
+            </p>
+            <div class="notice-actions">
+              <el-button
+                v-if="activeTab === 'notifications' && !isReadOf(item)"
+                link
+                type="primary"
+                @click.stop="markRead(item.id)"
+              >
+                标记已读
+              </el-button>
+              <el-button
+                v-if="activeTab === 'announcements'"
+                link
+                type="primary"
+                @click.stop="openAnnouncementDetail(item)"
+              >
+                查看详情
+              </el-button>
+            </div>
           </article>
           <el-empty v-if="!noticeList.length && !loading" :description="activeTab === 'notifications' ? '暂无通知' : '暂无公告'" />
         </div>
@@ -127,6 +177,22 @@ onMounted(() => {
         </div>
       </div>
     </section>
+
+    <el-dialog
+      v-model="detailVisible"
+      title="公告详情"
+      width="760px"
+      destroy-on-close
+      @closed="closeAnnouncementDetail"
+    >
+      <template v-if="selectedAnnouncement">
+        <h2 class="detail-title">{{ selectedAnnouncement.title || '-' }}</h2>
+        <div class="detail-time">发布时间：{{ selectedAnnouncementTime }}</div>
+        <div class="detail-content">
+          {{ selectedAnnouncement.content || '-' }}
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -152,6 +218,10 @@ onMounted(() => {
   border-radius: 14px;
   border: 1px solid var(--color-border);
   background: var(--color-surface);
+}
+
+.notice-item.announcement {
+  cursor: pointer;
 }
 
 .notice-item.unread {
@@ -182,6 +252,46 @@ p {
   margin: 0;
   color: var(--color-text-muted);
   line-height: 1.7;
+}
+
+.notice-title-clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.notice-content-clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.notice-actions {
+  margin-top: 8px;
+}
+
+.detail-title {
+  margin: 0 0 8px;
+  font-size: 22px;
+}
+
+.detail-time {
+  color: var(--color-text-muted);
+  margin-bottom: 12px;
+}
+
+.detail-content {
+  max-height: 70vh;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  line-height: 1.75;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--color-surface-soft);
 }
 
 .pagination-row {
