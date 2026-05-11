@@ -105,6 +105,7 @@ export interface ChatMessage {
   id: number
   role: 'user' | 'assistant'
   content: string
+  question?: string
   references?: Array<string | ChatReference>
   answerType?: 'RAG' | 'NO_CONTEXT' | 'GENERAL' | string
   canUseGeneralAnswer?: boolean

@@ -1,9 +1,8 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { useAuthStore } from '@/stores/auth'
-import { isAdminUser } from '@/stores/auth'
+import { useAuthStore, isAdminUser } from '@/stores/auth'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -14,12 +13,23 @@ async function submit() {
   loading.value = true
   try {
     const result = await authStore.adminLogin({ username: form.username, password: form.password })
-    if (!isAdminUser(result?.user)) {
-      ElMessage.warning('无权限访问后台')
-      router.push('/app/dashboard')
+    const currentUser = authStore.user ?? result?.user
+
+    if (!authStore.isLoggedIn) {
+      ElMessage.error('登录状态未建立，请重试')
       return
     }
-    router.push('/admin/dashboard')
+
+    if (!isAdminUser(currentUser)) {
+      ElMessage.warning('无权限访问后台')
+      await router.replace('/app/dashboard')
+      return
+    }
+
+    ElMessage.success('登录成功')
+    await router.replace('/admin/dashboard')
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '登录失败，请稍后重试')
   } finally {
     loading.value = false
   }
@@ -33,7 +43,7 @@ async function submit() {
         <div class="subtle-badge">后台入口</div>
         <h1>KnowFlow Admin</h1>
         <p>管理员登录后进入平台数据看板、用户管理与系统配置。</p>
-        <el-form label-position="top" class="form" @submit.prevent>
+        <el-form label-position="top" class="form" @submit.prevent="submit">
           <el-form-item label="管理员账号"><el-input v-model="form.username" placeholder="请输入管理员账号" /></el-form-item>
           <el-form-item label="密码"><el-input v-model="form.password" type="password" show-password placeholder="请输入密码" @keyup.enter="submit" /></el-form-item>
           <el-button type="primary" size="large" class="submit-btn" :loading="loading" @click="submit">进入后台</el-button>

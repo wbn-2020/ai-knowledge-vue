@@ -125,6 +125,10 @@ function maxSimilarityText(row: any) {
   return `${percent.toFixed(2)}%`
 }
 
+function answerTypeOf(row: any) {
+  return textOf(row?.answerType || row?.resultType)
+}
+
 async function loadAlerts() {
   alertLoading.value = true
   try {
@@ -311,6 +315,7 @@ onMounted(() => {
               <el-table-column label="场景" width="120" show-overflow-tooltip><template #default="{ row }">{{ sceneOf(row) }}</template></el-table-column>
               <el-table-column label="模型" min-width="160" show-overflow-tooltip><template #default="{ row }">{{ modelNameOf(row) }}</template></el-table-column>
               <el-table-column label="问题" min-width="240" show-overflow-tooltip><template #default="{ row }">{{ questionOf(row) }}</template></el-table-column>
+              <el-table-column label="回答类型" width="100"><template #default="{ row }">{{ answerTypeOf(row) }}</template></el-table-column>
               <el-table-column label="Provider" width="140" show-overflow-tooltip><template #default="{ row }">{{ textOf((row as any)?.provider) }}</template></el-table-column>
               <el-table-column label="是否调用模型" width="120"><template #default="{ row }">{{ llmCalledText(row) }}</template></el-table-column>
               <el-table-column label="召回数量" width="100"><template #default="{ row }">{{ retrieveCountOf(row) }}</template></el-table-column>

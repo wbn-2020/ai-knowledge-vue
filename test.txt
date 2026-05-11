@@ -1,3 +1,0 @@
-KnowFlow AI is a personal knowledge base and intelligent document QA platform.
-Tech stack: Java, Spring Boot, MySQL, Vue 3, TypeScript, Element Plus.
-MVP core flow: register/login, create KB, upload doc, parse/chunk/embed, ask questions.

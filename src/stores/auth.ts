@@ -20,11 +20,11 @@ export function isAdminUser(user: Partial<UserInfo> | null | undefined): boolean
   if (!user) return false
   if (user.isAdmin === true) return true
   const role = String(user.role || '').toUpperCase()
-  if (role === 'ADMIN') return true
+  if (role.includes('ADMIN')) return true
   const userType = String(user.userType || '').toUpperCase()
-  if (userType === 'ADMIN') return true
+  if (userType.includes('ADMIN')) return true
   const roles = Array.isArray(user.roles) ? user.roles : user.roles ? [user.roles] : []
-  return roles.some((item) => String(item || '').toUpperCase() === 'ADMIN')
+  return roles.some((item) => String(item || '').toUpperCase().includes('ADMIN'))
 }
 
 export const useAuthStore = defineStore('auth', () => {

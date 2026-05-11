@@ -91,6 +91,7 @@ export interface DashboardOverview {
 export interface AskResponse {
   sessionId: number
   answer: string
+  question?: string
   answerType?: 'RAG' | 'NO_CONTEXT' | 'GENERAL' | string
   canUseGeneralAnswer?: boolean
   found?: boolean

@@ -47,13 +47,15 @@ request.interceptors.response.use(
     }
 
     const body = response.data
-    if (body && typeof body === 'object' && 'code' in body && 'data' in body) {
+    if (body && typeof body === 'object' && 'code' in body) {
       const codeValue = (body as ApiResponse).code
       const code = asBizCode(codeValue)
-      if (code === '0' || code === 'SUCCESS') return body.data
+      if (code === '0' || code === 'SUCCESS') {
+        return 'data' in body ? (body as ApiResponse).data : body
+      }
 
       const message = (body as ApiResponse).message || '请求失败'
-      const error = new BusinessError(message, { bizCode: codeValue, bizData: (body as ApiResponse).data })
+      const error = new BusinessError(message, { bizCode: codeValue, bizData: (body as any).data })
       if (!isRagFriendlyCode(codeValue)) ElMessage.error(message)
       return Promise.reject(error)
     }

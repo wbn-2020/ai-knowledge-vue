@@ -54,6 +54,7 @@ function normalizeMessage(item: any): ChatMessage {
   return {
     ...item,
     role: normalizeRole(item.role),
+    question: String(item?.question ?? ''),
     content: String(item?.content ?? item?.answer ?? ''),
     references: Array.isArray(item?.references) ? item.references : [],
     answerType: item?.answerType,
@@ -172,13 +173,15 @@ function assistantHtml(message: ChatMessage) {
 }
 
 function referenceDialogHtml(ref: ChatReference | null) {
-  return renderMarkdownSafe(ref?.content || ref?.snippet || '后端未返回引用片段内容')
-}
-
-function referencePreview(ref: ChatReference) {
-  const content = String((ref as any).snippet || ref.content || '').trim()
-  if (!content) return '暂无片段摘要'
-  return content.length > 200 ? `${content.slice(0, 200)}...` : content
+  const content =
+    (ref as any)?.snippet ||
+    (ref as any)?.chunkContent ||
+    ref?.content ||
+    (ref as any)?.text ||
+    (ref as any)?.summary ||
+    ''
+  const safe = String(content || '').trim()
+  return renderMarkdownSafe(safe || '暂无片段内容')
 }
 
 function appendFriendlyAssistantMessage(code: unknown, message?: string) {
@@ -284,7 +287,7 @@ async function ask() {
 async function askGeneralForMessage(message: ChatMessage, index: number) {
   if (!selectedKb.value || !sessionId.value) return ElMessage.warning('请先选择知识库并开始会话')
   if (isRetryLoading(message.id)) return
-  const originalQuestion = findPreviousUserQuestion(index)
+  const originalQuestion = String((message as any).question || '').trim() || findPreviousUserQuestion(index)
   if (!originalQuestion) return ElMessage.warning('未找到该回复对应的用户问题')
   setRetryLoading(message.id, true)
   try {
@@ -302,6 +305,7 @@ async function askGeneralForMessage(message: ChatMessage, index: number) {
   } catch (error) {
     if (error instanceof BusinessError && isRagFriendlyCode(error.bizCode)) {
       chatMessages.value[index] = normalizeMessage({ ...message, content: error.message || friendlyRagMessage(error.bizCode), references: [] })
+      ElMessage.warning(error.message || friendlyRagMessage(error.bizCode))
       await scrollToBottom(true)
     } else {
       ElMessage.error(error instanceof Error ? error.message : '通用回答生成失败，请稍后重试')
@@ -463,9 +467,7 @@ onMounted(async () => {
 
           <div class="bubble" :class="message.role === 'user' ? 'user-bubble' : 'assistant-bubble'">
             <p v-if="message.role === 'user'" class="user-text">{{ message.content }}</p>
-            <div v-else class="assistant-content markdown-body" v-html="assistantHtml(message)" />
-
-            <div v-if="isNoContextMessage(message)" class="no-context-box">
+            <div v-else-if="isNoContextMessage(message)" class="no-context-box">
               <div class="no-context-title">当前知识库未找到足够相关资料</div>
               <div class="no-context-body">{{ getNoContextBody(message) }}</div>
               <div v-if="shouldShowGeneralAnswerButton(message)" class="no-context-action">
@@ -475,6 +477,7 @@ onMounted(async () => {
               </div>
               <div class="no-context-hint">通用回答不提供知识库引用来源。</div>
             </div>
+            <div v-else class="assistant-content markdown-body" v-html="assistantHtml(message)" />
 
             <div v-if="isGeneralAnswer(message)" class="general-hint">通用回答不提供知识库引用来源。</div>
 
@@ -487,7 +490,6 @@ onMounted(async () => {
                 @click="openReferenceDialog(ref)"
               >
                 <div>[{{ refIndex + 1 }}] {{ getReferenceDocumentName(ref) }} · 切片 {{ getReferenceChunkLabel(ref) }} · 相似度：{{ referenceScore(ref) }}</div>
-                <div class="reference-snippet">{{ referencePreview(ref) }}</div>
               </div>
               <el-button v-if="hasMoreReferences(message)" link type="primary" @click="toggleShowAllRefs(message.id)">
                 {{ showAllRefsMap[message.id] ? '收起引用' : `查看全部 ${validReferences(message).length} 条引用` }}
@@ -526,7 +528,7 @@ onMounted(async () => {
       </div>
     </section>
 
-    <el-dialog v-model="referenceDialogVisible" title="引用详情" width="760px" @close="closeReferenceDialog">
+    <el-dialog v-model="referenceDialogVisible" title="引用来源详情" width="760px" @close="closeReferenceDialog">
       <div v-if="currentReference" class="reference-dialog-content">
         <p><strong>文档：</strong>{{ getReferenceDocumentName(currentReference) }}</p>
         <p><strong>切片序号：</strong>{{ getReferenceChunkLabel(currentReference) }}</p>
@@ -779,12 +781,6 @@ onMounted(async () => {
 
 .reference-item:hover {
   background: #eff6ff;
-}
-
-.reference-snippet {
-  margin-top: 4px;
-  color: #64748b;
-  line-height: 1.5;
 }
 
 .message-actions {
