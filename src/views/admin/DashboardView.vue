@@ -38,16 +38,23 @@ const aiCallTotal = computed(() =>
   Number(
     overview.value?.aiCallCount ??
       overview.value?.aiCalls ??
-      overview.value?.aiCallTotal ??
       overview.value?.totalAiCalls ??
+      overview.value?.aiCallTotal ??
+      overview.value?.qaCount ??
       0,
   ),
 )
 
+const userTotal = computed(() => Number(overview.value?.userCount ?? overview.value?.totalUsers ?? 0))
+const knowledgeBaseTotal = computed(
+  () => Number(overview.value?.knowledgeBaseCount ?? overview.value?.kbCount ?? overview.value?.totalKnowledgeBases ?? 0),
+)
+const documentTotal = computed(() => Number(overview.value?.documentCount ?? overview.value?.totalDocuments ?? 0))
+
 const metrics = computed(() => [
-  { label: '平台用户', value: Number(overview.value?.userCount ?? 0), hint: '已注册用户总数' },
-  { label: '知识库总数', value: Number(overview.value?.knowledgeBaseCount ?? 0), hint: '全平台知识库' },
-  { label: '文档总数', value: Number(overview.value?.documentCount ?? 0), hint: '上传文档规模' },
+  { label: '平台用户', value: userTotal.value, hint: '已注册用户总数' },
+  { label: '知识库总数', value: knowledgeBaseTotal.value, hint: '全平台知识库' },
+  { label: '文档总数', value: documentTotal.value, hint: '上传文档规模' },
   { label: 'AI 调用次数', value: aiCallTotal.value, hint: '问答与摘要调用' },
 ])
 

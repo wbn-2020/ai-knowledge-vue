@@ -15,6 +15,21 @@ const keyword = ref('')
 const documentId = ref<number>()
 const pager = reactive({ pageNo: 1, pageSize: 10, total: 0 })
 
+const taskTypeOptions = [
+  { label: '文档解析', value: 'DOCUMENT_PARSE' },
+  { label: '文档向量化（DOCUMENT_VECTORIZE）', value: 'DOCUMENT_VECTORIZE' },
+  { label: '文档向量化（DOCUMENT_EMBEDDING）', value: 'DOCUMENT_EMBEDDING' },
+  { label: '向量化（VECTORIZE）', value: 'VECTORIZE' },
+  { label: '向量化（EMBEDDING）', value: 'EMBEDDING' },
+]
+
+function extractErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message) return error.message
+  const maybeAxios = error as any
+  const backendMessage = maybeAxios?.response?.data?.message || maybeAxios?.response?.data?.msg
+  return backendMessage ? String(backendMessage) : fallback
+}
+
 function taskIdOf(row: any) {
   const raw = row?.id ?? row?.taskId ?? row?.task_id
   const n = Number(raw)
@@ -38,19 +53,19 @@ async function loadTasks() {
   try {
     const params: any = {
       status: status.value || undefined,
+      taskType: taskType.value || undefined,
+      documentId: documentId.value || undefined,
       keyword: keyword.value || undefined,
       pageNo: pager.pageNo,
       pageSize: pager.pageSize,
     }
-    if (taskType.value) params.taskType = taskType.value
-    if (documentId.value) params.documentId = documentId.value
     const data: any = await getDocumentTasks(params)
     tasks.value = data?.list || []
     pager.total = data?.total || 0
     pager.pageNo = data?.pageNo || pager.pageNo
     pager.pageSize = data?.pageSize || pager.pageSize
   } catch (error) {
-    ElMessage.error(error instanceof Error ? error.message : '任务列表加载失败')
+    ElMessage.error(extractErrorMessage(error, '任务列表加载失败'))
   } finally {
     loading.value = false
   }
@@ -99,13 +114,14 @@ onMounted(loadTasks)
       <el-input v-model="keyword" placeholder="搜索文档名称 / 任务信息" clearable style="max-width: 320px" />
       <el-select v-model="status" placeholder="任务状态" clearable style="width: 160px">
         <el-option label="待执行" value="PENDING" />
-        <el-option label="执行中" value="RUNNING" />
         <el-option label="执行中" value="PROCESSING" />
         <el-option label="成功" value="SUCCESS" />
         <el-option label="失败" value="FAILED" />
       </el-select>
-      <el-input v-model="taskType" placeholder="任务类型（可选）" clearable style="width: 180px" />
-      <el-input-number v-model="documentId" :min="1" placeholder="文档ID" style="width: 150px" />
+      <el-select v-model="taskType" placeholder="任务类型（可选）" clearable style="width: 260px">
+        <el-option v-for="item in taskTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+      </el-select>
+      <el-input-number v-model="documentId" :min="1" placeholder="关联文档ID" style="width: 150px" />
     </div>
 
     <section class="soft-card">
