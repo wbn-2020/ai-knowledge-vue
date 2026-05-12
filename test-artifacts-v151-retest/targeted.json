@@ -1,0 +1,19 @@
+{
+  "generalBtnCount": 1,
+  "sendDisabled": false,
+  "url": "http://localhost:5173/app/chat",
+  "events": [
+    {
+      "url": "http://localhost:5173/api/documents/35/chat",
+      "status": 200,
+      "post": "{\"sessionId\":null,\"question\":\"请介绍火星殖民计划的最新进展\",\"allowGeneralAnswer\":false}",
+      "body": "{\"code\":0,\"message\":\"ok\",\"data\":{\"sessionId\":93,\"question\":\"请介绍火星殖民计划的最新进展\",\"answer\":\"当前知识库未找到相关依据。\",\"answerType\":\"NO_CONTEXT\",\"canUseGeneralAnswer\":true,\"messageId\":321,\"references\":[],\"found\":false,\"basedOnKnowledgeBase\":false,\"noAnswerReason\":\"LOW_SIMILARITY\"}}"
+    },
+    {
+      "url": "http://localhost:5173/api/chat/ask",
+      "status": 200,
+      "post": "{\"knowledgeBaseId\":45,\"sessionId\":null,\"question\":\"TopK 参数用于控制什么？\",\"allowGeneralAnswer\":false}",
+      "body": "{\"code\":0,\"message\":\"ok\",\"data\":{\"sessionId\":94,\"question\":\"TopK 参数用于控制什么？\",\"answer\":\"当前知识库未找到相关依据。\",\"answerType\":\"NO_CONTEXT\",\"canUseGeneralAnswer\":true,\"messageId\":324,\"references\":[],\"found\":false,\"basedOnKnowledgeBase\":false,\"noAnswerReason\":\"LOW_SIMILARITY\"}}"
+    }
+  ]
+}

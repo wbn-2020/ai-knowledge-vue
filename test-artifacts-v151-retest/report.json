@@ -1,0 +1,551 @@
+{
+  "startedAt": "2026-05-12T02:47:07.399Z",
+  "env": {
+    "frontend": "http://localhost:5173",
+    "backend": "http://localhost:8080",
+    "account": "admin/admin123"
+  },
+  "steps": [
+    {
+      "name": "open-login",
+      "ok": true,
+      "url": "http://localhost:5173/login"
+    },
+    {
+      "name": "login",
+      "ok": true,
+      "url": "http://localhost:5173/app/dashboard"
+    },
+    {
+      "name": "refresh-login-state",
+      "ok": true,
+      "url": "http://localhost:5173/app/dashboard"
+    },
+    {
+      "name": "open-doc35",
+      "ok": true,
+      "url": "http://localhost:5173/app/documents/35"
+    },
+    {
+      "name": "doc35-status-check",
+      "ok": true,
+      "url": "http://localhost:5173/app/documents/35"
+    },
+    {
+      "name": "entry-by-button",
+      "ok": true,
+      "url": "http://localhost:5173/app/chat?scope=document&documentId=35&documentName=topk-test-long-v2.md"
+    },
+    {
+      "name": "doc-mode-ui-check",
+      "ok": true,
+      "url": "http://localhost:5173/app/chat?scope=document&documentId=35&documentName=topk-test-long-v2.md"
+    },
+    {
+      "name": "doc-question-1",
+      "ok": true,
+      "url": "http://localhost:5173/app/chat?scope=document&documentId=35&documentName=topk-test-long-v2.md"
+    },
+    {
+      "name": "doc-question-2",
+      "ok": true,
+      "url": "http://localhost:5173/app/chat?scope=document&documentId=35&documentName=topk-test-long-v2.md"
+    },
+    {
+      "name": "open-reference-if-any",
+      "ok": true,
+      "url": "http://localhost:5173/app/chat?scope=document&documentId=35&documentName=topk-test-long-v2.md"
+    },
+    {
+      "name": "followup",
+      "ok": false,
+      "url": "http://localhost:5173/app/chat?scope=document&documentId=35&documentName=topk-test-long-v2.md",
+      "error": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: '发送' }).first()\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"button\" data-v-48cf1172=\"\" aria-disabled=\"false\" class=\"el-button el-button--primary\">…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div role=\"dialog\" aria-modal=\"true\" aria-label=\"引用来源详情\" class=\"el-overlay-dialog\" aria-describedby=\"el-id-3628-17\">…</div> from <div class=\"el-overlay el-modal-dialog\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div role=\"dialog\" aria-modal=\"true\" aria-label=\"引用来源详情\" class=\"el-overlay-dialog\" aria-describedby=\"el-id-3628-17\">…</div> from <div class=\"el-overlay el-modal-dialog\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    55 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div role=\"dialog\" aria-modal=\"true\" aria-label=\"引用来源详情\" class=\"el-overlay-dialog\" aria-describedby=\"el-id-3628-17\">…</div> from <div class=\"el-overlay el-modal-dialog\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n"
+    },
+    {
+      "name": "no-context-question",
+      "ok": false,
+      "url": "http://localhost:5173/app/chat?scope=document&documentId=35&documentName=topk-test-long-v2.md",
+      "error": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: '发送' }).first()\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"button\" data-v-48cf1172=\"\" aria-disabled=\"false\" class=\"el-button el-button--primary\">…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div role=\"dialog\" aria-modal=\"true\" aria-label=\"引用来源详情\" class=\"el-overlay-dialog\" aria-describedby=\"el-id-3628-17\">…</div> from <div class=\"el-overlay el-modal-dialog\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div role=\"dialog\" aria-modal=\"true\" aria-label=\"引用来源详情\" class=\"el-overlay-dialog\" aria-describedby=\"el-id-3628-17\">…</div> from <div class=\"el-overlay el-modal-dialog\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    57 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div role=\"dialog\" aria-modal=\"true\" aria-label=\"引用来源详情\" class=\"el-overlay-dialog\" aria-describedby=\"el-id-3628-17\">…</div> from <div class=\"el-overlay el-modal-dialog\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n"
+    },
+    {
+      "name": "general-click",
+      "ok": true,
+      "url": "http://localhost:5173/app/chat?scope=document&documentId=35&documentName=topk-test-long-v2.md"
+    },
+    {
+      "name": "manual-topk-threshold-fetch",
+      "ok": true,
+      "url": "http://localhost:5173/app/chat?scope=document&documentId=35&documentName=topk-test-long-v2.md"
+    },
+    {
+      "name": "switch-back-kb-mode",
+      "ok": false,
+      "url": "http://localhost:5173/app/chat?scope=document&documentId=35&documentName=topk-test-long-v2.md",
+      "error": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: '切换回知识库问答' }).first()\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"button\" data-v-48cf1172=\"\" aria-disabled=\"false\" class=\"el-button el-button--primary is-plain\">…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <p data-v-48cf1172=\"\">…</p> from <div class=\"el-overlay el-modal-dialog\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <p data-v-48cf1172=\"\">…</p> from <div class=\"el-overlay el-modal-dialog\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    57 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <p data-v-48cf1172=\"\">…</p> from <div class=\"el-overlay el-modal-dialog\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n"
+    },
+    {
+      "name": "kb-send-after-switch",
+      "ok": false,
+      "url": "http://localhost:5173/app/chat?scope=document&documentId=35&documentName=topk-test-long-v2.md",
+      "error": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: '发送' }).first()\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"button\" data-v-48cf1172=\"\" aria-disabled=\"false\" class=\"el-button el-button--primary\">…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div role=\"dialog\" aria-modal=\"true\" aria-label=\"引用来源详情\" class=\"el-overlay-dialog\" aria-describedby=\"el-id-3628-17\">…</div> from <div class=\"el-overlay el-modal-dialog\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div role=\"dialog\" aria-modal=\"true\" aria-label=\"引用来源详情\" class=\"el-overlay-dialog\" aria-describedby=\"el-id-3628-17\">…</div> from <div class=\"el-overlay el-modal-dialog\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    57 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div role=\"dialog\" aria-modal=\"true\" aria-label=\"引用来源详情\" class=\"el-overlay-dialog\" aria-describedby=\"el-id-3628-17\">…</div> from <div class=\"el-overlay el-modal-dialog\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n"
+    },
+    {
+      "name": "doc-understanding-regression",
+      "ok": true,
+      "url": "http://localhost:5173/app/documents/35"
+    },
+    {
+      "name": "kb-understanding-regression",
+      "ok": true,
+      "url": "http://localhost:5173/app/knowledge/45"
+    },
+    {
+      "name": "search-page-regression",
+      "ok": true,
+      "url": "http://localhost:5173/app/search"
+    },
+    {
+      "name": "admin-logs-regression",
+      "ok": true,
+      "url": "http://localhost:5173/admin/logs"
+    },
+    {
+      "name": "logout-back-check",
+      "ok": true,
+      "url": "http://localhost:5173/login"
+    }
+  ],
+  "api": [
+    {
+      "ts": "2026-05-12T02:47:11.398Z",
+      "method": "POST",
+      "url": "http://localhost:5173/api/auth/login",
+      "status": 200,
+      "postData": "{\"account\":\"admin\",\"password\":\"admin123\"}",
+      "body": "{\"code\":0,\"message\":\"ok\",\"data\":{\"token\":\"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3ODU1NDAzMSwiZXhwIjoxNzc4NjQwNDMxfQ.Icdp96e3E8n51kW4RzKDlyO6VgUXE72jkU-M9eD2vaw\",\"user\":{\"id\":1,\"username\":\"admin\",\"email\":\"admin@knowflow.local\",\"nickname\":\"admin\",\"avatar\":null,\"bio\":null,\"status\":\"ENABLED\",\"role\":\"ADMIN\",\"isAdmin\":true,\"kbCount\":0,\"docCount\":0,\"qaCount\":0,\"lastLoginTime\":null,\"createTime\":\"2026-05-08T13:40:50\"}}}"
+    },
+    {
+      "ts": "2026-05-12T02:47:17.047Z",
+      "method": "GET",
+      "url": "http://localhost:5173/api/documents/35",
+      "status": 200,
+      "postData": null,
+      "body": "{\"code\":0,\"message\":\"ok\",\"data\":{\"id\":35,\"userId\":1,\"uploaderId\":1,\"uploaderName\":\"admin\",\"knowledgeBaseId\":45,\"knowledgeBaseName\":\"TopK测试知识库\",\"ownerName\":\"admin\",\"name\":\"topk-test-long-v2.md\",\"originalName\":\"topk-test-long-v2.md\",\"fileType\":\"md\",\"fileSize\":65079,\"chunkCount\":44,\"parseStatus\":\"SUCCESS\",\"embeddingStatus\":\"SUCCESS\",\"vectorStatus\":\"SUCCESS\",\"errorMessage\":null,\"createTime\":\"2026-05-11T20:33:30\",\"updateTime\":\"2026-05-11T20:33:30\",\"createdAt\":\"2026-05-11T20:33:30\",\"updatedAt\":\"2026-05-11T20:33:30\"}}"
+    },
+    {
+      "ts": "2026-05-12T02:47:17.528Z",
+      "method": "GET",
+      "url": "http://localhost:5173/api/documents/35/summary",
+      "status": 200,
+      "postData": null,
+      "body": "{\"code\":0,\"message\":\"ok\",\"data\":{\"documentId\":35,\"documentName\":\"topk-test-long-v2.md\",\"knowledgeBaseId\":45,\"summary\":\"以下是根据文档内容生成的结构化摘要：\\n\\n---\\n\\n## 结构化摘要\\n\\n### 主题\\nRAG（检索增强生成）问答流程中的参数控制与日志记录规范。\\n\\n### 核心观点\\n- RAG 问答流程包含完整的步骤链：用户提问 → 向量检索 → 召回相关文档片段 → 拼接 Prompt → 调用大模型 → 生成回答 → 展示引用来源。\\n- 通过 `TopK` 和 `similarityThreshold` 两个参数控制候选片段的筛选逻辑。\\n- AI 调用日志需要记录一系列关键指标，用于追踪和调试检索与生成过程。\\n\\n### 关键细节\\n- **参数定义**：\\n  - `TopK`：控制候选片段数量。\\n  - `similarityThreshold`：用于过滤低相关片段。\\n  - `effectiveRetrieveCount`：表示有效召回数量。\\n  - `retrieveCount`：表示候选召回总数。\\n- **日志记录字段**：\\n  - 问题\\n  - 回答类型\\n  - 是否调用模型\\n  - 召回数量\\n  - 有效召回数量\\n  - TopK\\n  - 相似度阈值\\n  - 最高相似度\\n  - 耗时\\n  - 失败原因\\n\\n### 适用场景\\n- RAG 系统的开发与调试阶段，用于评估检索质量并优化参数。\\n- 日常运维监控，通过日志分析召回效果和模型调用情况。\\n- 故障排查，当回答质量或系统性能出现问题时，可依据日志字段定位原因。\",\"modelName\":\"deepseek-reasoner\",\"status\":\"SUCCESS\",\"errorMessage\":null,\"generatedAt\":\"2026-05-11T22:38:39\"}}"
+    },
+    {
+      "ts": "2026-05-12T02:47:17.683Z",
+      "method": "GET",
+      "url": "http://localhost:5173/api/documents/35/keywords",
+      "status": 200,
+      "postData": null,
+      "body": "{\"code\":0,\"message\":\"ok\",\"data\":[{\"keyword\":\"RAG\",\"weight\":1.0},{\"keyword\":\"问答流程\",\"weight\":0.9},{\"keyword\":\"向量检索\",\"weight\":0.9},{\"keyword\":\"召回\",\"weight\":0.9},{\"keyword\":\"TopK\",\"weight\":0.8},{\"keyword\":\"similarityThreshold\",\"weight\":0.8},{\"keyword\":\"effectiveRetrieveCount\",\"weight\":0.7},{\"keyword\":\"AI调用日志\",\"weight\":0.7},{\"keyword\":\"retrieveCount\",\"weight\":0.7},{\"keyword\":\"相似度阈值\",\"weight\":0.6}]}"
+    },
+    {
+      "ts": "2026-05-12T02:47:17.812Z",
+      "method": "GET",
+      "url": "http://localhost:5173/api/documents/35/preview",
+      "status": 200,
+      "postData": null,
+      "body": "{\"code\":0,\"message\":\"ok\",\"data\":\"# TopK 超长测试文档\\n\\n### 段落 1\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 2\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 3\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 4\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、\\n\\n选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 4\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 5\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 6\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败\\n\\n低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 7\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 8\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 9\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调\\n\\n、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 10\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 11\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 12\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，e\\n\\n2\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 13\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 14\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模"
+    },
+    {
+      "ts": "2026-05-12T02:47:18.002Z",
+      "method": "GET",
+      "url": "http://localhost:5173/api/documents/35/chunks?pageNo=1&pageSize=10",
+      "status": 200,
+      "postData": null,
+      "body": "{\"code\":0,\"message\":\"ok\",\"data\":{\"list\":[{\"chunkId\":525,\"chunkIndex\":0,\"content\":\"# TopK 超长测试文档\\n\\n### 段落 1\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 2\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 3\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 4\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、\",\"tokenCount\":400,\"vectorId\":\"525\",\"createdAt\":\"2026-05-11T20:33:30\"},{\"chunkId\":526,\"chunkIndex\":1,\"content\":\"选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 4\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 5\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 6\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败\",\"tokenCount\":400,\"vectorId\":\"526\",\"createdAt\":\"2026-05-11T20:33:30\"},{\"chunkId\":527,\"chunkIndex\":2,\"content\":\"低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 7\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 8\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 9\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调\",\"tokenCount\":400,\"vectorId\":\"527\",\"createdAt\":\"2026-05-11T20:33:30\"},{\"chunkId\":528,\"chunkIndex\":3,\"content\":\"、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 10\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 11\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 12\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，e\",\"tokenCount\":400,\"vectorId\":\"528\",\"createdAt\":\"2026-05-11T20:33:30\"},{\"chunkId\":529,\"chunkIndex\":4,\"content\":\"2\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、"
+    },
+    {
+      "ts": "2026-05-12T02:47:19.500Z",
+      "method": "GET",
+      "url": "http://localhost:5173/api/chat/sessions?pageNo=1&pageSize=12",
+      "status": 200,
+      "postData": null,
+      "body": "{\"code\":0,\"message\":\"ok\",\"data\":{\"list\":[{\"id\":87,\"knowledgeBaseId\":45,\"knowledgeBaseName\":\"TopK测试知识库\",\"title\":\"测试知识库模式\",\"latestQuestion\":\"测试知识库模式\",\"messageCount\":2,\"createTime\":\"2026-05-12T10:42:24\",\"updateTime\":\"2026-05-12T10:42:24\",\"updatedAt\":\"2026-05-12T10:42:24\"},{\"id\":86,\"knowledgeBaseId\":45,\"knowledgeBaseName\":\"TopK测试知识库\",\"title\":\"测试文档模式\",\"latestQuestion\":\"测试文档模式\",\"messageCount\":2,\"createTime\":\"2026-05-12T10:42:20\",\"updateTime\":\"2026-05-12T10:42:20\",\"updatedAt\":\"2026-05-12T10:42:20\"},{\"id\":85,\"knowledgeBaseId\":45,\"knowledgeBaseName\":\"TopK测试知识库\",\"title\":\"TopK 参数用于控制什么？\",\"latestQuestion\":\"TopK 参数用于控制什么？\",\"messageCount\":2,\"createTime\":\"2026-05-12T10:19:13\",\"updateTime\":\"2026-05-12T10:19:13\",\"updatedAt\":\"2026-05-12T10:19:13\"},{\"id\":84,\"knowledgeBaseId\":45,\"knowledgeBaseName\":\"TopK测试知识库\",\"title\":\"这篇文档主要讲了什么？\",\"latestQuestion\":\"请介绍火星殖民计划的最新进展\",\"messageCount\":8,\"createTime\":\"2026-05-12T10:16:10\",\"updateTime\":\"2026-05-12T10:16:10\",\"updatedAt\":\"2026-05-12T10:16:10\"},{\"id\":83,\"knowledgeBaseId\":45,\"knowledgeBaseName\":\"TopK测试知识库\",\"title\":\"测试切换会话用问题\",\"latestQuestion\":\"日本2024年的GDP是多少？\",\"messageCount\":8,\"createTime\":\"2026-05-11T20:59:55\",\"updateTime\":\"2026-05-11T20:59:55\",\"updatedAt\":\"2026-05-11T20:59:55\"},{\"id\":82,\"knowledgeBaseId\":45,\"knowledgeBaseName\":\"TopK测试知识库\",\"title\":\"测试切换会话用问题\",\"latestQuestion\":\"测试切换会话用问题\",\"messageCount\":2,\"createTime\":\"2026-05-11T20:58:57\",\"updateTime\":\"2026-05-11T20:58:57\",\"updatedAt\":\"2026-05-11T20:58:57\"},{\"id\":81,\"knowledgeBaseId\":45,\"knowledgeBaseName\":\"TopK测试知识库\",\"title\":\"这个知识库支持哪些文档格式？\",\"latestQuestion\":\"它的文档处理流程是什么？\",\"messageCount\":8,\"createTime\":\"2026-05-11T20:52:35\",\"updateTime\":\"2026-05-11T20:52:35\",\"updatedAt\":\"2026-05-11T20:52:35\"},{\"id\":80,\"knowledgeBaseId\":41,\"knowledgeBaseName\":\"RAG测试知识库2\",\"title\":\"这个知识库支持哪些文档格式？\",\"latestQuestion\":\"测试切换会话用问题\",\"messageCount\":6,\"createTime\":\"2026-05-11T20:48:46\",\"updateTime\":\"2026-05-11T20:48:46\",\"updatedAt\":\"2026-05-11T20:48:46\"},{\"id\":79,\"knowledgeBaseId\":45,\"knowledgeBaseName\":\"TopK测试知识库\",\"title\":\"RAG 问答流程包括哪些步骤？\",\"latestQuestion\":\"RAG 问答流程包括哪些步骤？\",\"messageCount\":2,\"createTime\":\"2026-05-11T20:38:13\",\"updateTime\":\"2026-05-11T20:38:13\",\"updatedAt\":\"2026-05-11T20:38:13\"},{\"id\":78,\"knowledgeBaseId\":45,\"knowledgeBaseName\":\"TopK测试知识库\",\"title\":\"RAG 问答流程包括哪些步骤？\",\"latestQuestion\":\"RAG 问答流程包括哪些步骤？\",\"messageCount\":2,\"createTime\":\"2026-05-11T20:37:47\",\"updateTime\":\"2026-05-11T20:37:47\",\"updatedAt\":\"2026-05-11T20:37:47\"},{\"id\":77,\"knowledgeBaseId\":45,\"knowledgeBaseName\":\"TopK测试知识库\",\"title\":\"RAG 问答流程包括哪些步骤？\",\"latestQuestion\":\"RAG 问答流程包括哪些步骤？\",\"messageCount\":2,\"createTime\":\"2026-05-11T20:34:02\",\"updateTime\":\"2026-05-11T20:34:02\",\"updatedAt\":\"2026-05-11T20:34:02\"},{\"id\":76,\"knowledgeBaseId\":45,\"knowledgeBaseName\":\"TopK测试知识库\",\"title\":\"RAG 问答流程包括哪些步骤？\",\"latestQuestion\":\"RAG 问答流程包括哪些步骤？\",\"messageCount\":2,\"createTime\":\"2026-05-11T20:32:17\",\"updateTime\":\"2026-05-11T20:32:17\",\"updatedAt\":\"2026-05-11T20:32:17\"}],\"total\":60,\"pageNo\":1,\"pageSize\":12}}"
+    },
+    {
+      "ts": "2026-05-12T02:47:26.047Z",
+      "method": "POST",
+      "url": "http://localhost:5173/api/documents/35/chat",
+      "status": 200,
+      "postData": "{\"sessionId\":null,\"question\":\"TopK 参数用于控制什么？\",\"allowGeneralAnswer\":false}",
+      "body": "{\"code\":0,\"message\":\"ok\",\"data\":{\"sessionId\":88,\"question\":\"TopK 参数用于控制什么？\",\"answer\":\"根据提供的文档内容，TopK 参数用于控制候选片段数量。\",\"answerType\":\"RAG\",\"canUseGeneralAnswer\":false,\"messageId\":311,\"references\":[{\"documentId\":35,\"documentName\":\"topk-test-long-v2.md\",\"chunkId\":541,\"chunkIndex\":16,\"vectorId\":\"541\",\"content\":\"、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 46\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 47\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 48\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThres\",\"snippet\":\"、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、\",\"score\":0.5617,\"finalScore\":0.5617,\"hitReason\":\"hybrid\",\"rank\":1},{\"documentId\":35,\"documentName\":\"topk-test-long-v2.md\",\"chunkId\":542,\"chunkIndex\":17,\"vectorId\":\"542\",\"content\":\"和失败原因。\\n\\n### 段落 48\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 49\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 50\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 51\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 \",\"snippet\":\"和失败原因。 ### 段落 48 ## RAG 扩展段落 RAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount \",\"score\":0.5613,\"finalScore\":0.5613,\"hitReason\":\"hybrid\",\"rank\":2},{\"documentId\":35,\"documentName\":\"topk-test-long-v2.md\",\"chunkId\":525,\"chunkIndex\":0,\"vectorId\":\"525\",\"content\":\"# TopK 超长测试文档\\n\\n### 段落 1\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 2\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 3\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 4\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、\",\"snippet\":\"# TopK 超长测试文档 ### 段落 1 ## RAG 扩展段落 RAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieve\",\"score\":0.5602,\"finalScore\":0.5602,\"hitReason\":\"hybrid\",\"rank\":3},{\"documentId\":35,\"documentName\":\"topk-test-long-v2.md\",\"chunkId\":559,\"chunkIndex\":34,\"vectorId\":\"559\",\"content\":\"耗时和失败原因。\\n\\n### 段落 95\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshol"
+    },
+    {
+      "ts": "2026-05-12T02:47:26.127Z",
+      "method": "GET",
+      "url": "http://localhost:5173/api/chat/sessions?pageNo=1&pageSize=12",
+      "status": 200,
+      "postData": null,
+      "body": "{\"code\":0,\"message\":\"ok\",\"data\":{\"list\":[{\"id\":88,\"knowledgeBaseId\":45,\"knowledgeBaseName\":\"TopK测试知识库\",\"title\":\"TopK 参数用于控制什么？\",\"latestQuestion\":\"TopK 参数用于控制什么？\",\"messageCount\":2,\"createTime\":\"2026-05-12T10:47:21\",\"updateTime\":\"2026-05-12T10:47:21\",\"updatedAt\":\"2026-05-12T10:47:21\"},{\"id\":87,\"knowledgeBaseId\":45,\"knowledgeBaseName\":\"TopK测试知识库\",\"title\":\"测试知识库模式\",\"latestQuestion\":\"测试知识库模式\",\"messageCount\":2,\"createTime\":\"2026-05-12T10:42:24\",\"updateTime\":\"2026-05-12T10:42:24\",\"updatedAt\":\"2026-05-12T10:42:24\"},{\"id\":86,\"knowledgeBaseId\":45,\"knowledgeBaseName\":\"TopK测试知识库\",\"title\":\"测试文档模式\",\"latestQuestion\":\"测试文档模式\",\"messageCount\":2,\"createTime\":\"2026-05-12T10:42:20\",\"updateTime\":\"2026-05-12T10:42:20\",\"updatedAt\":\"2026-05-12T10:42:20\"},{\"id\":85,\"knowledgeBaseId\":45,\"knowledgeBaseName\":\"TopK测试知识库\",\"title\":\"TopK 参数用于控制什么？\",\"latestQuestion\":\"TopK 参数用于控制什么？\",\"messageCount\":2,\"createTime\":\"2026-05-12T10:19:13\",\"updateTime\":\"2026-05-12T10:19:13\",\"updatedAt\":\"2026-05-12T10:19:13\"},{\"id\":84,\"knowledgeBaseId\":45,\"knowledgeBaseName\":\"TopK测试知识库\",\"title\":\"这篇文档主要讲了什么？\",\"latestQuestion\":\"请介绍火星殖民计划的最新进展\",\"messageCount\":8,\"createTime\":\"2026-05-12T10:16:10\",\"updateTime\":\"2026-05-12T10:16:10\",\"updatedAt\":\"2026-05-12T10:16:10\"},{\"id\":83,\"knowledgeBaseId\":45,\"knowledgeBaseName\":\"TopK测试知识库\",\"title\":\"测试切换会话用问题\",\"latestQuestion\":\"日本2024年的GDP是多少？\",\"messageCount\":8,\"createTime\":\"2026-05-11T20:59:55\",\"updateTime\":\"2026-05-11T20:59:55\",\"updatedAt\":\"2026-05-11T20:59:55\"},{\"id\":82,\"knowledgeBaseId\":45,\"knowledgeBaseName\":\"TopK测试知识库\",\"title\":\"测试切换会话用问题\",\"latestQuestion\":\"测试切换会话用问题\",\"messageCount\":2,\"createTime\":\"2026-05-11T20:58:57\",\"updateTime\":\"2026-05-11T20:58:57\",\"updatedAt\":\"2026-05-11T20:58:57\"},{\"id\":81,\"knowledgeBaseId\":45,\"knowledgeBaseName\":\"TopK测试知识库\",\"title\":\"这个知识库支持哪些文档格式？\",\"latestQuestion\":\"它的文档处理流程是什么？\",\"messageCount\":8,\"createTime\":\"2026-05-11T20:52:35\",\"updateTime\":\"2026-05-11T20:52:35\",\"updatedAt\":\"2026-05-11T20:52:35\"},{\"id\":80,\"knowledgeBaseId\":41,\"knowledgeBaseName\":\"RAG测试知识库2\",\"title\":\"这个知识库支持哪些文档格式？\",\"latestQuestion\":\"测试切换会话用问题\",\"messageCount\":6,\"createTime\":\"2026-05-11T20:48:46\",\"updateTime\":\"2026-05-11T20:48:46\",\"updatedAt\":\"2026-05-11T20:48:46\"},{\"id\":79,\"knowledgeBaseId\":45,\"knowledgeBaseName\":\"TopK测试知识库\",\"title\":\"RAG 问答流程包括哪些步骤？\",\"latestQuestion\":\"RAG 问答流程包括哪些步骤？\",\"messageCount\":2,\"createTime\":\"2026-05-11T20:38:13\",\"updateTime\":\"2026-05-11T20:38:13\",\"updatedAt\":\"2026-05-11T20:38:13\"},{\"id\":78,\"knowledgeBaseId\":45,\"knowledgeBaseName\":\"TopK测试知识库\",\"title\":\"RAG 问答流程包括哪些步骤？\",\"latestQuestion\":\"RAG 问答流程包括哪些步骤？\",\"messageCount\":2,\"createTime\":\"2026-05-11T20:37:47\",\"updateTime\":\"2026-05-11T20:37:47\",\"updatedAt\":\"2026-05-11T20:37:47\"},{\"id\":77,\"knowledgeBaseId\":45,\"knowledgeBaseName\":\"TopK测试知识库\",\"title\":\"RAG 问答流程包括哪些步骤？\",\"latestQuestion\":\"RAG 问答流程包括哪些步骤？\",\"messageCount\":2,\"createTime\":\"2026-05-11T20:34:02\",\"updateTime\":\"2026-05-11T20:34:02\",\"updatedAt\":\"2026-05-11T20:34:02\"}],\"total\":61,\"pageNo\":1,\"pageSize\":12}}"
+    },
+    {
+      "ts": "2026-05-12T02:48:34.235Z",
+      "method": "POST",
+      "url": "http://localhost:5173/api/documents/35/chat",
+      "status": 200,
+      "postData": "{\"question\":\"TopK 参数用于控制什么？\",\"topK\":1,\"allowGeneralAnswer\":false}",
+      "body": "{\"code\":0,\"message\":\"ok\",\"data\":{\"sessionId\":89,\"question\":\"TopK 参数用于控制什么？\",\"answer\":\"根据提供的文档内容，TopK 参数用于控制候选片段数量。\",\"answerType\":\"RAG\",\"canUseGeneralAnswer\":false,\"messageId\":313,\"references\":[{\"documentId\":35,\"documentName\":\"topk-test-long-v2.md\",\"chunkId\":541,\"chunkIndex\":16,\"vectorId\":\"541\",\"content\":\"、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 46\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 47\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 48\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThres\",\"snippet\":\"、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、\",\"score\":0.5617,\"finalScore\":0.5617,\"hitReason\":\"hybrid\",\"rank\":1}],\"found\":true,\"basedOnKnowledgeBase\":true,\"noAnswerReason\":null}}"
+    },
+    {
+      "ts": "2026-05-12T02:48:35.933Z",
+      "method": "POST",
+      "url": "http://localhost:5173/api/documents/35/chat",
+      "status": 200,
+      "postData": "{\"question\":\"TopK 参数用于控制什么？\",\"topK\":5,\"allowGeneralAnswer\":false}",
+      "body": "{\"code\":0,\"message\":\"ok\",\"data\":{\"sessionId\":90,\"question\":\"TopK 参数用于控制什么？\",\"answer\":\"根据提供的文档内容，TopK 参数用于控制候选片段数量。\",\"answerType\":\"RAG\",\"canUseGeneralAnswer\":false,\"messageId\":315,\"references\":[{\"documentId\":35,\"documentName\":\"topk-test-long-v2.md\",\"chunkId\":541,\"chunkIndex\":16,\"vectorId\":\"541\",\"content\":\"、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 46\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 47\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 48\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThres\",\"snippet\":\"、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、\",\"score\":0.5617,\"finalScore\":0.5617,\"hitReason\":\"hybrid\",\"rank\":1},{\"documentId\":35,\"documentName\":\"topk-test-long-v2.md\",\"chunkId\":542,\"chunkIndex\":17,\"vectorId\":\"542\",\"content\":\"和失败原因。\\n\\n### 段落 48\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 49\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 50\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 51\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 \",\"snippet\":\"和失败原因。 ### 段落 48 ## RAG 扩展段落 RAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount \",\"score\":0.5613,\"finalScore\":0.5613,\"hitReason\":\"hybrid\",\"rank\":2},{\"documentId\":35,\"documentName\":\"topk-test-long-v2.md\",\"chunkId\":525,\"chunkIndex\":0,\"vectorId\":\"525\",\"content\":\"# TopK 超长测试文档\\n\\n### 段落 1\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 2\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 3\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 4\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、\",\"snippet\":\"# TopK 超长测试文档 ### 段落 1 ## RAG 扩展段落 RAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieve\",\"score\":0.5602,\"finalScore\":0.5602,\"hitReason\":\"hybrid\",\"rank\":3},{\"documentId\":35,\"documentName\":\"topk-test-long-v2.md\",\"chunkId\":559,\"chunkIndex\":34,\"vectorId\":\"559\",\"content\":\"耗时和失败原因。\\n\\n### 段落 95\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshol"
+    },
+    {
+      "ts": "2026-05-12T02:48:36.267Z",
+      "method": "POST",
+      "url": "http://localhost:5173/api/documents/35/chat",
+      "status": 200,
+      "postData": "{\"question\":\"TopK 参数用于控制什么？\",\"similarityThreshold\":0.95,\"allowGeneralAnswer\":false}",
+      "body": "{\"code\":0,\"message\":\"ok\",\"data\":{\"sessionId\":91,\"question\":\"TopK 参数用于控制什么？\",\"answer\":\"当前知识库未找到相关依据。\",\"answerType\":\"NO_CONTEXT\",\"canUseGeneralAnswer\":true,\"messageId\":317,\"references\":[],\"found\":false,\"basedOnKnowledgeBase\":false,\"noAnswerReason\":\"LOW_SIMILARITY\"}}"
+    },
+    {
+      "ts": "2026-05-12T02:48:37.595Z",
+      "method": "POST",
+      "url": "http://localhost:5173/api/documents/35/chat",
+      "status": 200,
+      "postData": "{\"question\":\"TopK 参数用于控制什么？\",\"similarityThreshold\":0.1,\"allowGeneralAnswer\":false}",
+      "body": "{\"code\":0,\"message\":\"ok\",\"data\":{\"sessionId\":92,\"question\":\"TopK 参数用于控制什么？\",\"answer\":\"根据知识库内容，TopK 参数用于控制候选片段数量。\",\"answerType\":\"RAG\",\"canUseGeneralAnswer\":false,\"messageId\":319,\"references\":[{\"documentId\":35,\"documentName\":\"topk-test-long-v2.md\",\"chunkId\":541,\"chunkIndex\":16,\"vectorId\":\"541\",\"content\":\"、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 46\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 47\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 48\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThres\",\"snippet\":\"、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、\",\"score\":0.5617,\"finalScore\":0.5617,\"hitReason\":\"hybrid\",\"rank\":1},{\"documentId\":35,\"documentName\":\"topk-test-long-v2.md\",\"chunkId\":542,\"chunkIndex\":17,\"vectorId\":\"542\",\"content\":\"和失败原因。\\n\\n### 段落 48\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 49\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 50\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 51\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 \",\"snippet\":\"和失败原因。 ### 段落 48 ## RAG 扩展段落 RAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount \",\"score\":0.5613,\"finalScore\":0.5613,\"hitReason\":\"hybrid\",\"rank\":2},{\"documentId\":35,\"documentName\":\"topk-test-long-v2.md\",\"chunkId\":525,\"chunkIndex\":0,\"vectorId\":\"525\",\"content\":\"# TopK 超长测试文档\\n\\n### 段落 1\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 2\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 3\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 4\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、\",\"snippet\":\"# TopK 超长测试文档 ### 段落 1 ## RAG 扩展段落 RAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieve\",\"score\":0.5602,\"finalScore\":0.5602,\"hitReason\":\"hybrid\",\"rank\":3},{\"documentId\":35,\"documentName\":\"topk-test-long-v2.md\",\"chunkId\":559,\"chunkIndex\":34,\"vectorId\":\"559\",\"content\":\"耗时和失败原因。\\n\\n### 段落 95\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold "
+    },
+    {
+      "ts": "2026-05-12T02:49:38.104Z",
+      "method": "GET",
+      "url": "http://localhost:5173/api/documents/35",
+      "status": 200,
+      "postData": null,
+      "body": "{\"code\":0,\"message\":\"ok\",\"data\":{\"id\":35,\"userId\":1,\"uploaderId\":1,\"uploaderName\":\"admin\",\"knowledgeBaseId\":45,\"knowledgeBaseName\":\"TopK测试知识库\",\"ownerName\":\"admin\",\"name\":\"topk-test-long-v2.md\",\"originalName\":\"topk-test-long-v2.md\",\"fileType\":\"md\",\"fileSize\":65079,\"chunkCount\":44,\"parseStatus\":\"SUCCESS\",\"embeddingStatus\":\"SUCCESS\",\"vectorStatus\":\"SUCCESS\",\"errorMessage\":null,\"createTime\":\"2026-05-11T20:33:30\",\"updateTime\":\"2026-05-11T20:33:30\",\"createdAt\":\"2026-05-11T20:33:30\",\"updatedAt\":\"2026-05-11T20:33:30\"}}"
+    },
+    {
+      "ts": "2026-05-12T02:49:38.156Z",
+      "method": "GET",
+      "url": "http://localhost:5173/api/documents/35/summary",
+      "status": 200,
+      "postData": null,
+      "body": "{\"code\":0,\"message\":\"ok\",\"data\":{\"documentId\":35,\"documentName\":\"topk-test-long-v2.md\",\"knowledgeBaseId\":45,\"summary\":\"以下是根据文档内容生成的结构化摘要：\\n\\n---\\n\\n## 结构化摘要\\n\\n### 主题\\nRAG（检索增强生成）问答流程中的参数控制与日志记录规范。\\n\\n### 核心观点\\n- RAG 问答流程包含完整的步骤链：用户提问 → 向量检索 → 召回相关文档片段 → 拼接 Prompt → 调用大模型 → 生成回答 → 展示引用来源。\\n- 通过 `TopK` 和 `similarityThreshold` 两个参数控制候选片段的筛选逻辑。\\n- AI 调用日志需要记录一系列关键指标，用于追踪和调试检索与生成过程。\\n\\n### 关键细节\\n- **参数定义**：\\n  - `TopK`：控制候选片段数量。\\n  - `similarityThreshold`：用于过滤低相关片段。\\n  - `effectiveRetrieveCount`：表示有效召回数量。\\n  - `retrieveCount`：表示候选召回总数。\\n- **日志记录字段**：\\n  - 问题\\n  - 回答类型\\n  - 是否调用模型\\n  - 召回数量\\n  - 有效召回数量\\n  - TopK\\n  - 相似度阈值\\n  - 最高相似度\\n  - 耗时\\n  - 失败原因\\n\\n### 适用场景\\n- RAG 系统的开发与调试阶段，用于评估检索质量并优化参数。\\n- 日常运维监控，通过日志分析召回效果和模型调用情况。\\n- 故障排查，当回答质量或系统性能出现问题时，可依据日志字段定位原因。\",\"modelName\":\"deepseek-reasoner\",\"status\":\"SUCCESS\",\"errorMessage\":null,\"generatedAt\":\"2026-05-11T22:38:39\"}}"
+    },
+    {
+      "ts": "2026-05-12T02:49:38.231Z",
+      "method": "GET",
+      "url": "http://localhost:5173/api/documents/35/keywords",
+      "status": 200,
+      "postData": null,
+      "body": "{\"code\":0,\"message\":\"ok\",\"data\":[{\"keyword\":\"RAG\",\"weight\":1.0},{\"keyword\":\"问答流程\",\"weight\":0.9},{\"keyword\":\"向量检索\",\"weight\":0.9},{\"keyword\":\"召回\",\"weight\":0.9},{\"keyword\":\"TopK\",\"weight\":0.8},{\"keyword\":\"similarityThreshold\",\"weight\":0.8},{\"keyword\":\"effectiveRetrieveCount\",\"weight\":0.7},{\"keyword\":\"AI调用日志\",\"weight\":0.7},{\"keyword\":\"retrieveCount\",\"weight\":0.7},{\"keyword\":\"相似度阈值\",\"weight\":0.6}]}"
+    },
+    {
+      "ts": "2026-05-12T02:49:38.285Z",
+      "method": "GET",
+      "url": "http://localhost:5173/api/documents/35/preview",
+      "status": 200,
+      "postData": null,
+      "body": "{\"code\":0,\"message\":\"ok\",\"data\":\"# TopK 超长测试文档\\n\\n### 段落 1\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 2\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 3\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 4\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、\\n\\n选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 4\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 5\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 6\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败\\n\\n低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 7\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 8\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 9\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调\\n\\n、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 10\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 11\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 12\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，e\\n\\n2\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 13\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 14\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模"
+    },
+    {
+      "ts": "2026-05-12T02:49:38.403Z",
+      "method": "GET",
+      "url": "http://localhost:5173/api/documents/35/chunks?pageNo=1&pageSize=10",
+      "status": 200,
+      "postData": null,
+      "body": "{\"code\":0,\"message\":\"ok\",\"data\":{\"list\":[{\"chunkId\":525,\"chunkIndex\":0,\"content\":\"# TopK 超长测试文档\\n\\n### 段落 1\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 2\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 3\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 4\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、\",\"tokenCount\":400,\"vectorId\":\"525\",\"createdAt\":\"2026-05-11T20:33:30\"},{\"chunkId\":526,\"chunkIndex\":1,\"content\":\"选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 4\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 5\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 6\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败\",\"tokenCount\":400,\"vectorId\":\"526\",\"createdAt\":\"2026-05-11T20:33:30\"},{\"chunkId\":527,\"chunkIndex\":2,\"content\":\"低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 7\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 8\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 9\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调\",\"tokenCount\":400,\"vectorId\":\"527\",\"createdAt\":\"2026-05-11T20:33:30\"},{\"chunkId\":528,\"chunkIndex\":3,\"content\":\"、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 10\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 11\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n\\n### 段落 12\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，e\",\"tokenCount\":400,\"vectorId\":\"528\",\"createdAt\":\"2026-05-11T20:33:30\"},{\"chunkId\":529,\"chunkIndex\":4,\"content\":\"2\\n## RAG 扩展段落\\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、"
+    },
+    {
+      "ts": "2026-05-12T02:49:39.919Z",
+      "method": "GET",
+      "url": "http://localhost:5173/api/knowledge-bases/45/keywords",
+      "status": 200,
+      "postData": null,
+      "body": "{\"code\":0,\"message\":\"ok\",\"data\":[{\"keyword\":\"RAG\",\"weight\":1.0},{\"keyword\":\"TopK\",\"weight\":0.9},{\"keyword\":\"向量检索\",\"weight\":0.8},{\"keyword\":\"召回\",\"weight\":0.8},{\"keyword\":\"similarityThreshold\",\"weight\":0.7},{\"keyword\":\"大模型\",\"weight\":0.7},{\"keyword\":\"Prompt\",\"weight\":0.7},{\"keyword\":\"引用来源\",\"weight\":0.6},{\"keyword\":\"AI调用日志\",\"weight\":0.6},{\"keyword\":\"有效召回数量\",\"weight\":0.5}]}"
+    },
+    {
+      "ts": "2026-05-12T02:49:40.424Z",
+      "method": "GET",
+      "url": "http://localhost:5173/api/knowledge-bases/45/summary",
+      "status": 200,
+      "postData": null,
+      "body": "{\"code\":0,\"message\":\"ok\",\"data\":{\"knowledgeBaseId\":45,\"knowledgeBaseName\":\"TopK测试知识库\",\"summary\":\"基于您提供的知识库内容，以下为主题概览、主要知识点、覆盖范围和适用场景：\\n\\n---\\n\\n### 主题概览\\n该知识库主要围绕**RAG（检索增强生成）问答系统**的核心流程、关键参数以及日志记录要求展开。内容反复强调了从用户提问到最终生成回答的完整链路，并详细说明了控制检索质量和模型输入的相关配置项。\\n\\n---\\n\\n### 主要知识点\\n1. **RAG 问答流程**：用户提问 → 向量检索 → 召回相关文档片段 → 拼接 Prompt → 调用大模型 → 生成回答 → 展示引用来源。\\n2. **TopK 参数**：用于控制向量检索时返回的候选片段数量。TopK 越大，候选片段越多；TopK 越小，只返回最相关的少量片段。\\n3. **similarityThreshold（相似度阈值）**：用于过滤低相关片段。若片段与问题的相似度低于该阈值，则不进入最终 Prompt，也不作为引用来源展示。\\n4. **effectiveRetrieveCount（有效召回数量）**：表示经过相似度阈值过滤后实际用于 Prompt 的片段数量。\\n5. **retrieveCount（候选召回总数）**：表示向量检索返回的候选片段总数。\\n6. **contextMaxLength 参数**：用于限制最终拼接给大模型的上下文长度，避免 Prompt 过长导致模型调用失败或成本过高。\\n7. **引用来源**：应包含文档名称、切片序号、相似度分数和片段内容详情，用于告知用户 AI 回答的依据。\\n8. **无相关依据处理**：当知识库中查不到相关内容时，系统应返回“无相关依据”提示，而非让大模型编造答案。用户可选择是否允许 AI 基于通用知识回答。\\n9. **AI 调用日志**：应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\\n10. **文档预处理流程**：用户上传文档后，系统会解析文本、切分片段、生成向量。\\n\\n---\\n\\n### 覆盖范围\\n- **RAG 系统流程设计**：从文档上传、向量化、检索到 Prompt 拼接和模型调用的完整环节。\\n- **关键参数配置**：TopK、similarityThreshold、contextMaxLength 等对检索质量和模型输入的影响。\\n- **日志与监控**：AI 调用日志应记录的关键字段。\\n- **用户体验相关**：引用来源的展示规范、无依据时的提示逻辑。\\n\\n---\\n\\n### 适用场景\\n- 开发和配置 RAG 问答系统（如 KnowFlow AI 等平台）的技术人员或运维人员。\\n- 需要理解 RAG 流程中参数含义及日志要求的测试人员、产品经理或技术支持。\\n- 对 RAG 系统进行调优（如调整 TopK 和相似度阈值）以平衡召回率与精度的场景。\\n- 排查 AI 调用失败或回答质量问题时，依据日志字段进行定位分析。\",\"coveredDocumentCount\":2,\"modelName\":\"deepseek-reasoner\",\"status\":\"SUCCESS\",\"errorMessage\":null,\"generatedAt\":\"2026-05-11T22:37:51\"}}"
+    },
+    {
+      "ts": "2026-05-12T02:49:45.264Z",
+      "method": "GET",
+      "url": "http://localhost:5173/api/admin/logs/operations?pageNo=1&pageSize=10",
+      "status": 200,
+      "postData": null,
+      "body": "{\"code\":0,\"message\":\"ok\",\"data\":{\"list\":[{\"id\":43,\"userId\":1,\"knowledgeBaseId\":null,\"sessionId\":null,\"username\":null,\"question\":null,\"type\":\"OPERATION\",\"module\":\"SYSTEM_CONFIG\",\"action\":\"SAVE_SYSTEM_CONFIG\",\"path\":\"/api/admin/config/system\",\"result\":\"SUCCESS\",\"failureReason\":null,\"account\":null,\"ip\":null,\"device\":null,\"model\":null,\"modelName\":null,\"modelType\":null,\"provider\":null,\"scene\":null,\"answerType\":null,\"llmCalled\":null,\"retrieveCount\":null,\"effectiveRetrieveCount\":null,\"topK\":null,\"similarityThreshold\":null,\"maxSimilarityScore\":null,\"failReason\":null,\"noAnswerReason\":null,\"promptTokens\":null,\"completionTokens\":null,\"totalTokens\":null,\"durationMs\":null,\"costMs\":null,\"createTime\":\"2026-05-11T21:07:37\"},{\"id\":42,\"userId\":1,\"knowledgeBaseId\":null,\"sessionId\":null,\"username\":null,\"question\":null,\"type\":\"OPERATION\",\"module\":\"SYSTEM_CONFIG\",\"action\":\"SAVE_SYSTEM_CONFIG\",\"path\":\"/api/admin/config/system\",\"result\":\"SUCCESS\",\"failureReason\":null,\"account\":null,\"ip\":null,\"device\":null,\"model\":null,\"modelName\":null,\"modelType\":null,\"provider\":null,\"scene\":null,\"answerType\":null,\"llmCalled\":null,\"retrieveCount\":null,\"effectiveRetrieveCount\":null,\"topK\":null,\"similarityThreshold\":null,\"maxSimilarityScore\":null,\"failReason\":null,\"noAnswerReason\":null,\"promptTokens\":null,\"completionTokens\":null,\"totalTokens\":null,\"durationMs\":null,\"costMs\":null,\"createTime\":\"2026-05-11T20:38:06\"},{\"id\":41,\"userId\":1,\"knowledgeBaseId\":null,\"sessionId\":null,\"username\":null,\"question\":null,\"type\":\"OPERATION\",\"module\":\"SYSTEM_CONFIG\",\"action\":\"SAVE_SYSTEM_CONFIG\",\"path\":\"/api/admin/config/system\",\"result\":\"SUCCESS\",\"failureReason\":null,\"account\":null,\"ip\":null,\"device\":null,\"model\":null,\"modelName\":null,\"modelType\":null,\"provider\":null,\"scene\":null,\"answerType\":null,\"llmCalled\":null,\"retrieveCount\":null,\"effectiveRetrieveCount\":null,\"topK\":null,\"similarityThreshold\":null,\"maxSimilarityScore\":null,\"failReason\":null,\"noAnswerReason\":null,\"promptTokens\":null,\"completionTokens\":null,\"totalTokens\":null,\"durationMs\":null,\"costMs\":null,\"createTime\":\"2026-05-11T20:37:39\"},{\"id\":40,\"userId\":1,\"knowledgeBaseId\":null,\"sessionId\":null,\"username\":null,\"question\":null,\"type\":\"OPERATION\",\"module\":\"SYSTEM_CONFIG\",\"action\":\"SAVE_SYSTEM_CONFIG\",\"path\":\"/api/admin/config/system\",\"result\":\"SUCCESS\",\"failureReason\":null,\"account\":null,\"ip\":null,\"device\":null,\"model\":null,\"modelName\":null,\"modelType\":null,\"provider\":null,\"scene\":null,\"answerType\":null,\"llmCalled\":null,\"retrieveCount\":null,\"effectiveRetrieveCount\":null,\"topK\":null,\"similarityThreshold\":null,\"maxSimilarityScore\":null,\"failReason\":null,\"noAnswerReason\":null,\"promptTokens\":null,\"completionTokens\":null,\"totalTokens\":null,\"durationMs\":null,\"costMs\":null,\"createTime\":\"2026-05-11T20:21:19\"},{\"id\":39,\"userId\":1,\"knowledgeBaseId\":null,\"sessionId\":null,\"username\":null,\"question\":null,\"type\":\"OPERATION\",\"module\":\"SYSTEM_CONFIG\",\"action\":\"SAVE_SYSTEM_CONFIG\",\"path\":\"/api/admin/config/system\",\"result\":\"SUCCESS\",\"failureReason\":null,\"account\":null,\"ip\":null,\"device\":null,\"model\":null,\"modelName\":null,\"modelType\":null,\"provider\":null,\"scene\":null,\"answerType\":null,\"llmCalled\":null,\"retrieveCount\":null,\"effectiveRetrieveCount\":null,\"topK\":null,\"similarityThreshold\":null,\"maxSimilarityScore\":null,\"failReason\":null,\"noAnswerReason\":null,\"promptTokens\":null,\"completionTokens\":null,\"totalTokens\":null,\"durationMs\":null,\"costMs\":null,\"createTime\":\"2026-05-11T20:20:25\"},{\"id\":38,\"userId\":1,\"knowledgeBaseId\":null,\"sessionId\":null,\"username\":null,\"question\":null,\"type\":\"OPERATION\",\"module\":\"SYSTEM_CONFIG\",\"action\":\"SAVE_SYSTEM_CONFIG\",\"path\":\"/api/admin/config/system\",\"result\":\"SUCCESS\",\"failureReason\":null,\"account\":null,\"ip\":null,\"device\":null,\"model\":null,\"modelName\":null,\"modelType\":null,\"provider\":null,\"scene\":null,\"answerType\":null,\"llmCalled\":null,\"retrieveCount\":null,\"effectiveRetrieveCount\":null,\"topK\":null,\"similarityThreshold\":null,\"maxSimilarityScore\":null,\"failReason\":null,\"noAnswerReason\":null,\"promptTokens\":null,\"complet"
+    },
+    {
+      "ts": "2026-05-12T02:49:45.900Z",
+      "method": "GET",
+      "url": "http://localhost:5173/api/admin/logs/alerts",
+      "status": 200,
+      "postData": null,
+      "body": "{\"code\":0,\"message\":\"ok\",\"data\":[{\"type\":\"AI_CALL_FAILURE\",\"level\":\"OK\",\"message\":\"AI_CALL_FAILURE failure rate is 3.61%\",\"total\":194,\"failed\":7,\"failureRate\":0.03608247422680412},{\"type\":\"DOCUMENT_PARSE_FAILURE\",\"level\":\"OK\",\"message\":\"DOCUMENT_PARSE_FAILURE failure rate is 7.69%\",\"total\":26,\"failed\":2,\"failureRate\":0.07692307692307693},{\"type\":\"LOGIN_FAILURE\",\"level\":\"OK\",\"message\":\"LOGIN_FAILURE failure rate is 14.41%\",\"total\":118,\"failed\":17,\"failureRate\":0.1440677966101695}]}"
+    },
+    {
+      "ts": "2026-05-12T02:49:48.528Z",
+      "method": "DELETE",
+      "url": "http://localhost:5173/api/auth/logout",
+      "status": 200,
+      "postData": null,
+      "body": "{\"code\":0,\"message\":\"ok\",\"data\":null}"
+    }
+  ],
+  "consoleErrors": [],
+  "checks": {
+    "doc35": {},
+    "entryButtonCount": 1,
+    "entryButtonDisabled": false,
+    "docModeUrl": "http://localhost:5173/app/chat?scope=document&documentId=35&documentName=topk-test-long-v2.md",
+    "docModeScope": true,
+    "docModeDocId": true,
+    "scopeText": "当前范围：指定文档 - topk-test-long-v2.md",
+    "kbSelectorInDocMode": 0,
+    "switchBackBtn": 1,
+    "sendDisabledBeforeAsk": false,
+    "referenceVisibleCountAfterQ": 3,
+    "manualParamTests": {
+      "topk1": {
+        "http": 200,
+        "body": {
+          "code": 0,
+          "message": "ok",
+          "data": {
+            "sessionId": 89,
+            "question": "TopK 参数用于控制什么？",
+            "answer": "根据提供的文档内容，TopK 参数用于控制候选片段数量。",
+            "answerType": "RAG",
+            "canUseGeneralAnswer": false,
+            "messageId": 313,
+            "references": [
+              {
+                "documentId": 35,
+                "documentName": "topk-test-long-v2.md",
+                "chunkId": 541,
+                "chunkIndex": 16,
+                "vectorId": "541",
+                "content": "、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 46\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 47\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 48\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThres",
+                "snippet": "、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、",
+                "score": 0.5617,
+                "finalScore": 0.5617,
+                "hitReason": "hybrid",
+                "rank": 1
+              }
+            ],
+            "found": true,
+            "basedOnKnowledgeBase": true,
+            "noAnswerReason": null
+          }
+        }
+      },
+      "topk5": {
+        "http": 200,
+        "body": {
+          "code": 0,
+          "message": "ok",
+          "data": {
+            "sessionId": 90,
+            "question": "TopK 参数用于控制什么？",
+            "answer": "根据提供的文档内容，TopK 参数用于控制候选片段数量。",
+            "answerType": "RAG",
+            "canUseGeneralAnswer": false,
+            "messageId": 315,
+            "references": [
+              {
+                "documentId": 35,
+                "documentName": "topk-test-long-v2.md",
+                "chunkId": 541,
+                "chunkIndex": 16,
+                "vectorId": "541",
+                "content": "、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 46\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 47\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 48\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThres",
+                "snippet": "、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、",
+                "score": 0.5617,
+                "finalScore": 0.5617,
+                "hitReason": "hybrid",
+                "rank": 1
+              },
+              {
+                "documentId": 35,
+                "documentName": "topk-test-long-v2.md",
+                "chunkId": 542,
+                "chunkIndex": 17,
+                "vectorId": "542",
+                "content": "和失败原因。\n\n### 段落 48\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 49\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 50\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 51\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 ",
+                "snippet": "和失败原因。 ### 段落 48 ## RAG 扩展段落 RAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount ",
+                "score": 0.5613,
+                "finalScore": 0.5613,
+                "hitReason": "hybrid",
+                "rank": 2
+              },
+              {
+                "documentId": 35,
+                "documentName": "topk-test-long-v2.md",
+                "chunkId": 525,
+                "chunkIndex": 0,
+                "vectorId": "525",
+                "content": "# TopK 超长测试文档\n\n### 段落 1\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 2\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 3\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 4\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、",
+                "snippet": "# TopK 超长测试文档 ### 段落 1 ## RAG 扩展段落 RAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieve",
+                "score": 0.5602,
+                "finalScore": 0.5602,
+                "hitReason": "hybrid",
+                "rank": 3
+              },
+              {
+                "documentId": 35,
+                "documentName": "topk-test-long-v2.md",
+                "chunkId": 559,
+                "chunkIndex": 34,
+                "vectorId": "559",
+                "content": "耗时和失败原因。\n\n### 段落 95\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 96\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 97\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 98\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼",
+                "snippet": "耗时和失败原因。 ### 段落 95 ## RAG 扩展段落 RAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCoun",
+                "score": 0.5602,
+                "finalScore": 0.5602,
+                "hitReason": "hybrid",
+                "rank": 4
+              },
+              {
+                "documentId": 35,
+                "documentName": "topk-test-long-v2.md",
+                "chunkId": 563,
+                "chunkIndex": 38,
+                "vectorId": "563",
+                "content": "\n\n### 段落 106\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 107\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 108\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 109\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Pr",
+                "snippet": "### 段落 106 ## RAG 扩展段落 RAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回",
+                "score": 0.5602,
+                "finalScore": 0.5602,
+                "hitReason": "hybrid",
+                "rank": 5
+              }
+            ],
+            "found": true,
+            "basedOnKnowledgeBase": true,
+            "noAnswerReason": null
+          }
+        }
+      },
+      "th095": {
+        "http": 200,
+        "body": {
+          "code": 0,
+          "message": "ok",
+          "data": {
+            "sessionId": 91,
+            "question": "TopK 参数用于控制什么？",
+            "answer": "当前知识库未找到相关依据。",
+            "answerType": "NO_CONTEXT",
+            "canUseGeneralAnswer": true,
+            "messageId": 317,
+            "references": [],
+            "found": false,
+            "basedOnKnowledgeBase": false,
+            "noAnswerReason": "LOW_SIMILARITY"
+          }
+        }
+      },
+      "th01": {
+        "http": 200,
+        "body": {
+          "code": 0,
+          "message": "ok",
+          "data": {
+            "sessionId": 92,
+            "question": "TopK 参数用于控制什么？",
+            "answer": "根据知识库内容，TopK 参数用于控制候选片段数量。",
+            "answerType": "RAG",
+            "canUseGeneralAnswer": false,
+            "messageId": 319,
+            "references": [
+              {
+                "documentId": 35,
+                "documentName": "topk-test-long-v2.md",
+                "chunkId": 541,
+                "chunkIndex": 16,
+                "vectorId": "541",
+                "content": "、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 46\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 47\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 48\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThres",
+                "snippet": "、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、",
+                "score": 0.5617,
+                "finalScore": 0.5617,
+                "hitReason": "hybrid",
+                "rank": 1
+              },
+              {
+                "documentId": 35,
+                "documentName": "topk-test-long-v2.md",
+                "chunkId": 542,
+                "chunkIndex": 17,
+                "vectorId": "542",
+                "content": "和失败原因。\n\n### 段落 48\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 49\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 50\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 51\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 ",
+                "snippet": "和失败原因。 ### 段落 48 ## RAG 扩展段落 RAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount ",
+                "score": 0.5613,
+                "finalScore": 0.5613,
+                "hitReason": "hybrid",
+                "rank": 2
+              },
+              {
+                "documentId": 35,
+                "documentName": "topk-test-long-v2.md",
+                "chunkId": 525,
+                "chunkIndex": 0,
+                "vectorId": "525",
+                "content": "# TopK 超长测试文档\n\n### 段落 1\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 2\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 3\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 4\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、",
+                "snippet": "# TopK 超长测试文档 ### 段落 1 ## RAG 扩展段落 RAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieve",
+                "score": 0.5602,
+                "finalScore": 0.5602,
+                "hitReason": "hybrid",
+                "rank": 3
+              },
+              {
+                "documentId": 35,
+                "documentName": "topk-test-long-v2.md",
+                "chunkId": 559,
+                "chunkIndex": 34,
+                "vectorId": "559",
+                "content": "耗时和失败原因。\n\n### 段落 95\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 96\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 97\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 98\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼",
+                "snippet": "耗时和失败原因。 ### 段落 95 ## RAG 扩展段落 RAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCoun",
+                "score": 0.5602,
+                "finalScore": 0.5602,
+                "hitReason": "hybrid",
+                "rank": 4
+              },
+              {
+                "documentId": 35,
+                "documentName": "topk-test-long-v2.md",
+                "chunkId": 563,
+                "chunkIndex": 38,
+                "vectorId": "563",
+                "content": "\n\n### 段落 106\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 107\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 108\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回总数。AI 调用日志应记录问题、回答类型、是否调用模型、召回数量、有效召回数量、TopK、相似度阈值、最高相似度、耗时和失败原因。\n\n### 段落 109\n## RAG 扩展段落\nRAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Pr",
+                "snippet": "### 段落 106 ## RAG 扩展段落 RAG 问答流程包括用户提问、向量检索、召回相关文档片段、拼接 Prompt、调用大模型、生成回答、展示引用来源。TopK 参数用于控制候选片段数量，similarityThreshold 用于过滤低相关片段，effectiveRetrieveCount 表示有效召回数量，retrieveCount 表示候选召回",
+                "score": 0.5602,
+                "finalScore": 0.5602,
+                "hitReason": "hybrid",
+                "rank": 5
+              }
+            ],
+            "found": true,
+            "basedOnKnowledgeBase": true,
+            "noAnswerReason": null
+          }
+        }
+      }
+    },
+    "sendDisabledAfterSwitch": false,
+    "urlAfterLogout": "http://localhost:5173/login",
+    "urlAfterBack": "http://localhost:5173/login"
+  },
+  "localStorage": {
+    "knowflow_user": "{\"id\":1,\"username\":\"admin\",\"email\":\"admin@knowflow.local\",\"nickname\":\"admin\",\"avatar\":null,\"bio\":null,\"status\":\"ENABLED\",\"role\":\"ADMIN\",\"isAdmin\":true,\"kbCount\":0,\"docCount\":0,\"qaCount\":0,\"lastLoginTime\":null,\"createTime\":\"2026-05-08T13:40:50\"}",
+    "knowflow_token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3ODU1NDAzMSwiZXhwIjoxNzc4NjQwNDMxfQ.Icdp96e3E8n51kW4RzKDlyO6VgUXE72jkU-M9eD2vaw"
+  },
+  "finishedAt": "2026-05-12T02:49:51.340Z"
+}

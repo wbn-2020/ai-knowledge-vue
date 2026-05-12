@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   askKnowledgeBase,
+  chatWithDocument,
   clearChatMessages,
   deleteChatSession,
   exportChat,
@@ -24,6 +25,8 @@ const route = useRoute()
 const router = useRouter()
 
 const selectedKb = ref<number>()
+const currentDocumentId = ref<number | null>(null)
+const currentDocumentName = ref('')
 const question = ref('')
 const knowledgeBases = ref<KnowledgeBase[]>([])
 const chatMessages = ref<ChatMessage[]>([])
@@ -48,7 +51,13 @@ const canUseSessionActions = computed(() => !!sessionId.value)
 const questionLength = computed(() => question.value.trim().length)
 const selectedKnowledgeBase = computed(() => knowledgeBases.value.find((item) => item.id === selectedKb.value) || null)
 const selectedKbDocCount = computed(() => Number((selectedKnowledgeBase.value as any)?.documentCount ?? selectedKnowledgeBase.value?.docCount ?? 0))
-const canAsk = computed(() => !!selectedKb.value && selectedKbDocCount.value > 0 && questionLength.value > 0 && questionLength.value <= MAX_QUESTION_LENGTH && !thinking.value)
+const isDocumentMode = computed(() => route.query.scope === 'document')
+const canAsk = computed(() => {
+  if (isDocumentMode.value) {
+    return !!currentDocumentId.value && questionLength.value > 0 && questionLength.value <= MAX_QUESTION_LENGTH && !thinking.value
+  }
+  return !!selectedKb.value && selectedKbDocCount.value > 0 && questionLength.value > 0 && questionLength.value <= MAX_QUESTION_LENGTH && !thinking.value
+})
 
 function normalizeMessage(item: any): ChatMessage {
   return {
@@ -199,11 +208,28 @@ function appendFriendlyAssistantMessage(code: unknown, message?: string) {
   )
 }
 
+function applyScopeFromQuery() {
+  const docId = Number(route.query.documentId || 0)
+  if (route.query.scope === 'document' && Number.isFinite(docId) && docId > 0) {
+    currentDocumentId.value = docId
+    currentDocumentName.value = String(route.query.documentName || '').trim()
+  } else {
+    currentDocumentId.value = null
+    currentDocumentName.value = ''
+  }
+}
+
+function ensureKnowledgeBaseSelected() {
+  if (isDocumentMode.value) return
+  if (selectedKb.value && knowledgeBases.value.some((item) => item.id === selectedKb.value)) return
+  const queryKb = Number(route.query.knowledgeBaseId || 0)
+  selectedKb.value = knowledgeBases.value.find((item) => item.id === queryKb)?.id || knowledgeBases.value[0]?.id
+}
+
 async function loadKnowledgeBases() {
   const data = await getKnowledgeBasePage({ pageNo: 1, pageSize: 100, sortBy: 'updateTime' })
   knowledgeBases.value = data.list || []
-  const queryKb = Number(route.query.knowledgeBaseId || 0)
-  selectedKb.value = data.list?.find((item) => item.id === queryKb)?.id || data.list?.[0]?.id
+  ensureKnowledgeBaseSelected()
 }
 
 async function loadSessions() {
@@ -231,7 +257,7 @@ async function loadMessages(id: number) {
 
 async function selectSession(row: ChatSession) {
   sessionId.value = row.id
-  if (row.knowledgeBaseId) selectedKb.value = row.knowledgeBaseId
+  if (!isDocumentMode.value && row.knowledgeBaseId) selectedKb.value = row.knowledgeBaseId
   await loadMessages(row.id)
 }
 
@@ -243,10 +269,23 @@ function newSession() {
   retryGeneralLoading.value = {}
 }
 
+function switchToKnowledgeBaseMode() {
+  newSession()
+  currentDocumentId.value = null
+  currentDocumentName.value = ''
+  const query: Record<string, string> = {}
+  if (selectedKb.value) query.knowledgeBaseId = String(selectedKb.value)
+  router.replace({ path: '/app/chat', query })
+}
+
 async function doAsk(allowGeneralAnswer = false, overrideQuestion?: string) {
   const q = (overrideQuestion ?? question.value).trim()
-  if (!selectedKb.value) return ElMessage.warning('请先选择知识库')
-  if (selectedKbDocCount.value <= 0) return ElMessage.warning('当前知识库暂无可问答文档，请先上传并等待解析完成')
+  if (isDocumentMode.value) {
+    if (!currentDocumentId.value) return ElMessage.warning('缺少 documentId，无法发起指定文档问答')
+  } else {
+    if (!selectedKb.value) return ElMessage.warning('请先选择知识库')
+    if (selectedKbDocCount.value <= 0) return ElMessage.warning('当前知识库暂无可问答文档，请先上传并等待解析完成')
+  }
   if (!q) return ElMessage.warning('请输入问题')
   if (q.length > MAX_QUESTION_LENGTH) return ElMessage.warning(`问题不能超过 ${MAX_QUESTION_LENGTH} 个字符`)
   if (thinking.value) return
@@ -258,12 +297,18 @@ async function doAsk(allowGeneralAnswer = false, overrideQuestion?: string) {
   thinking.value = true
   askError.value = ''
   try {
-    const result = await askKnowledgeBase({
-      knowledgeBaseId: selectedKb.value,
-      sessionId: sessionId.value,
-      question: q,
-      allowGeneralAnswer,
-    })
+    const result = isDocumentMode.value
+      ? await chatWithDocument(currentDocumentId.value as number, {
+          sessionId: sessionId.value,
+          question: q,
+          allowGeneralAnswer,
+        })
+      : await askKnowledgeBase({
+          knowledgeBaseId: selectedKb.value as number,
+          sessionId: sessionId.value,
+          question: q,
+          allowGeneralAnswer,
+        })
     sessionId.value = result.sessionId
     chatMessages.value.push(normalizeMessage({ id: Date.now() + 1, role: 'assistant', ...result, content: result.answer }))
     await loadSessions()
@@ -285,19 +330,30 @@ async function ask() {
 }
 
 async function askGeneralForMessage(message: ChatMessage, index: number) {
-  if (!selectedKb.value || !sessionId.value) return ElMessage.warning('请先选择知识库并开始会话')
+  if (!isDocumentMode.value && !selectedKb.value) return ElMessage.warning('请先选择知识库')
+  if (isDocumentMode.value && !currentDocumentId.value) return ElMessage.warning('缺少 documentId，无法生成通用回答')
   if (isRetryLoading(message.id)) return
   const originalQuestion = String((message as any).question || '').trim() || findPreviousUserQuestion(index)
   if (!originalQuestion) return ElMessage.warning('未找到该回复对应的用户问题')
+  const retrySessionId = Number((message as any).sessionId ?? sessionId.value)
+  const normalizedRetrySessionId = Number.isFinite(retrySessionId) && retrySessionId > 0 ? retrySessionId : null
   setRetryLoading(message.id, true)
   try {
-    const result = await askKnowledgeBase({
-      knowledgeBaseId: selectedKb.value,
-      sessionId: sessionId.value,
-      question: originalQuestion,
-      allowGeneralAnswer: true,
-    })
-    sessionId.value = result.sessionId
+    const result = isDocumentMode.value
+      ? await chatWithDocument(currentDocumentId.value as number, {
+          sessionId: normalizedRetrySessionId,
+          question: originalQuestion,
+          allowGeneralAnswer: true,
+        })
+      : await askKnowledgeBase({
+          knowledgeBaseId: selectedKb.value as number,
+          sessionId: normalizedRetrySessionId,
+          question: originalQuestion,
+          allowGeneralAnswer: true,
+        })
+    if (Number.isFinite(Number(result.sessionId)) && Number(result.sessionId) > 0) {
+      sessionId.value = Number(result.sessionId)
+    }
     chatMessages.value[index] = normalizeMessage({ ...message, ...result, content: result.answer })
     ElMessage.success('已生成通用回答')
     await loadSessions()
@@ -412,7 +468,17 @@ watch(
   },
 )
 
+watch(
+  () => route.query,
+  () => {
+    applyScopeFromQuery()
+    ensureKnowledgeBaseSelected()
+  },
+  { immediate: true },
+)
+
 onMounted(async () => {
+  applyScopeFromQuery()
   await Promise.all([loadKnowledgeBases(), loadSessions()])
 })
 </script>
@@ -425,9 +491,16 @@ onMounted(async () => {
           <h3 class="section-title">会话</h3>
           <el-button type="primary" size="small" @click="newSession"><el-icon><Plus /></el-icon>新建</el-button>
         </div>
-        <el-select v-model="selectedKb" style="width: 100%" placeholder="选择知识库">
+        <el-select v-if="!isDocumentMode" v-model="selectedKb" style="width: 100%" placeholder="选择知识库">
           <el-option v-for="kb in knowledgeBases" :key="kb.id" :label="kb.name" :value="kb.id" />
         </el-select>
+        <el-alert
+          v-else
+          type="info"
+          :closable="false"
+          show-icon
+          :title="`指定文档模式：${currentDocumentName || `文档 #${currentDocumentId}`}`"
+        />
         <div class="session-list" v-loading="loadingSessions">
           <button v-for="item in sessions" :key="item.id" class="session-item" :class="{ active: item.id === sessionId }" @click="selectSession(item)">
             <strong>{{ item.title || `会话 #${item.id}` }}</strong>
@@ -443,6 +516,7 @@ onMounted(async () => {
       <div class="chat-head">
         <div><h1>{{ currentSession?.title || '智能问答' }}</h1></div>
         <div class="head-actions">
+          <el-button v-if="isDocumentMode" plain type="primary" @click="switchToKnowledgeBaseMode">切换回知识库问答</el-button>
           <el-button plain :disabled="!canUseSessionActions" @click="renameSession()">重命名</el-button>
           <el-button plain :disabled="!canUseSessionActions" @click="clearCurrentMessages">清空</el-button>
           <el-button plain :disabled="!canUseSessionActions" @click="removeSession()">删除</el-button>
@@ -458,6 +532,15 @@ onMounted(async () => {
           </el-dropdown>
         </div>
       </div>
+
+      <el-alert
+        v-if="isDocumentMode"
+        class="scope-alert"
+        type="warning"
+        :closable="false"
+        show-icon
+        :title="`当前范围：指定文档 - ${currentDocumentName || `文档 #${currentDocumentId}`}`"
+      />
 
       <div ref="messageListRef" class="message-list" v-loading="loadingMessages">
         <el-alert v-if="askError" type="error" show-icon :closable="false" :title="askError" />
@@ -520,6 +603,7 @@ onMounted(async () => {
           @keydown.enter.exact.prevent="ask"
         />
         <div class="input-footer">
+          <div v-if="!isDocumentMode && !selectedKb" class="input-hint">请先选择知识库后再提问。</div>
           <div class="input-actions">
             <el-button plain :disabled="!sessionId" :loading="thinking" @click="regenerate">重新生成</el-button>
             <el-button type="primary" :disabled="!canAsk" :loading="thinking" @click="ask">发送</el-button>
@@ -627,6 +711,10 @@ onMounted(async () => {
   justify-content: space-between;
   gap: 12px;
   flex-shrink: 0;
+}
+
+.scope-alert {
+  margin: 12px 20px 0;
 }
 
 .message-list {
@@ -797,6 +885,22 @@ onMounted(async () => {
 .input-footer {
   margin-top: 10px;
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.input-hint {
+  color: #92400e;
+  font-size: 13px;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  padding: 4px 10px;
+}
+
+.input-actions {
+  margin-left: auto;
   justify-content: flex-end;
 }
 

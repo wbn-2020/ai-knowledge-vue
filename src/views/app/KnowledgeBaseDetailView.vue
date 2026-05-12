@@ -1,10 +1,21 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { deleteKnowledgeBase, getDocumentPage, getKnowledgeBaseDetail, retryDocument } from '@/api/knowledge'
-import type { ChatSession, DocumentItem, KnowledgeBase } from '@/types'
-import { docCountOf, documentErrorOf, documentNameOf, fileSizeOf, fileTypeOf, statusTagType, timeOf } from '@/utils/view-adapters'
+import {
+  deleteKnowledgeBase,
+  extractKnowledgeBaseKeywords,
+  generateKnowledgeBaseSummary,
+  getDocumentPage,
+  getKnowledgeBaseDetail,
+  getKnowledgeBaseKeywords,
+  getKnowledgeBaseSummary,
+  reextractKnowledgeBaseKeywords,
+  regenerateKnowledgeBaseSummary,
+  retryDocument,
+} from '@/api/knowledge'
+import type { ChatSession, DocumentItem, KnowledgeBase, KeywordVO, KnowledgeBaseSummaryVO } from '@/types'
+import { docCountOf, documentErrorOf, documentNameOf, fileSizeOf, fileTypeOf, formatDateTimeValue, statusTagType, textOf, timeOf } from '@/utils/view-adapters'
 
 const route = useRoute()
 const router = useRouter()
@@ -17,8 +28,29 @@ const processingStatus = ref('NORMAL')
 const invalidKb = ref(false)
 const docPager = reactive({ pageNo: 1, pageSize: 10, total: 0 })
 
+const kbSummaryLoading = ref(false)
+const kbSummaryActionLoading = ref(false)
+const kbKeywordLoading = ref(false)
+const kbKeywordActionLoading = ref(false)
+const kbSummary = ref<KnowledgeBaseSummaryVO | null>(null)
+const kbKeywords = ref<KeywordVO[]>([])
+
 const kbId = computed(() => Number(route.params.id))
 const isValidKbId = computed(() => Number.isFinite(kbId.value) && kbId.value > 0)
+const hasKbSummary = computed(() => Boolean(String(kbSummary.value?.summary || '').trim()))
+const hasKbKeywords = computed(() => kbKeywords.value.length > 0)
+
+function normalizeKeywords(list: KeywordVO[] | null | undefined): KeywordVO[] {
+  if (!Array.isArray(list)) return []
+  return list.filter((item) => item && String(item.keyword || '').trim())
+}
+
+function weightText(weight: unknown): string {
+  if (weight === null || weight === undefined || weight === '') return ''
+  const num = Number(weight)
+  if (Number.isNaN(num)) return String(weight)
+  return num.toFixed(2)
+}
 
 async function loadDetail() {
   if (!isValidKbId.value) {
@@ -59,8 +91,29 @@ async function loadDocuments() {
   }
 }
 
+async function loadKbUnderstanding() {
+  if (!isValidKbId.value) {
+    kbSummary.value = null
+    kbKeywords.value = []
+    return
+  }
+  kbSummaryLoading.value = true
+  kbKeywordLoading.value = true
+  try {
+    const [summary, keywords] = await Promise.all([
+      getKnowledgeBaseSummary(kbId.value).catch(() => null),
+      getKnowledgeBaseKeywords(kbId.value).catch(() => [] as KeywordVO[]),
+    ])
+    kbSummary.value = summary || null
+    kbKeywords.value = normalizeKeywords(keywords || [])
+  } finally {
+    kbSummaryLoading.value = false
+    kbKeywordLoading.value = false
+  }
+}
+
 async function refreshAll() {
-  await Promise.all([loadDetail(), loadDocuments()])
+  await Promise.all([loadDetail(), loadDocuments(), loadKbUnderstanding()])
 }
 
 function uploadForCurrentKb() {
@@ -75,7 +128,7 @@ function askInCurrentKb() {
 
 async function removeKnowledgeBase() {
   if (!kb.value) return
-  await ElMessageBox.confirm(`确认删除知识库「${kb.value.name}」吗？删除后不可恢复。`, '删除确认', { type: 'warning' })
+  await ElMessageBox.confirm(`确认删除知识库“${kb.value.name}”吗？删除后不可恢复。`, '删除确认', { type: 'warning' })
   await deleteKnowledgeBase(kb.value.id)
   ElMessage.success('知识库已删除')
   router.push('/app/knowledge')
@@ -85,6 +138,39 @@ async function retryParse(row: DocumentItem) {
   await retryDocument(row.id)
   ElMessage.success('已提交重新解析任务')
   await loadDocuments()
+}
+
+async function handleGenerateKbSummary(regenerate = false) {
+  if (!isValidKbId.value) return
+  kbSummaryActionLoading.value = true
+  try {
+    if (regenerate) {
+      await regenerateKnowledgeBaseSummary(kbId.value)
+      ElMessage.success('已提交重新生成知识库摘要')
+    } else {
+      await generateKnowledgeBaseSummary(kbId.value)
+      ElMessage.success('已提交生成知识库摘要')
+    }
+    kbSummary.value = await getKnowledgeBaseSummary(kbId.value)
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '知识库摘要操作失败，请稍后重试')
+  } finally {
+    kbSummaryActionLoading.value = false
+  }
+}
+
+async function handleExtractKbKeywords(reextract = false) {
+  if (!isValidKbId.value) return
+  kbKeywordActionLoading.value = true
+  try {
+    const list = reextract ? await reextractKnowledgeBaseKeywords(kbId.value) : await extractKnowledgeBaseKeywords(kbId.value)
+    ElMessage.success(reextract ? '已重新提取知识库关键词' : '已提取知识库关键词')
+    kbKeywords.value = normalizeKeywords(list || [])
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '知识库关键词操作失败，请稍后重试')
+  } finally {
+    kbKeywordActionLoading.value = false
+  }
 }
 
 onMounted(refreshAll)
@@ -118,6 +204,51 @@ onMounted(refreshAll)
             <el-button type="primary" @click="askInCurrentKb"><el-icon><ChatDotRound /></el-icon>基于此库提问</el-button>
           </div>
         </div>
+      </div>
+
+      <div class="understanding-grid">
+        <section class="soft-card">
+          <div class="soft-card-body" v-loading="kbSummaryLoading">
+            <div class="section-head">
+              <h3 class="section-title">知识库理解 · 摘要</h3>
+              <el-button type="primary" plain :loading="kbSummaryActionLoading" @click="handleGenerateKbSummary(hasKbSummary)">
+                {{ hasKbSummary ? '重新生成' : '生成知识库摘要' }}
+              </el-button>
+            </div>
+            <div class="meta-line">
+              <span>状态：{{ textOf(kbSummary?.status) }}</span>
+              <span>覆盖文档数：{{ textOf(kbSummary?.coveredDocumentCount, '0') }}</span>
+              <span>模型：{{ textOf(kbSummary?.modelName) }}</span>
+              <span>生成时间：{{ formatDateTimeValue(kbSummary?.generatedAt) }}</span>
+            </div>
+            <el-alert
+              v-if="kbSummary?.errorMessage"
+              type="error"
+              show-icon
+              :closable="false"
+              :title="textOf(kbSummary?.errorMessage, '知识库摘要生成失败')"
+            />
+            <div class="summary-content">{{ textOf(kbSummary?.summary, '暂无知识库摘要') }}</div>
+          </div>
+        </section>
+
+        <section class="soft-card">
+          <div class="soft-card-body" v-loading="kbKeywordLoading">
+            <div class="section-head">
+              <h3 class="section-title">知识库理解 · 关键词</h3>
+              <el-button type="primary" plain :loading="kbKeywordActionLoading" @click="handleExtractKbKeywords(hasKbKeywords)">
+                {{ hasKbKeywords ? '重新提取' : '提取关键词' }}
+              </el-button>
+            </div>
+            <el-empty v-if="!kbKeywords.length" description="暂无关键词" :image-size="80" />
+            <div v-else class="keyword-tags">
+              <el-tag v-for="(item, index) in kbKeywords" :key="`${item.keyword || 'keyword'}-${index}`" round>
+                {{ textOf(item.keyword, '-') }}
+                <template v-if="weightText(item.weight)"> {{ weightText(item.weight) }} </template>
+              </el-tag>
+            </div>
+          </div>
+        </section>
       </div>
 
       <div class="section-grid detail-grid">
@@ -192,12 +323,21 @@ h1 { margin: 12px 0 8px; font-size: 32px; }
 .hero-content p { color: var(--color-text-muted); margin: 0; }
 .hero-meta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; color: var(--color-text-muted); font-size: 13px; }
 .hero-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+.understanding-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; }
 .detail-grid { grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.7fr); }
 .section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.meta-line { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; color: var(--color-text-muted); font-size: 13px; }
+.summary-content { white-space: pre-wrap; word-break: break-word; line-height: 1.8; color: var(--color-text-main); min-height: 64px; }
+.keyword-tags { display: flex; flex-wrap: wrap; gap: 10px; }
 .document-panel { min-width: 0; }
 .pagination-row { display: flex; justify-content: flex-end; margin-top: 16px; }
 .question-stack { display: grid; gap: 12px; }
 .question-card { padding: 14px; border-radius: 12px; border: 1px solid var(--color-border); cursor: pointer; }
 .question-card p, .question-card span { display: block; margin: 6px 0 0; color: var(--color-text-muted); font-size: 13px; }
-@media (max-width: 1100px) { .hero-inner, .detail-grid { grid-template-columns: 1fr; } .hero-actions { justify-content: flex-start; } }
+@media (max-width: 1100px) {
+  .hero-inner,
+  .understanding-grid,
+  .detail-grid { grid-template-columns: 1fr; }
+  .hero-actions { justify-content: flex-start; }
+}
 </style>

@@ -235,3 +235,30 @@ export interface SearchResult {
   snippet?: string
   chunkIndex?: number
 }
+
+export interface DocumentSummaryVO {
+  documentId?: number
+  documentName?: string
+  knowledgeBaseId?: number
+  summary?: string
+  modelName?: string
+  status?: string
+  errorMessage?: string
+  generatedAt?: string
+}
+
+export interface KnowledgeBaseSummaryVO {
+  knowledgeBaseId?: number
+  knowledgeBaseName?: string
+  summary?: string
+  coveredDocumentCount?: number
+  modelName?: string
+  status?: string
+  errorMessage?: string
+  generatedAt?: string
+}
+
+export interface KeywordVO {
+  keyword?: string
+  weight?: number
+}

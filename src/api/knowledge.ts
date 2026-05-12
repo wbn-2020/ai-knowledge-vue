@@ -6,8 +6,11 @@ import type {
   AiCallLog,
   ChatMessage,
   ChatSession,
+  DocumentSummaryVO,
   DocumentItem,
+  KeywordVO,
   KnowledgeBase,
+  KnowledgeBaseSummaryVO,
   LogAlert,
   LoginLog,
   NotificationItem,
@@ -194,8 +197,20 @@ export interface AskRequest {
   allowGeneralAnswer?: boolean
 }
 
+export interface DocumentAskRequest {
+  sessionId?: number | null
+  question: string
+  allowGeneralAnswer?: boolean
+  topK?: number
+  similarityThreshold?: number
+}
+
 export function askKnowledgeBase(data: AskRequest) {
   return request.post<any, AskResponse>('/chat/ask', data)
+}
+
+export function chatWithDocument(documentId: number, data: DocumentAskRequest) {
+  return request.post<any, AskResponse>(`/documents/${documentId}/chat`, data)
 }
 
 export function askDocument(data: { documentId: number; sessionId?: number | null; question: string }) {
@@ -246,20 +261,60 @@ export function keywordSearch(params: { knowledgeBaseId: number; keyword: string
   return request.get<any, SearchResult[]>('/search/keyword', { params })
 }
 
-export function summarizeDocument(documentId: number) {
-  return request.post('/summaries/document', null, { params: { documentId } })
+export function getDocumentSummary(id: number) {
+  return request.get<any, DocumentSummaryVO | null>(`/documents/${id}/summary`)
 }
 
-export function getDocumentSummary(documentId: number) {
-  return request.get<any, SummaryVO>('/summaries/document', { params: { documentId } })
+export function generateDocumentSummary(id: number) {
+  return request.post<any, DocumentSummaryVO | null>(`/documents/${id}/summary/generate`)
+}
+
+export function regenerateDocumentSummary(id: number) {
+  return request.post<any, DocumentSummaryVO | null>(`/documents/${id}/summary/regenerate`)
+}
+
+export function summarizeDocument(documentId: number) {
+  return generateDocumentSummary(documentId)
+}
+
+export function getKnowledgeBaseSummary(id: number) {
+  return request.get<any, KnowledgeBaseSummaryVO | null>(`/knowledge-bases/${id}/summary`)
+}
+
+export function generateKnowledgeBaseSummary(id: number) {
+  return request.post<any, KnowledgeBaseSummaryVO | null>(`/knowledge-bases/${id}/summary/generate`)
+}
+
+export function regenerateKnowledgeBaseSummary(id: number) {
+  return request.post<any, KnowledgeBaseSummaryVO | null>(`/knowledge-bases/${id}/summary/regenerate`)
 }
 
 export function summarizeKnowledgeBase(knowledgeBaseId: number) {
-  return request.post('/summaries/knowledge-base', null, { params: { knowledgeBaseId } })
+  return generateKnowledgeBaseSummary(knowledgeBaseId)
 }
 
-export function getKnowledgeBaseSummary(knowledgeBaseId: number) {
-  return request.get<any, SummaryVO>('/summaries/knowledge-base', { params: { knowledgeBaseId } })
+export function getDocumentKeywords(id: number) {
+  return request.get<any, KeywordVO[] | null>(`/documents/${id}/keywords`)
+}
+
+export function extractDocumentKeywords(id: number) {
+  return request.post<any, KeywordVO[] | null>(`/documents/${id}/keywords/extract`)
+}
+
+export function reextractDocumentKeywords(id: number) {
+  return request.post<any, KeywordVO[] | null>(`/documents/${id}/keywords/reextract`)
+}
+
+export function getKnowledgeBaseKeywords(id: number) {
+  return request.get<any, KeywordVO[] | null>(`/knowledge-bases/${id}/keywords`)
+}
+
+export function extractKnowledgeBaseKeywords(id: number) {
+  return request.post<any, KeywordVO[] | null>(`/knowledge-bases/${id}/keywords/extract`)
+}
+
+export function reextractKnowledgeBaseKeywords(id: number) {
+  return request.post<any, KeywordVO[] | null>(`/knowledge-bases/${id}/keywords/reextract`)
 }
 
 export function getNotificationPage(params: { pageNo?: number; pageSize?: number }) {

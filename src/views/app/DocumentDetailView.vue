@@ -1,10 +1,36 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { deleteDocument, downloadDocument, getDocument, getDocumentChunks, getDocumentPreview, renameDocument, retryDocument } from '@/api/knowledge'
-import type { DocumentItem } from '@/types'
-import { documentErrorOf, documentNameOf, embeddingStatusText, fileSizeOf, fileTypeOf, kbNameOf, parseStatusText, statusTagType, timeOf } from '@/utils/view-adapters'
+import {
+  deleteDocument,
+  downloadDocument,
+  extractDocumentKeywords,
+  generateDocumentSummary,
+  getDocument,
+  getDocumentChunks,
+  getDocumentKeywords,
+  getDocumentPreview,
+  getDocumentSummary,
+  reextractDocumentKeywords,
+  regenerateDocumentSummary,
+  renameDocument,
+  retryDocument,
+} from '@/api/knowledge'
+import type { DocumentItem, DocumentSummaryVO, KeywordVO } from '@/types'
+import {
+  documentErrorOf,
+  documentNameOf,
+  embeddingStatusText,
+  fileSizeOf,
+  fileTypeOf,
+  formatDateTimeValue,
+  kbNameOf,
+  parseStatusText,
+  statusTagType,
+  textOf,
+  timeOf,
+} from '@/utils/view-adapters'
 import { renderMarkdownSafe } from '@/utils/markdown'
 
 const route = useRoute()
@@ -21,8 +47,21 @@ const errorMessage = ref('')
 const chunkDialogVisible = ref(false)
 const activeChunk = ref<any | null>(null)
 const chunkPager = reactive({ pageNo: 1, pageSize: 10, total: 0 })
+
+const summaryLoading = ref(false)
+const summaryActionLoading = ref(false)
+const keywordLoading = ref(false)
+const keywordActionLoading = ref(false)
+const summaryData = ref<DocumentSummaryVO | null>(null)
+const keywords = ref<KeywordVO[]>([])
+
 const previewHtml = computed(() => renderMarkdownSafe(preview.value || '暂无预览内容'))
 const activeChunkHtml = computed(() => renderMarkdownSafe(activeChunk.value?.content || '-'))
+const summaryText = computed(() => textOf(summaryData.value?.summary, '暂无摘要内容'))
+const canGenerateSummary = computed(() => (doc.value?.parseStatus || '').toUpperCase() === 'SUCCESS')
+const hasSummary = computed(() => Boolean(String(summaryData.value?.summary || '').trim()))
+const hasKeywords = computed(() => keywords.value.length > 0)
+const canAskByDocument = computed(() => (doc.value?.parseStatus || '').toUpperCase() === 'SUCCESS' && (doc.value?.embeddingStatus || '').toUpperCase() === 'SUCCESS')
 
 function downloadBlob(response: any, fallbackName: string) {
   const blob = response?.data instanceof Blob ? response.data : new Blob([response?.data || ''])
@@ -37,6 +76,18 @@ function downloadBlob(response: any, fallbackName: string) {
   link.click()
   document.body.removeChild(link)
   URL.revokeObjectURL(url)
+}
+
+function normalizeKeywords(list: KeywordVO[] | null | undefined): KeywordVO[] {
+  if (!Array.isArray(list)) return []
+  return list.filter((item) => item && String(item.keyword || '').trim())
+}
+
+function weightText(weight: unknown): string {
+  if (weight === null || weight === undefined || weight === '') return ''
+  const num = Number(weight)
+  if (Number.isNaN(num)) return String(weight)
+  return num.toFixed(2)
 }
 
 async function loadPreview(id: number) {
@@ -65,18 +116,75 @@ async function loadChunks(id: number) {
   }
 }
 
+async function loadDocUnderstanding(id: number) {
+  summaryLoading.value = true
+  keywordLoading.value = true
+  try {
+    const [summary, keywordList] = await Promise.all([
+      getDocumentSummary(id).catch(() => null),
+      getDocumentKeywords(id).catch(() => [] as KeywordVO[]),
+    ])
+    summaryData.value = summary || null
+    keywords.value = normalizeKeywords(keywordList || [])
+  } finally {
+    summaryLoading.value = false
+    keywordLoading.value = false
+  }
+}
+
 async function loadDetail() {
   loading.value = true
   errorMessage.value = ''
   try {
     const id = Number(route.params.id)
     doc.value = await getDocument(id)
-    await Promise.all([loadPreview(id), loadChunks(id)])
+    await Promise.all([loadPreview(id), loadChunks(id), loadDocUnderstanding(id)])
   } catch (error) {
     doc.value = null
     errorMessage.value = error instanceof Error ? error.message : '文档详情加载失败'
   } finally {
     loading.value = false
+  }
+}
+
+async function handleGenerateSummary(regenerate = false) {
+  if (!doc.value) return
+  if (!canGenerateSummary.value) {
+    ElMessage.warning('文档尚未解析成功，暂不能生成摘要。')
+    return
+  }
+  summaryActionLoading.value = true
+  try {
+    if (regenerate) {
+      await regenerateDocumentSummary(doc.value.id)
+      ElMessage.success('已提交重新生成摘要')
+    } else {
+      await generateDocumentSummary(doc.value.id)
+      ElMessage.success('已提交生成摘要')
+    }
+    summaryData.value = await getDocumentSummary(doc.value.id)
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '摘要操作失败，请稍后重试')
+  } finally {
+    summaryActionLoading.value = false
+  }
+}
+
+async function handleExtractKeywords(reextract = false) {
+  if (!doc.value) return
+  if (!canGenerateSummary.value) {
+    ElMessage.warning('文档尚未解析成功，暂不能提取关键词。')
+    return
+  }
+  keywordActionLoading.value = true
+  try {
+    const list = reextract ? await reextractDocumentKeywords(doc.value.id) : await extractDocumentKeywords(doc.value.id)
+    ElMessage.success(reextract ? '已重新提取关键词' : '已提取关键词')
+    keywords.value = normalizeKeywords(list || [])
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '关键词操作失败，请稍后重试')
+  } finally {
+    keywordActionLoading.value = false
   }
 }
 
@@ -116,10 +224,26 @@ async function rename() {
 
 async function removeDoc() {
   if (!doc.value) return
-  await ElMessageBox.confirm(`确认删除文档「${documentNameOf(doc.value)}」吗？`, '删除确认', { type: 'warning' })
+  await ElMessageBox.confirm(`确认删除文档“${documentNameOf(doc.value)}”吗？`, '删除确认', { type: 'warning' })
   await deleteDocument(doc.value.id)
   ElMessage.success('文档已删除')
   router.push('/app/documents')
+}
+
+function askByCurrentDocument() {
+  if (!doc.value?.id) return
+  if (!canAskByDocument.value) {
+    ElMessage.warning('文档尚未解析和向量化完成，暂不能问答。')
+    return
+  }
+  router.push({
+    path: '/app/chat',
+    query: {
+      scope: 'document',
+      documentId: String(doc.value.id),
+      documentName: documentNameOf(doc.value),
+    },
+  })
 }
 
 function openChunkDialog(row: any) {
@@ -141,6 +265,12 @@ onMounted(loadDetail)
           <div class="page-desc">查看文档状态、失败原因、预览与切片。</div>
         </div>
         <div class="header-actions">
+          <el-tooltip v-if="!canAskByDocument" content="文档尚未解析和向量化完成，暂不能问答。" placement="top">
+            <span>
+              <el-button type="success" disabled>基于本文档提问</el-button>
+            </span>
+          </el-tooltip>
+          <el-button v-else type="success" @click="askByCurrentDocument">基于本文档提问</el-button>
           <el-button plain @click="router.push('/app/documents')">返回列表</el-button>
           <el-button plain @click="rename">重命名</el-button>
           <el-button plain :loading="retrying" @click="retryParse">重新解析</el-button>
@@ -158,7 +288,7 @@ onMounted(loadDetail)
               <div><span>所属知识库</span><strong>{{ kbNameOf(doc) }}</strong></div>
               <div><span>上传人</span><strong>{{ (doc as any).ownerName || (doc as any).username || '-' }}</strong></div>
               <div><span>大小</span><strong>{{ fileSizeOf(doc) }}</strong></div>
-              <div><span>分块数量</span><strong>{{ (doc as any).chunkCount || (doc as any).segmentCount || 0 }}</strong></div>
+              <div><span>切块数量</span><strong>{{ (doc as any).chunkCount || (doc as any).segmentCount || 0 }}</strong></div>
               <div><span>解析状态</span><el-tag :type="statusTagType(doc.parseStatus)">{{ parseStatusText(doc.parseStatus) }}</el-tag></div>
               <div><span>向量状态</span><el-tag :type="statusTagType(doc.embeddingStatus)" effect="plain">{{ embeddingStatusText(doc.embeddingStatus) }}</el-tag></div>
               <div><span>更新时间</span><strong>{{ timeOf(doc) }}</strong></div>
@@ -174,10 +304,80 @@ onMounted(loadDetail)
         </section>
       </div>
 
+      <div class="detail-grid understanding-grid">
+        <section class="soft-card">
+          <div class="soft-card-body" v-loading="summaryLoading">
+            <div class="section-head">
+              <h3 class="section-title">文档理解 · 摘要</h3>
+              <el-button
+                type="primary"
+                plain
+                :loading="summaryActionLoading"
+                :disabled="!canGenerateSummary"
+                @click="handleGenerateSummary(hasSummary)"
+              >
+                {{ hasSummary ? '重新生成' : '生成摘要' }}
+              </el-button>
+            </div>
+            <el-alert
+              v-if="!canGenerateSummary"
+              type="warning"
+              :closable="false"
+              show-icon
+              title="文档尚未解析成功，暂不能生成摘要。"
+            />
+            <div class="meta-line">
+              <span>状态：{{ textOf(summaryData?.status) }}</span>
+              <span>模型：{{ textOf(summaryData?.modelName) }}</span>
+              <span>生成时间：{{ formatDateTimeValue(summaryData?.generatedAt) }}</span>
+            </div>
+            <el-alert
+              v-if="summaryData?.errorMessage"
+              type="error"
+              :closable="false"
+              show-icon
+              :title="textOf(summaryData?.errorMessage, '摘要生成失败')"
+            />
+            <div class="summary-content">{{ summaryText }}</div>
+          </div>
+        </section>
+
+        <section class="soft-card">
+          <div class="soft-card-body" v-loading="keywordLoading">
+            <div class="section-head">
+              <h3 class="section-title">文档理解 · 关键词</h3>
+              <el-button
+                type="primary"
+                plain
+                :loading="keywordActionLoading"
+                :disabled="!canGenerateSummary"
+                @click="handleExtractKeywords(hasKeywords)"
+              >
+                {{ hasKeywords ? '重新提取' : '提取关键词' }}
+              </el-button>
+            </div>
+            <el-alert
+              v-if="!canGenerateSummary"
+              type="warning"
+              :closable="false"
+              show-icon
+              title="文档尚未解析成功，暂不能提取关键词。"
+            />
+            <el-empty v-if="!keywords.length" description="暂无关键词" :image-size="80" />
+            <div v-else class="keyword-tags">
+              <el-tag v-for="(item, index) in keywords" :key="`${item.keyword || 'keyword'}-${index}`" round>
+                {{ textOf(item.keyword, '-') }}
+                <template v-if="weightText(item.weight)"> {{ weightText(item.weight) }} </template>
+              </el-tag>
+            </div>
+          </div>
+        </section>
+      </div>
+
       <section class="soft-card">
         <div class="soft-card-body">
           <h3 class="section-title">文档切片</h3>
-          <el-table :data="chunks" v-loading="chunkLoading" size="large" empty-text="当前文档暂无切片，可能还未完成解析或向量化">
+          <el-table :data="chunks" v-loading="chunkLoading" size="large" empty-text="当前文档暂无切片，可能还未完成解析或向量化。">
             <el-table-column label="切片序号" width="100">
               <template #default="{ row }">{{ row.chunkIndex ?? '-' }}</template>
             </el-table-column>
@@ -228,10 +428,15 @@ onMounted(loadDetail)
 .state-alert { margin-bottom: 16px; }
 .header-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
 .detail-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 16px; }
+.understanding-grid { margin-top: 16px; }
 h2 { margin: 14px 0 0; font-size: 28px; }
 .meta-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
 .meta-grid span { display: block; color: var(--color-text-muted); font-size: 13px; margin-bottom: 6px; }
 .summary-box { margin-top: 16px; max-height: 420px; min-height: 220px; overflow: auto; padding: 16px; border-radius: 14px; background: var(--color-surface-soft); color: var(--color-text-muted); line-height: 1.8; }
+.section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.meta-line { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; color: var(--color-text-muted); font-size: 13px; }
+.summary-content { white-space: pre-wrap; word-break: break-word; line-height: 1.8; color: var(--color-text-main); min-height: 64px; }
+.keyword-tags { display: flex; flex-wrap: wrap; gap: 10px; }
 .chunk-content {
   display: -webkit-box;
   -webkit-box-orient: vertical;
