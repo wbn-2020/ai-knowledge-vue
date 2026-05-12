@@ -2,6 +2,7 @@
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { deleteMessageFeedback, getMessageFeedback, submitMessageFeedback } from '@/api/chatFeedback'
 import {
   askKnowledgeBase,
   chatWithDocument,
@@ -13,9 +14,8 @@ import {
   getKnowledgeBasePage,
   regenerateAnswer,
   renameChatSession,
-  sendFeedback,
 } from '@/api/knowledge'
-import type { ChatMessage, ChatReference, ChatSession, KnowledgeBase } from '@/types'
+import type { ChatMessage, ChatReference, ChatSession, FeedbackReason, FeedbackType, KnowledgeBase } from '@/types'
 import { normalizeRole, timeOf } from '@/utils/view-adapters'
 import { renderMarkdownSafe } from '@/utils/markdown'
 import { asBizCode, BusinessError, friendlyRagMessage, isRagFriendlyCode } from '@/utils/business-error'
@@ -39,12 +39,26 @@ const askError = ref('')
 const sessionId = ref<number | null>(null)
 const sessionPager = reactive({ pageNo: 1, pageSize: 12, total: 0 })
 const retryGeneralLoading = ref<Record<number, boolean>>({})
+const feedbackLoadingMap = ref<Record<number, boolean>>({})
 const showAllRefsMap = ref<Record<number, boolean>>({})
 const messageListRef = ref<HTMLElement>()
 
 const referenceDialogVisible = ref(false)
 const currentReference = ref<ChatReference | null>(null)
 const missingRefNameWarned = ref<Record<number, boolean>>({})
+const feedbackDialogVisible = ref(false)
+const feedbackSubmitting = ref(false)
+const feedbackTargetMessage = ref<ChatMessage | null>(null)
+const feedbackForm = reactive<{ reason: FeedbackReason | ''; remark: string }>({ reason: '', remark: '' })
+
+const feedbackReasonOptions: Array<{ value: FeedbackReason; label: string }> = [
+  { value: 'NOT_RELEVANT', label: '答非所问' },
+  { value: 'INCORRECT', label: '内容不正确' },
+  { value: 'INCOMPLETE', label: '回答不完整' },
+  { value: 'HALLUCINATION', label: '疑似幻觉' },
+  { value: 'BAD_REFERENCE', label: '引用来源不准确' },
+  { value: 'OTHER', label: '其他' },
+]
 
 const currentSession = computed(() => sessions.value.find((item) => item.id === sessionId.value) || null)
 const canUseSessionActions = computed(() => !!sessionId.value)
@@ -60,8 +74,13 @@ const canAsk = computed(() => {
 })
 
 function normalizeMessage(item: any): ChatMessage {
+  const localOnly = !!item?._localOnly
+  const normalizedId = Number(item?.id ?? item?.messageId ?? Date.now())
+  const normalizedMessageId = Number(item?.messageId ?? (localOnly ? 0 : item?.id) ?? 0) || undefined
   return {
     ...item,
+    id: normalizedId,
+    messageId: normalizedMessageId,
     role: normalizeRole(item.role),
     question: String(item?.question ?? ''),
     content: String(item?.content ?? item?.answer ?? ''),
@@ -71,6 +90,21 @@ function normalizeMessage(item: any): ChatMessage {
     found: item?.found,
     basedOnKnowledgeBase: item?.basedOnKnowledgeBase,
     noAnswerReason: item?.noAnswerReason,
+    feedback: (item as any)?.feedback ?? null,
+  }
+}
+
+function getMessageServerId(message: ChatMessage) {
+  const raw = Number((message as any).messageId ?? message.id)
+  return Number.isFinite(raw) && raw > 0 ? raw : null
+}
+
+function resolveAssistantMessageIdentity(result: any, fallbackId: number) {
+  const serverMessageId = Number(result?.messageId ?? result?.id ?? 0)
+  const hasServerMessageId = Number.isFinite(serverMessageId) && serverMessageId > 0
+  return {
+    id: hasServerMessageId ? serverMessageId : fallbackId,
+    messageId: hasServerMessageId ? serverMessageId : undefined,
   }
 }
 
@@ -162,6 +196,30 @@ function isRetryLoading(messageId: number) {
   return !!retryGeneralLoading.value[messageId]
 }
 
+function setFeedbackLoading(messageId: number, loading: boolean) {
+  feedbackLoadingMap.value = { ...feedbackLoadingMap.value, [messageId]: loading }
+}
+
+function isFeedbackLoading(messageId: number) {
+  return !!feedbackLoadingMap.value[messageId]
+}
+
+function feedbackTypeOf(message: ChatMessage): FeedbackType | '' {
+  return (message.feedback?.feedbackType as FeedbackType | undefined) || ''
+}
+
+function isLiked(message: ChatMessage) {
+  return feedbackTypeOf(message) === 'LIKE'
+}
+
+function isDisliked(message: ChatMessage) {
+  return feedbackTypeOf(message) === 'DISLIKE'
+}
+
+function reasonLabel(reason?: string | null) {
+  return feedbackReasonOptions.find((item) => item.value === reason)?.label || '-'
+}
+
 async function scrollToBottom(smooth = false) {
   await nextTick()
   const el = messageListRef.value
@@ -196,6 +254,7 @@ function referenceDialogHtml(ref: ChatReference | null) {
 function appendFriendlyAssistantMessage(code: unknown, message?: string) {
   chatMessages.value.push(
     normalizeMessage({
+      _localOnly: true,
       id: Date.now() + 1,
       role: 'assistant',
       answerType: 'NO_CONTEXT',
@@ -249,10 +308,30 @@ async function loadMessages(id: number) {
   loadingMessages.value = true
   try {
     chatMessages.value = (await getChatMessages(id)).map(normalizeMessage)
+    await hydrateMessageFeedbacks(chatMessages.value)
     await scrollToBottom()
   } finally {
     loadingMessages.value = false
   }
+}
+
+async function hydrateMessageFeedbacks(messages: ChatMessage[]) {
+  const targets = messages.filter((message) => message.role === 'assistant')
+  await Promise.all(
+    targets.map(async (message) => {
+      const messageId = getMessageServerId(message)
+      if (!messageId) {
+        console.warn('[Chat] assistant message missing messageId, feedback disabled for this message.', message)
+        message.feedback = null
+        return
+      }
+      try {
+        message.feedback = await getMessageFeedback(messageId)
+      } catch {
+        message.feedback = null
+      }
+    }),
+  )
 }
 
 async function selectSession(row: ChatSession) {
@@ -267,6 +346,7 @@ function newSession() {
   question.value = ''
   askError.value = ''
   retryGeneralLoading.value = {}
+  feedbackLoadingMap.value = {}
 }
 
 function switchToKnowledgeBaseMode() {
@@ -291,7 +371,7 @@ async function doAsk(allowGeneralAnswer = false, overrideQuestion?: string) {
   if (thinking.value) return
 
   if (!allowGeneralAnswer) {
-    chatMessages.value.push({ id: Date.now(), role: 'user', content: q })
+    chatMessages.value.push({ id: Date.now(), role: 'user', content: q, _localOnly: true } as any)
     question.value = ''
   }
   thinking.value = true
@@ -310,7 +390,14 @@ async function doAsk(allowGeneralAnswer = false, overrideQuestion?: string) {
           allowGeneralAnswer,
         })
     sessionId.value = result.sessionId
-    chatMessages.value.push(normalizeMessage({ id: Date.now() + 1, role: 'assistant', ...result, content: result.answer }))
+    const assistantMessage = normalizeMessage({
+      ...resolveAssistantMessageIdentity(result, Date.now() + 1),
+      role: 'assistant',
+      ...result,
+      content: result.answer,
+    })
+    chatMessages.value.push(assistantMessage)
+    await hydrateMessageFeedbacks([assistantMessage])
     await loadSessions()
     await scrollToBottom(true)
   } catch (error) {
@@ -354,7 +441,14 @@ async function askGeneralForMessage(message: ChatMessage, index: number) {
     if (Number.isFinite(Number(result.sessionId)) && Number(result.sessionId) > 0) {
       sessionId.value = Number(result.sessionId)
     }
-    chatMessages.value[index] = normalizeMessage({ ...message, ...result, content: result.answer })
+    const mergedMessage = normalizeMessage({
+      ...message,
+      ...result,
+      ...resolveAssistantMessageIdentity(result, message.id),
+      content: result.answer,
+    })
+    chatMessages.value[index] = mergedMessage
+    await hydrateMessageFeedbacks([mergedMessage])
     ElMessage.success('已生成通用回答')
     await loadSessions()
     await scrollToBottom(true)
@@ -404,7 +498,14 @@ async function regenerate() {
   thinking.value = true
   try {
     const result = await regenerateAnswer(sessionId.value)
-    chatMessages.value.push(normalizeMessage({ id: Date.now(), role: 'assistant', ...result, content: result.answer }))
+    const assistantMessage = normalizeMessage({
+      ...resolveAssistantMessageIdentity(result, Date.now()),
+      role: 'assistant',
+      ...result,
+      content: result.answer,
+    })
+    chatMessages.value.push(assistantMessage)
+    await hydrateMessageFeedbacks([assistantMessage])
     ElMessage.success('已重新生成回答')
     await scrollToBottom(true)
   } finally {
@@ -412,9 +513,81 @@ async function regenerate() {
   }
 }
 
-async function feedback(message: ChatMessage, feedbackType: 'LIKE' | 'DISLIKE') {
-  await sendFeedback({ messageId: message.id, feedbackType })
-  ElMessage.success(feedbackType === 'LIKE' ? '已记录有帮助反馈' : '已记录不准确反馈')
+async function removeFeedback(message: ChatMessage) {
+  const messageId = getMessageServerId(message)
+  if (!messageId) return ElMessage.warning('缺少消息 ID，无法取消反馈')
+  if (isFeedbackLoading(message.id)) return
+  setFeedbackLoading(message.id, true)
+  try {
+    await deleteMessageFeedback(messageId)
+    message.feedback = null
+    ElMessage.success('反馈已取消')
+  } finally {
+    setFeedbackLoading(message.id, false)
+  }
+}
+
+async function submitLikeFeedback(message: ChatMessage) {
+  if (isLiked(message)) return removeFeedback(message)
+  const messageId = getMessageServerId(message)
+  if (!messageId) return ElMessage.warning('缺少消息 ID，无法提交反馈')
+  if (isFeedbackLoading(message.id)) return
+  setFeedbackLoading(message.id, true)
+  try {
+    const data = await submitMessageFeedback(messageId, { feedbackType: 'LIKE' })
+    message.feedback = data
+    ElMessage.success('已记录点赞反馈')
+  } finally {
+    setFeedbackLoading(message.id, false)
+  }
+}
+
+function openDislikeDialog(message: ChatMessage) {
+  feedbackTargetMessage.value = message
+  feedbackForm.reason = (message.feedback?.reason as FeedbackReason | undefined) || ''
+  feedbackForm.remark = String(message.feedback?.remark || '')
+  feedbackDialogVisible.value = true
+}
+
+function closeFeedbackDialog() {
+  feedbackDialogVisible.value = false
+  feedbackSubmitting.value = false
+  feedbackTargetMessage.value = null
+  feedbackForm.reason = ''
+  feedbackForm.remark = ''
+}
+
+function handleDislikeClick(message: ChatMessage) {
+  if (isDisliked(message)) {
+    removeFeedback(message)
+    return
+  }
+  openDislikeDialog(message)
+}
+
+async function submitDislikeFeedback() {
+  if (!feedbackTargetMessage.value) return
+  const message = feedbackTargetMessage.value
+  const messageId = getMessageServerId(message)
+  if (!messageId) return ElMessage.warning('缺少消息 ID，无法提交反馈')
+  if (!feedbackForm.reason) return ElMessage.warning('请选择点踩原因')
+  if (feedbackForm.remark.length > 500) return ElMessage.warning('备注不能超过 500 字')
+  if (feedbackSubmitting.value) return
+  feedbackSubmitting.value = true
+  setFeedbackLoading(message.id, true)
+  try {
+    const data = await submitMessageFeedback(messageId, {
+      feedbackType: 'DISLIKE',
+      reason: feedbackForm.reason,
+      remark: feedbackForm.remark.trim() || undefined,
+    })
+    message.feedback = data
+    ElMessage.success('已记录点踩反馈')
+    closeFeedbackDialog()
+  } finally {
+    setFeedbackLoading(message.id, false)
+    feedbackSubmitting.value = false
+  }
 }
 
 function openReferenceDialog(ref: ChatReference) {
@@ -582,8 +755,28 @@ onMounted(async () => {
             <div v-if="isRagAnswer(message) && !validReferences(message).length" class="empty-reference">暂无引用来源</div>
 
             <div v-if="message.role === 'assistant'" class="message-actions">
-              <el-button link type="primary" @click="feedback(message, 'LIKE')">有帮助</el-button>
-              <el-button link type="warning" @click="feedback(message, 'DISLIKE')">不准确</el-button>
+              <el-button
+                link
+                :type="isLiked(message) ? 'success' : 'primary'"
+                :loading="isFeedbackLoading(message.id) && isLiked(message)"
+                @click="submitLikeFeedback(message)"
+              >
+                {{ isLiked(message) ? '已点赞' : '点赞' }}
+              </el-button>
+              <el-button
+                link
+                :type="isDisliked(message) ? 'danger' : 'warning'"
+                :loading="isFeedbackLoading(message.id) && isDisliked(message)"
+                @click="handleDislikeClick(message)"
+              >
+                {{ isDisliked(message) ? '已点踩' : '点踩' }}
+              </el-button>
+              <el-button v-if="message.feedback" link type="info" :disabled="isFeedbackLoading(message.id)" @click="removeFeedback(message)">
+                取消反馈
+              </el-button>
+              <span v-if="message.feedback?.feedbackType === 'DISLIKE'" class="feedback-text">
+                {{ reasonLabel(message.feedback?.reason) }}
+              </span>
             </div>
           </div>
 
@@ -623,6 +816,23 @@ onMounted(async () => {
       <template #footer>
         <el-button @click.stop="closeReferenceDialog">关闭</el-button>
         <el-button type="primary" @click.stop="goDocumentDetail(currentReference)">查看文档详情</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="feedbackDialogVisible" title="点踩反馈" width="560px" @close="closeFeedbackDialog">
+      <el-form label-position="top">
+        <el-form-item label="原因" required>
+          <el-radio-group v-model="feedbackForm.reason">
+            <el-radio v-for="item in feedbackReasonOptions" :key="item.value" :label="item.value">{{ item.label }}</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="备注（可选）">
+          <el-input v-model="feedbackForm.remark" type="textarea" :rows="4" maxlength="500" show-word-limit placeholder="可填写补充说明（最多 500 字）" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="closeFeedbackDialog">取消</el-button>
+        <el-button type="primary" :loading="feedbackSubmitting" @click="submitDislikeFeedback">提交反馈</el-button>
       </template>
     </el-dialog>
   </div>
@@ -873,6 +1083,11 @@ onMounted(async () => {
 
 .message-actions {
   margin-top: 8px;
+}
+
+.feedback-text {
+  color: #6b7280;
+  font-size: 12px;
 }
 
 .input-area {

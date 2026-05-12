@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
@@ -11,13 +11,14 @@ const authStore = useAuthStore()
 const collapsed = ref(localStorage.getItem(ADMIN_SIDEBAR_KEY) === 'true')
 
 const menus = [
-  { path: '/admin/dashboard', label: '数据看板', icon: 'DataBoard' },
+  { path: '/admin/dashboard', label: '后台首页', icon: 'DataBoard' },
   { path: '/admin/users', label: '用户管理', icon: 'User' },
   { path: '/admin/knowledge-bases', label: '知识库管理', icon: 'FolderOpened' },
   { path: '/admin/documents', label: '文档管理', icon: 'Document' },
   { path: '/admin/tasks', label: '任务管理', icon: 'List' },
   { path: '/admin/ai-models', label: 'AI 配置', icon: 'Cpu' },
   { path: '/admin/prompts', label: 'Prompt 模板', icon: 'DocumentCopy' },
+  { path: '/admin/feedbacks', label: '回答反馈管理', icon: 'ChatDotRound' },
   { path: '/admin/logs', label: '日志审计', icon: 'Tickets' },
   { path: '/admin/settings', label: '系统参数', icon: 'Setting' },
   { path: '/admin/announcements', label: '公告管理', icon: 'Notification' },
@@ -252,3 +253,4 @@ async function logout() {
   }
 }
 </style>
+

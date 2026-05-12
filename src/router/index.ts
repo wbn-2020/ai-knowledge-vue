@@ -78,6 +78,7 @@ const routes = [
       { path: 'tasks/:id', component: () => import('@/views/admin/TaskDetailView.vue'), meta: { title: '任务详情' } },
       { path: 'ai-models', component: () => import('@/views/admin/ModelConfigView.vue'), meta: { title: 'AI 配置' } },
       { path: 'prompts', component: () => import('@/views/admin/PromptView.vue'), meta: { title: 'Prompt 模板' } },
+      { path: 'feedbacks', component: () => import('@/views/admin/FeedbackManageView.vue'), meta: { title: '回答反馈管理' } },
       { path: 'logs', component: () => import('@/views/admin/LogView.vue'), meta: { title: '日志审计' } },
       { path: 'logs/:id', component: () => import('@/views/admin/LogDetailView.vue'), meta: { title: '日志详情' } },
       { path: 'settings', component: () => import('@/views/admin/SystemSettingView.vue'), meta: { title: '系统参数' } },

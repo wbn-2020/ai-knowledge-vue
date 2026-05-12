@@ -105,6 +105,7 @@ export interface ChatMessage {
   id: number
   role: 'user' | 'assistant'
   content: string
+  messageId?: number
   question?: string
   references?: Array<string | ChatReference>
   answerType?: 'RAG' | 'NO_CONTEXT' | 'GENERAL' | string
@@ -112,10 +113,60 @@ export interface ChatMessage {
   found?: boolean
   basedOnKnowledgeBase?: boolean
   noAnswerReason?: string | null
+  feedback?: ChatFeedbackVO | null
   createdAt?: string
   createTime?: string
   modelName?: string
   tokenCount?: number
+}
+
+export type FeedbackType = 'LIKE' | 'DISLIKE'
+
+export type FeedbackReason = 'NOT_RELEVANT' | 'INCORRECT' | 'INCOMPLETE' | 'HALLUCINATION' | 'BAD_REFERENCE' | 'OTHER'
+
+export interface ChatFeedbackVO {
+  id: number
+  messageId: number
+  feedbackType: FeedbackType
+  reason?: FeedbackReason | null
+  remark?: string | null
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface ChatFeedbackRequest {
+  feedbackType: FeedbackType
+  reason?: FeedbackReason
+  remark?: string
+}
+
+export interface AdminFeedbackVO {
+  feedbackId: number
+  messageId: number
+  sessionId: number
+  userId: number
+  username: string
+  feedbackType: FeedbackType
+  reason?: FeedbackReason | null
+  remark?: string | null
+  question?: string
+  answer?: string
+  answerType?: 'RAG' | 'NO_CONTEXT' | 'GENERAL' | string
+  knowledgeBaseId?: number | null
+  knowledgeBaseName?: string | null
+  documentId?: number | null
+  documentName?: string | null
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface AdminFeedbackPageQuery {
+  pageNo?: number
+  pageSize?: number
+  feedbackType?: FeedbackType
+  reason?: FeedbackReason
+  username?: string
+  keyword?: string
 }
 
 export interface Metric {
